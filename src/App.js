@@ -6,7 +6,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Bienvenido al Planificador de Tareas y Hábitos</h1>
+        <h1>Bienvenido al Planificador de Tareas y Hábitos de Tiger Tech 🐅</h1>
       </header>
       <main>
         {/* Aquí usas tu componente como si fuera una etiqueta HTML */}
