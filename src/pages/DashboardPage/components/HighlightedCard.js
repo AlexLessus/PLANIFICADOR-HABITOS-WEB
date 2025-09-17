@@ -13,28 +13,26 @@ export default function HighlightedCard() {
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   return (
-    <Card sx={{ height: '100%' }}>
+    <Card sx={{ width: '100%' }}>
       <CardContent>
-        <InsightsRoundedIcon />
         <Typography
-          component="h2"
-          variant="subtitle2"
           gutterBottom
-          sx={{ fontWeight: '600' }}
+          variant={isSmallScreen ? 'h6' : 'h5'}
+          component="div"
+          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
         >
-          Explore your data
+          <InsightsRoundedIcon fontSize={isSmallScreen ? 'small' : 'medium'} />
+          Habito
         </Typography>
-        <Typography sx={{ color: 'text.secondary', mb: '8px' }}>
-          Uncover performance and visitor insights with our data wizardry.
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Descripción breve del habito destacado.
         </Typography>
         <Button
-          variant="contained"
-          size="small"
-          color="primary"
+          variant="outlined"
+          size={isSmallScreen ? 'small' : 'medium'}
           endIcon={<ChevronRightRoundedIcon />}
-          fullWidth={isSmallScreen}
         >
-          Get insights
+          Ver más
         </Button>
       </CardContent>
     </Card>

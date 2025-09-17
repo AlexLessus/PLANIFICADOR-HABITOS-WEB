@@ -7,6 +7,17 @@ import Copyright from '../internals/components/Copyright';
 import ChartUserByCountry from './ChartUserByCountry';
 import CustomizedTreeView from './CustomizedTreeView';
 import CustomizedDataGrid from './CustomizedDataGrid';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListSubheader from '@mui/material/ListSubheader';
+
+import Card from '@mui/material/Card';
+import CardActions from '@mui/material/CardActions';
+import CardContent from '@mui/material/CardContent';
+import CardMedia from '@mui/material/CardMedia';
+import Button from '@mui/material/Button';
+
 import HighlightedCard from './HighlightedCard';
 import PageViewsBarChart from './PageViewsBarChart';
 import SessionsChart from './SessionsChart';
@@ -50,9 +61,60 @@ export default function MainGrid() {
     <Box sx={{ width: '100%', maxWidth: { sm: '100%', md: '1700px' } }}>
       {/* cards */}
       <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
-        Overview
+        Resumen
       </Typography>
-      <Grid
+      <Grid container spacing={1} >
+        <Grid size={8} sx={{ overflow: 'auto', mb: 4, maxHeight: 300 }}>
+          <Grid container spacing={2} columns={12} sx={{ mb: 2 }}>
+            <Grid size={6} item xs={12} sm={6} md={4}>
+              <HighlightedCard />
+            </Grid>
+            <Grid size={6} item xs={12} sm={6} md={4}>
+              <HighlightedCard />
+            </Grid>
+            <Grid size={6} item xs={12} sm={6} md={4}>
+              <HighlightedCard />
+            </Grid>
+            <Grid size={6} item xs={12} sm={6} md={4}>
+              <HighlightedCard />
+            </Grid>
+          </Grid>
+
+        </Grid>
+        <Grid size={4}>
+          <List
+            sx={{
+              width: '100%',
+              maxWidth: 360,
+              bgcolor: 'background.paper',
+              position: 'relative',
+              overflow: 'auto',
+              maxHeight: 300,
+              '& ul': { padding: 0 },
+            }}
+            subheader={<li />}
+          >
+            {["Matemáticas", "Ciencias", "Historia"].map((sectionId) => (
+              <li key={`section-${sectionId}`}>
+                <ul>
+                  <ListSubheader>{`Materia: ${sectionId}`}</ListSubheader>
+                  {[0, 1, 2].map((item) => (
+                    <ListItem key={`Tarea-${sectionId}-${item}`}>
+                      <ListItemText primary={`Tarea ${item}`} />
+                    </ListItem>
+                  ))}
+                </ul>
+              </li>
+            ))}
+          </List>
+
+        </Grid>
+      </Grid>
+
+
+      {/*
+      Grid para mostrar las tarjetas de estadísticas y gráficos
+      <Grid 
         container
         spacing={2}
         columns={12}
@@ -72,7 +134,8 @@ export default function MainGrid() {
         <Grid size={{ xs: 12, md: 6 }}>
           <PageViewsBarChart />
         </Grid>
-      </Grid>
+      </Grid>*/}
+
       <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
         Details
       </Typography>
