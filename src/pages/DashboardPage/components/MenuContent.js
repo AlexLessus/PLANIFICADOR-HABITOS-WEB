@@ -12,6 +12,7 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import InfoRoundedIcon from '@mui/icons-material/InfoRounded';
 import HelpRoundedIcon from '@mui/icons-material/HelpRounded';
+import DonutLargeIcon from '@mui/icons-material/DonutLarge';
 import { Link } from 'react-router-dom'; // Importa Link
 
 const mainListItems = [
@@ -19,12 +20,11 @@ const mainListItems = [
   { text: 'Habitos', icon: <TrackChangesIcon />, to: '/' },
   { text: 'Tareas', icon: <TaskIcon />, to: '/' },
   { text: 'Calendario', icon: <CalendarTodayIcon />, to: '/' },
+  { text: 'Progreso', icon: <DonutLargeIcon />, to: '/' },
 ];
 
 const secondaryListItems = [
   { text: 'Ajustes', icon: <SettingsRoundedIcon />, to: '/' },
-  { text: 'Acerca de', icon: <InfoRoundedIcon />, to: '/' },
-  { text: 'Comentarios', icon: <HelpRoundedIcon />, to: '/' },
 ];
 
 export default function MenuContent() {
