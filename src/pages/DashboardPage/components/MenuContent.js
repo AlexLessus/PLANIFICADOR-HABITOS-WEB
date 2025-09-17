@@ -22,9 +22,9 @@ const mainListItems = [
 ];
 
 const secondaryListItems = [
-  { text: 'Settings', icon: <SettingsRoundedIcon />, to: '/' },
-  { text: 'About', icon: <InfoRoundedIcon />, to: '/' },
-  { text: 'Feedback', icon: <HelpRoundedIcon />, to: '/' },
+  { text: 'Ajustes', icon: <SettingsRoundedIcon />, to: '/' },
+  { text: 'Acerca de', icon: <InfoRoundedIcon />, to: '/' },
+  { text: 'Comentarios', icon: <HelpRoundedIcon />, to: '/' },
 ];
 
 export default function MenuContent() {

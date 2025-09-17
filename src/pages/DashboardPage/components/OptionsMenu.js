@@ -13,6 +13,7 @@ import MenuButton from './MenuButton';
 
 const MenuItem = styled(MuiMenuItem)({
   margin: '2px 0',
+  fontSize: '14px'
 });
 
 export default function OptionsMenu() {
@@ -53,10 +54,10 @@ export default function OptionsMenu() {
           },
         }}
       >
-        <MenuItem onClick={handleClose}>Profile           </MenuItem>
-        <MenuItem onClick={handleClose}>My account</MenuItem>
+        <MenuItem onClick={handleClose}>Perfil</MenuItem>
+        <MenuItem onClick={handleClose}>Mi cuenta</MenuItem>
         <Divider />
-        <MenuItem onClick={handleClose}>Settings</MenuItem>
+        <MenuItem onClick={handleClose}>Ajustes</MenuItem>
         <Divider />
         <MenuItem
           onClick={handleClose}
