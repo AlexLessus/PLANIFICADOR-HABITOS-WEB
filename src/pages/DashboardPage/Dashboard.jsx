@@ -3,15 +3,17 @@ import { alpha } from '@mui/material/styles';// colores con transparencia
 import CssBaseline from '@mui/material/CssBaseline';// restablece estilos base
 import Box from '@mui/material/Box'; // contenedores flexibles
 import Stack from '@mui/material/Stack'; // contenedores flexibles en stack
-import AppNavbar from './DashboardPage/components/AppNavbar'; // barra de navegación
-import SideMenu from './DashboardPage/components/SideMenu'; // menú lateral
-import AppTheme from './shared-theme/AppTheme'; // tema personalizado
+import AppNavbar from './components/AppNavbar'; // barra de navegación
+import Header from './components/Header'; // encabezado de la página
+import MainGrid from './components/MainGrid'; // cuadrícula principal
+import SideMenu from './components/SideMenu'; // menú lateral
+import AppTheme from '../shared-theme/AppTheme'; // tema personalizado
 import { //estilos personalizados para componentes MUI
     chartsCustomizations,
     dataGridCustomizations,
     datePickersCustomizations,
     treeViewCustomizations,
-} from './DashboardPage/theme/customizations';
+} from './theme/customizations';
 
 const xThemeComponents = { // combinando todas las personalizaciones
     ...chartsCustomizations,
@@ -20,7 +22,7 @@ const xThemeComponents = { // combinando todas las personalizaciones
     ...treeViewCustomizations,
 };
 
-function HomePage(props) {
+export default function Dashboard(props) {
     return (
         //Contenedor principal del tema, se asegura de aplicar el tema a todos los componentes hijos
         <AppTheme {...props} themeComponents={xThemeComponents}>
@@ -49,11 +51,11 @@ function HomePage(props) {
                             mt: { xs: 8, md: 0 },
                         }}
                     >
+                        <Header />
+                        <MainGrid />
                     </Stack>
                 </Box>
             </Box>
         </AppTheme>
     );
 }
-
-export default HomePage;
