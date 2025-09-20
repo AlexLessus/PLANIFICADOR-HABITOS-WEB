@@ -4,11 +4,11 @@ import { alpha } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import AppNavbar from './components/AppNavbar';
-import Header from './components/Header';
+import AppNavbar from '../../globalComponents/AppNavbar';
+import Header from '../../globalComponents/Header';
 import MainGrid from './components/MainGrid';
-import SideMenu from './components/SideMenu';
-import AppTheme from '../shared-theme/AppTheme';
+import SideMenu from '../../globalComponents/SideMenu';
+import AppTheme from '../../shared-theme/AppTheme';
 import {
   chartsCustomizations,
   dataGridCustomizations,

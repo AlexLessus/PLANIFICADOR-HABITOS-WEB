@@ -10,17 +10,16 @@ import TrackChangesIcon from '@mui/icons-material/TrackChanges';
 import TaskIcon from '@mui/icons-material/Task';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
-import InfoRoundedIcon from '@mui/icons-material/InfoRounded';
-import HelpRoundedIcon from '@mui/icons-material/HelpRounded';
 import DonutLargeIcon from '@mui/icons-material/DonutLarge';
-import { Link } from 'react-router-dom'; // Importa Link
+
+import { useLocation, Link } from 'react-router-dom';
 
 const mainListItems = [
   { text: 'Dashboard', icon: <HomeRoundedIcon />, to: '/dashboard' },
-  { text: 'Habitos', icon: <TrackChangesIcon />, to: '/' },
-  { text: 'Tareas', icon: <TaskIcon />, to: '/' },
-  { text: 'Calendario', icon: <CalendarTodayIcon />, to: '/' },
-  { text: 'Progreso', icon: <DonutLargeIcon />, to: '/' },
+  { text: 'Habitos', icon: <TrackChangesIcon />, to: '/habits' },
+  { text: 'Tareas', icon: <TaskIcon />, to: '/tasks' },
+  { text: 'Calendario', icon: <CalendarTodayIcon />, to: '/calendary' },
+  { text: 'Progreso', icon: <DonutLargeIcon />, to: '/progress' },
 ];
 
 const secondaryListItems = [
@@ -30,6 +29,7 @@ const secondaryListItems = [
 ];
 
 export default function MenuContent() {
+  const location = useLocation();
   return (
     <Stack sx={{ flexGrow: 1, p: 1, justifyContent: 'space-between' }}>
       <List dense>
@@ -38,7 +38,7 @@ export default function MenuContent() {
             <ListItemButton
               component={Link}
               to={item.to}
-              selected={index === 0}
+              selected={location.pathname === item.to}
             >
               <ListItemIcon>{item.icon}</ListItemIcon>
               <ListItemText primary={item.text} />

@@ -3,9 +3,9 @@ import { alpha } from '@mui/material/styles';// colores con transparencia
 import CssBaseline from '@mui/material/CssBaseline';// restablece estilos base
 import Box from '@mui/material/Box'; // contenedores flexibles
 import Stack from '@mui/material/Stack'; // contenedores flexibles en stack
-import AppNavbar from './DashboardPage/components/AppNavbar'; // barra de navegación
-import SideMenu from './DashboardPage/components/SideMenu'; // menú lateral
-import AppTheme from './shared-theme/AppTheme'; // tema personalizado
+import AppNavbar from '../globalComponents/AppNavbar'; // barra de navegación
+import SideMenu from '../globalComponents/SideMenu'; // menú lateral
+import AppTheme from '../shared-theme/AppTheme'; // tema personalizado
 import { //estilos personalizados para componentes MUI
     chartsCustomizations,
     dataGridCustomizations,
@@ -49,6 +49,8 @@ function HomePage(props) {
                             mt: { xs: 8, md: 0 },
                         }}
                     >
+
+
                     </Stack>
                 </Box>
             </Box>
