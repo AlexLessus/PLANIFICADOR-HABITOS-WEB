@@ -49,8 +49,6 @@ function HomePage(props) {
                             mt: { xs: 8, md: 0 },
                         }}
                     >
-
-
                     </Stack>
                 </Box>
             </Box>
