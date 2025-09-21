@@ -10,13 +10,13 @@ import './App.css';
 import Habits from './pages/Habits/Habits';
 import Tasks from './pages/Task/Tasks';
 import Progress from './pages/Progress/Progress';
-import Calendary from './pages/Calendary/Calendary';
+import Calendar from './pages/Calendar/Calendar';
 
 // 1. Importa el proveedor de autenticación
-import { AuthProvider } from './context/AuthContext'; 
+import { AuthProvider } from './context/AuthContext';
 
 // 2. Importa el componente de ruta protegida
-import PrivateRoute from './components/PrivateRoute'; 
+import PrivateRoute from './components/PrivateRoute';
 
 function App() {
   return (
@@ -30,7 +30,7 @@ function App() {
           <Route path="/signup" element={<SignUp />} />
           <Route path="/habits" element={<Habits />} />
           <Route path="/tasks" element={<Tasks />} />
-          <Route path="/calendary" element={<Calendary />} />
+          <Route path="/calendar" element={<Calendar />} />
           <Route path="/progress" element={<Progress />} />
 
           {/* 4. Protege la ruta del dashboard con PrivateRoute */}

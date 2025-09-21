@@ -49,11 +49,11 @@ app.use('/api/auth', authRoutes); // <--- LÍNEA para usar las rutas de autentic
 app.listen(PORT, () => {
     console.log(`Servidor backend corriendo en http://localhost:${PORT}`);
     db.getConnection()
-      .then(connection => {
-        console.log('Pool de conexiones de la base de datos listo.');
-        connection.release();
-      })
-      .catch(err => {
-        console.error('No se pudo establecer conexión inicial con la base de datos:', err.message);
-      });
+        .then(connection => {
+            console.log('Pool de conexiones de la base de datos listo.');
+            connection.release();
+        })
+        .catch(err => {
+            console.error('No se pudo establecer conexión inicial con la base de datos:', err.message);
+        });
 });

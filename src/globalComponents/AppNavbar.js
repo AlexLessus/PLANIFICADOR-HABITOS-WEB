@@ -12,6 +12,8 @@ import SideMenuMobile from './SideMenuMobile';
 import MenuButton from './MenuButton';
 import ColorModeIconDropdown from '../shared-theme/ColorModeIconDropdown';
 
+import { SitemarkIcon } from '../shared-theme/CustomIcons';
+
 const Toolbar = styled(MuiToolbar)({
   width: '100%',
   padding: '12px',
@@ -63,7 +65,7 @@ export default function AppNavbar() {
             spacing={1}
             sx={{ justifyContent: 'center', mr: 'auto' }}
           >
-            <CustomIcon />
+
             <Typography variant="h4" component="h1" sx={{ color: 'text.primary' }}>
               Tigre Habit Planner
             </Typography>

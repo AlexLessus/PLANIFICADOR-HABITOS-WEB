@@ -26,7 +26,6 @@ export function SitemarkIcon() {
   );
 }
 
-
 export function GoogleIcon() {
   return (
     <SvgIcon>

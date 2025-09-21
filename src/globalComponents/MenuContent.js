@@ -18,7 +18,7 @@ const mainListItems = [
   { text: 'Dashboard', icon: <HomeRoundedIcon />, to: '/dashboard' },
   { text: 'Habitos', icon: <TrackChangesIcon />, to: '/habits' },
   { text: 'Tareas', icon: <TaskIcon />, to: '/tasks' },
-  { text: 'Calendario', icon: <CalendarTodayIcon />, to: '/calendary' },
+  { text: 'Calendario', icon: <CalendarTodayIcon />, to: '/calendar' },
   { text: 'Progreso', icon: <DonutLargeIcon />, to: '/progress' },
 ];
 
