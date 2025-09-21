@@ -1,4 +1,6 @@
 import * as React from 'react';
+import { useState } from 'react'; // Importar useState
+import { useNavigate } from 'react-router-dom'; // Importar useNavigate
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
@@ -16,6 +18,8 @@ import { styled } from '@mui/material/styles';
 import AppTheme from '../shared-theme/AppTheme';
 import ColorModeSelect from '../shared-theme/ColorModeSelect';
 import { GoogleIcon, FacebookIcon, SitemarkIcon } from './components/CustomIcons';
+
+import authService from '../../services/authService'; // Importa el servicio de autenticación
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -60,21 +64,39 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
 }));
 
 export default function SignUp(props) {
-  const [emailError, setEmailError] = React.useState(false);
-  const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
-  const [passwordError, setPasswordError] = React.useState(false);
-  const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
-  const [nameError, setNameError] = React.useState(false);
-  const [nameErrorMessage, setNameErrorMessage] = React.useState('');
+  // Estado para los datos del formulario
+  const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    password: '',
+  });
+
+  // Estados para manejar mensajes de éxito o error
+  const [message, setMessage] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  // Puedes seguir usando tus estados de error para la validación del frontend
+  const [emailError, setEmailError] = useState(false);
+  const [emailErrorMessage, setEmailErrorMessage] = useState('');
+  const [passwordError, setPasswordError] = useState(false);
+  const [passwordErrorMessage, setPasswordErrorMessage] = useState('');
+  const [nameError, setNameError] = useState(false);
+  const [nameErrorMessage, setNameErrorMessage] = useState('');
+
+  const navigate = useNavigate();
+
+  // Función para actualizar el estado cuando se escribe en los inputs
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
 
   const validateInputs = () => {
-    const email = document.getElementById('email');
-    const password = document.getElementById('password');
-    const name = document.getElementById('name');
-
+    // La validación ahora usa los datos del estado
     let isValid = true;
 
-    if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
+    if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) {
       setEmailError(true);
       setEmailErrorMessage('Please enter a valid email address.');
       isValid = false;
@@ -83,7 +105,7 @@ export default function SignUp(props) {
       setEmailErrorMessage('');
     }
 
-    if (!password.value || password.value.length < 6) {
+    if (!formData.password || formData.password.length < 6) {
       setPasswordError(true);
       setPasswordErrorMessage('Password must be at least 6 characters long.');
       isValid = false;
@@ -92,7 +114,7 @@ export default function SignUp(props) {
       setPasswordErrorMessage('');
     }
 
-    if (!name.value || name.value.length < 1) {
+    if (!formData.first_name || formData.first_name.length < 1) {
       setNameError(true);
       setNameErrorMessage('Name is required.');
       isValid = false;
@@ -104,18 +126,27 @@ export default function SignUp(props) {
     return isValid;
   };
 
-  const handleSubmit = (event) => {
-    if (nameError || emailError || passwordError) {
-      event.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (!validateInputs()) {
       return;
     }
-    const data = new FormData(event.currentTarget);
-    console.log({
-      name: data.get('name'),
-      lastName: data.get('lastName'),
-      email: data.get('email'),
-      password: data.get('password'),
-    });
+
+    try {
+      const response = await authService.register(formData);
+
+      setMessage(response.message);
+      setIsSuccess(true);
+
+      // Redirige al usuario a la página de login después de un registro exitoso
+      setTimeout(() => {
+        navigate('/signin');
+      }, 2000);
+
+    } catch (error) {
+      setMessage(error.message || 'Ocurrió un error inesperado. Intenta de nuevo.');
+      setIsSuccess(false);
+    }
   };
 
   return (
@@ -138,17 +169,30 @@ export default function SignUp(props) {
             sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
           >
             <FormControl>
-              <FormLabel htmlFor="name">Nombre completo</FormLabel>
+              <FormLabel htmlFor="first_name">Nombre</FormLabel>
               <TextField
-                autoComplete="name"
-                name="name"
+                autoComplete="first-name"
+                name="first_name"
                 required
                 fullWidth
-                id="name"
-                placeholder="Tigre Salvaje"
+                id="first_name"
+                placeholder="Tigre"
                 error={nameError}
                 helperText={nameErrorMessage}
                 color={nameError ? 'error' : 'primary'}
+                onChange={handleChange}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel htmlFor="last_name">Apellido</FormLabel>
+              <TextField
+                autoComplete="last-name"
+                name="last_name"
+                required
+                fullWidth
+                id="last_name"
+                placeholder="Salvaje"
+                onChange={handleChange}
               />
             </FormControl>
             <FormControl>
@@ -164,6 +208,7 @@ export default function SignUp(props) {
                 error={emailError}
                 helperText={emailErrorMessage}
                 color={passwordError ? 'error' : 'primary'}
+                onChange={handleChange}
               />
             </FormControl>
             <FormControl>
@@ -180,6 +225,7 @@ export default function SignUp(props) {
                 error={passwordError}
                 helperText={passwordErrorMessage}
                 color={passwordError ? 'error' : 'primary'}
+                onChange={handleChange}
               />
             </FormControl>
             <FormControlLabel
@@ -190,7 +236,6 @@ export default function SignUp(props) {
               type="submit"
               fullWidth
               variant="contained"
-              onClick={validateInputs}
             >
               Crear cuenta
             </Button>
@@ -207,7 +252,6 @@ export default function SignUp(props) {
             >
               Registrarse con Google
             </Button>
-
             <Typography sx={{ textAlign: 'center' }}>
               ¿Ya tienes una cuenta?{' '}
               <Link
@@ -220,6 +264,17 @@ export default function SignUp(props) {
             </Typography>
           </Box>
         </Card>
+        {message && (
+          <Typography
+            variant="body2"
+            sx={{
+              color: isSuccess ? 'green' : 'red',
+              textAlign: 'center'
+            }}
+          >
+            {message}
+          </Typography>
+        )}
       </SignUpContainer>
     </AppTheme>
   );

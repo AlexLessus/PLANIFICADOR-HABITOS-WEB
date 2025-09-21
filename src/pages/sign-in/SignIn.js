@@ -1,4 +1,6 @@
 import * as React from 'react';
+import { useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
@@ -17,6 +19,9 @@ import ForgotPassword from './components/ForgotPassword';
 import AppTheme from '../shared-theme/AppTheme';
 import ColorModeSelect from '../shared-theme/ColorModeSelect';
 import { GoogleIcon, FacebookIcon, SitemarkIcon } from './components/CustomIcons';
+
+import authService from '../../services/authService';
+import AuthContext from '../../context/AuthContext'; // Importar el contexto
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -61,11 +66,21 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
 }));
 
 export default function SignIn(props) {
-  const [emailError, setEmailError] = React.useState(false);
-  const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
-  const [passwordError, setPasswordError] = React.useState(false);
-  const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
-  const [open, setOpen] = React.useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+
+  const [message, setMessage] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [emailError, setEmailError] = useState(false);
+  const [emailErrorMessage, setEmailErrorMessage] = useState('');
+  const [passwordError, setPasswordError] = useState(false);
+  const [passwordErrorMessage, setPasswordErrorMessage] = useState('');
+  const [open, setOpen] = useState(false);
+
+  const { login } = useContext(AuthContext); // Obtenemos la función de login del contexto
+  const navigate = useNavigate(); // Importamos el hook para la redirección
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -75,25 +90,16 @@ export default function SignIn(props) {
     setOpen(false);
   };
 
-  const handleSubmit = (event) => {
-    if (emailError || passwordError) {
-      event.preventDefault();
-      return;
-    }
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
-
+  
   const validateInputs = () => {
-    const email = document.getElementById('email');
-    const password = document.getElementById('password');
-
+    // La validación ahora usa los datos del estado
     let isValid = true;
-
-    if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
+    
+    if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) {
       setEmailError(true);
       setEmailErrorMessage('Please enter a valid email address.');
       isValid = false;
@@ -102,7 +108,7 @@ export default function SignIn(props) {
       setEmailErrorMessage('');
     }
 
-    if (!password.value || password.value.length < 6) {
+    if (!formData.password || formData.password.length < 6) {
       setPasswordError(true);
       setPasswordErrorMessage('Password must be at least 6 characters long.');
       isValid = false;
@@ -112,6 +118,27 @@ export default function SignIn(props) {
     }
 
     return isValid;
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (!validateInputs()) {
+      return;
+    }
+    
+    try {
+      await login(formData); // Llama a la función de login del contexto
+      
+      setMessage('Inicio de sesión exitoso. Redirigiendo al dashboard...');
+      setIsSuccess(true);
+      
+      // Añade esta línea para redirigir al usuario
+      navigate('/dashboard'); 
+
+    } catch (error) {
+      setMessage(error.message || 'Credenciales inválidas');
+      setIsSuccess(false);
+    }
   };
 
   return (
@@ -157,6 +184,7 @@ export default function SignIn(props) {
                 fullWidth
                 variant="outlined"
                 color={emailError ? 'error' : 'primary'}
+                onChange={handleChange}
               />
             </FormControl>
             <FormControl>
@@ -174,6 +202,7 @@ export default function SignIn(props) {
                 fullWidth
                 variant="outlined"
                 color={passwordError ? 'error' : 'primary'}
+                onChange={handleChange}
               />
             </FormControl>
             <FormControlLabel
@@ -185,7 +214,6 @@ export default function SignIn(props) {
               type="submit"
               fullWidth
               variant="contained"
-              onClick={validateInputs}
             >
               Iniciar sesión
             </Button>
@@ -209,7 +237,6 @@ export default function SignIn(props) {
             >
               Iniciar sesión con Google
             </Button>
-
             <Typography sx={{ textAlign: 'center' }}>
               No tienes una cuenta?{' '}
               <Link
@@ -222,6 +249,17 @@ export default function SignIn(props) {
             </Typography>
           </Box>
         </Card>
+        {message && (
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              color: isSuccess ? 'green' : 'red', 
+              textAlign: 'center' 
+            }}
+          >
+            {message}
+          </Typography>
+        )}
       </SignInContainer>
     </AppTheme>
   );
