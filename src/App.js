@@ -1,6 +1,6 @@
 import React from 'react';
 // 1. Importa las herramientas de React Router y tus páginas
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import DashboardPage from './pages/DashboardPage/Dashboard';
 import SignIn from './pages/sign-in/SignIn';
@@ -23,7 +23,6 @@ function App() {
         <Route path="/tasks" element={<Tasks />} />
         <Route path="/calendary" element={<Calendary />} />
         <Route path="/progress" element={<Progress />} />
-
       </Routes>
     </BrowserRouter>
   );
