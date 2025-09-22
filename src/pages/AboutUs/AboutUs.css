@@ -1,0 +1,104 @@
+/* src/components/AboutUs.css */
+
+/* --- Paleta de colores --- */
+:root {
+    --background-dark: #05070A;
+    --text-primary: #141313;
+    --text-secondary: #c4c8d1;
+    --button-background: #E6EAF2;
+    --button-hover: #C2C9D6;
+    --gradient-from: #0a0f18;
+    --gradient-to: #041325;
+}
+
+/* Estilos generales del contenedor */
+.about-us-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: radial-gradient(circle, var(--gradient-to), var(--gradient-from));
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    padding: 20px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+/* Estilos del encabezado */
+.header {
+    position: absolute;
+    top: 40px;
+    left: 40px;
+}
+
+.logo {
+    height: 150px;
+    /* Ajusta el tamaño de tu logo si es necesario */
+    width: auto;
+}
+
+/* Estilos para el contenido principal */
+.main-content {
+    max-width: 1000px;
+    padding: 10px;
+}
+
+.main-title {
+    font-size: 3.5rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    /* Aplicamos el degradado al texto */
+    background: linear-gradient(to right, #10427e, #c4c8d1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+    margin: 50px 0;
+}
+
+.description {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin-bottom: 4rem;
+    /* Más separación entre la intro y los botones */
+    padding: 0 20px;
+}
+
+/* Estilos para el grupo de botones */
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 150px;
+    /* Más espacio entre los botones */
+}
+
+.primary-button {
+    background-color: var(--button-background);
+    color: var(--text-primary);
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 18px 45px;
+    /* Botones más grandes */
+    font-size: 1.3rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.primary-button:hover {
+    background-color: var(--button-hover);
+}
+
+/* Opcional: Estilos para el link (para quitar el subrayado) */
+.button-group a {
+    text-decoration: none;
+}
+
+
+/* mala practica pero es la unica solucion que encontre a las 4:00 am jheje */
+.st0 {
+  fill: #fff !important;
+}

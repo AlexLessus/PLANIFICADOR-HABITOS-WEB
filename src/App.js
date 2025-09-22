@@ -11,6 +11,7 @@ import Habits from './pages/Habits/Habits';
 import Tasks from './pages/Task/Tasks';
 import Progress from './pages/Progress/Progress';
 import Calendar from './pages/Calendar/Calendar';
+import AboutUs from './pages/AboutUs/AboutUs';
 
 // 1. Importa el proveedor de autenticación
 import { AuthProvider } from './context/AuthContext';
@@ -24,8 +25,7 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/" element={<AboutUs />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/habits" element={<Habits />} />
