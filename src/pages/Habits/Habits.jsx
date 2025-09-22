@@ -107,7 +107,7 @@ function HabitsPage(props) {
                     })}
                 >
                     {/* El contenedor del contenido ahora usa un padding consistente y el margen superior para la navbar */}
-                    <Container maxWidth="lg" sx={{ pt: 10, pb: 5 }}>
+                    <Container maxWidth="lg" sx={{ pt: 5, pb: 5 }}>
                         {/* --- Aquí comienza el contenido específico de la página de hábitos --- */}
 
                         <Typography variant="h4" component="h1" gutterBottom>

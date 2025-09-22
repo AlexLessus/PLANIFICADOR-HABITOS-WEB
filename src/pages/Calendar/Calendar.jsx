@@ -16,6 +16,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 
 // --- Layout y Tema ---
 import MainLayout from '../../globalComponents/MainLayout';
+import Header from '../../globalComponents/Header';
 import AppTheme from '../../shared-theme/AppTheme';
 import { chartsCustomizations, dataGridCustomizations, datePickersCustomizations, treeViewCustomizations } from '../DashboardPage/theme/customizations';
 
@@ -92,9 +93,10 @@ function CalendarPage(props) {
     return (
         <AppTheme {...props} themeComponents={xThemeComponents}>
             <CssBaseline enableColorScheme />
+            <Header />
             <Box sx={{ display: 'flex' }}>
                 <MainLayout />
-                <Container maxWidth="xl" sx={{ marginTop: 4, flexGrow: 1, padding: 3 }}>
+                <Container maxWidth="xl" sx={{ marginTop: 0, flexGrow: 1, padding: 3 }}>
                     <Typography variant="h4" component="h1" gutterBottom>
                         Calendario
                     </Typography>

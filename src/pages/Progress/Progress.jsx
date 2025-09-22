@@ -22,6 +22,7 @@ import {
 } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
 import MainLayout from '../../globalComponents/MainLayout'; // Layout principal
+import Header from '../../globalComponents/Header'; // Header
 import AppTheme from '../../shared-theme/AppTheme'; // Tema personalizado
 
 // --- Librerías para Gráficos y Selectores de Fecha ---
@@ -90,9 +91,10 @@ function Progress(props) {
     return (
         <AppTheme {...props} themeComponents={xThemeComponents}>
             <CssBaseline enableColorScheme />
+            <Header />
             <Box sx={{ display: 'flex' }}>
                 <MainLayout />
-                <Container maxWidth="lg" sx={{ marginTop: 4, flexGrow: 1, padding: 3 }}>
+                <Container maxWidth="lg" sx={{ marginTop: 0, flexGrow: 1, padding: 3 }}>
                     <Typography variant="h4" component="h1" gutterBottom>
                         Estadísticas y Reportes
                     </Typography>
