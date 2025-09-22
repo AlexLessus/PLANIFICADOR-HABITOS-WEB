@@ -7,10 +7,9 @@ import { alpha } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import AppNavbar from './components/AppNavbar';
-import Header from './components/Header';
+import MainLayout from '../../globalComponents/MainLayout';
 import MainGrid from './components/MainGrid';
-import SideMenu from './components/SideMenu';
+import Header from '../../globalComponents/Header';
 import AppTheme from '../shared-theme/AppTheme';
 import Button from '@mui/material/Button'; // Importamos el componente Button de MUI
 import Typography from '@mui/material/Typography'; // Importamos Typography para mostrar el nombre
@@ -51,8 +50,7 @@ export default function Dashboard(props) {
     <AppTheme {...props} themeComponents={xThemeComponents}>
       <CssBaseline enableColorScheme />
       <Box sx={{ display: 'flex' }}>
-        <SideMenu />
-        <AppNavbar />
+        <MainLayout />
         {/* Main content */}
         <Box
           component="main"

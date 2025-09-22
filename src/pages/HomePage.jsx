@@ -13,7 +13,7 @@ import { //estilos personalizados para componentes MUI
     treeViewCustomizations,
 } from './DashboardPage/theme/customizations';
 
-const xThemeComponents = { // combinando todas las personalizaciones
+export const xThemeComponents = { // combinando todas las personalizaciones
     ...chartsCustomizations,
     ...dataGridCustomizations,
     ...datePickersCustomizations,
