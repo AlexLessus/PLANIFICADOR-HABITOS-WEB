@@ -228,10 +228,12 @@ export default function SignUp(props) {
                 onChange={handleChange}
               />
             </FormControl>
+            {/*}
             <FormControlLabel
               control={<Checkbox value="allowExtraEmails" color="primary" />}
               label="Quiero recibir actualizaciones por correo."
             />
+            */}
             <Button
               type="submit"
               fullWidth

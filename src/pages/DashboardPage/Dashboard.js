@@ -72,11 +72,8 @@ export default function Dashboard(props) {
             }}
           >
             {/* 3. Muestra el nombre del usuario y el botón de cerrar sesión */}
-            <Typography variant="h5">¡Bienvenido, {currentUser.first_name}!</Typography>
-            <Button variant="contained" color="secondary" onClick={handleLogout}>
-              Cerrar Sesión
-            </Button>
             <Header />
+            <Typography variant="h5">¡Bienvenido, {currentUser.first_name}!</Typography>
             <MainGrid />
           </Stack>
         </Box>

@@ -24,8 +24,6 @@ const mainListItems = [
 
 const secondaryListItems = [
   { text: 'Ajustes', icon: <SettingsRoundedIcon />, to: '/' },
-  { text: 'SignIn', icon: <SettingsRoundedIcon />, to: '/signin' },
-  { text: 'SignUp', icon: <SettingsRoundedIcon />, to: '/signup' },
 ];
 
 export default function MenuContent() {

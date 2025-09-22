@@ -10,6 +10,9 @@ import ListItemIcon, { listItemIconClasses } from '@mui/material/ListItemIcon';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
 import MenuButton from './MenuButton';
+import { useContext } from 'react'; // Importamos useContext
+import { useNavigate } from 'react-router-dom'; // Importamos useNavigate
+import AuthContext from '../context/AuthContext'; // Importamos el contexto
 
 const MenuItem = styled(MuiMenuItem)({
   margin: '2px 0',
@@ -25,6 +28,24 @@ export default function OptionsMenu() {
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  // 1. Usa el hook useContext para acceder al estado global de autenticación
+  const { currentUser, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  // Si por alguna razón el usuario no está en el contexto, se redirige.
+  // Esto es una capa extra de seguridad.
+  if (!currentUser) {
+    navigate('/signin');
+    return null;
+  }
+
+  // 2. Función para manejar el cierre de sesión
+  const handleLogout = () => {
+    logout(); // Llama a la función de logout del contexto
+    navigate('/signin'); // Redirige al usuario al login
+  };
+
   return (
     <React.Fragment>
       <MenuButton
@@ -68,7 +89,7 @@ export default function OptionsMenu() {
             },
           }}
         >
-          <ListItemText>Logout</ListItemText>
+          <ListItemText onClick={handleLogout}>Logout</ListItemText>
           <ListItemIcon>
             <LogoutRoundedIcon fontSize="small" />
           </ListItemIcon>

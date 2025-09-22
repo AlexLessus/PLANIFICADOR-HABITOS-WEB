@@ -12,9 +12,7 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { alpha } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
-// Asumiendo rutas relativas basadas en tu ejemplo
-import AppNavbar from '../../globalComponents/AppNavbar';
-import SideMenu from '../../globalComponents/SideMenu';
+import MainLayout from '../../globalComponents/MainLayout';
 import AppTheme from '../../shared-theme/AppTheme';
 import {
     chartsCustomizations,
@@ -22,6 +20,7 @@ import {
     datePickersCustomizations,
     treeViewCustomizations,
 } from '../DashboardPage/theme/customizations'; // Ajusta esta ruta si es necesario
+import Header from '../../globalComponents/Header';
 
 // --- NUEVO: Combinando las personalizaciones del tema ---
 export const xThemeComponents = {
@@ -92,13 +91,12 @@ function HabitsPage(props) {
         return today.toDateString() === lastDate.toDateString();
     };
 
-    // --- MODIFICADO: Usamos el JSX del Layout Principal ---
     return (
         <AppTheme {...props} themeComponents={xThemeComponents}>
             <CssBaseline enableColorScheme />
+            <Header />
             <Box sx={{ display: 'flex' }}>
-                <SideMenu />
-                <AppNavbar />
+                <MainLayout />
                 <Box
                     component="main"
                     sx={(theme) => ({
@@ -166,8 +164,6 @@ function HabitsPage(props) {
                                 </Box>
                             </Modal>
                         )}
-
-                        {/* --- Aquí termina el contenido específico de la página de hábitos --- */}
                     </Container>
                 </Box>
             </Box>
