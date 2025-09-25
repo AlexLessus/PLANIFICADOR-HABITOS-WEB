@@ -101,11 +101,24 @@ export default function Hero() {
           </Typography>
           <Button
             variant="contained"
-            color="primary"
+            color="secondary"
             size="large"
-            href='/signup'
+            sx={{
+              mt: 4,
+              px: 6,
+              py: 2,
+              fontSize: 22,
+              boxShadow: 4,
+              animation: 'pulse 2s infinite',
+              '@keyframes pulse': {
+                '0%': { boxShadow: '0 0 0 0 #1976d2' },
+                '70%': { boxShadow: '0 0 0 10px rgba(25, 118, 210, 0)' },
+                '100%': { boxShadow: '0 0 0 0 #1976d2' },
+              },
+            }}
+            href="/signup"
           >
-            Comenzar ahora
+            ¡Empieza ahora gratis!
           </Button>
           <Stack
             direction={{ xs: 'column', sm: 'row' }}

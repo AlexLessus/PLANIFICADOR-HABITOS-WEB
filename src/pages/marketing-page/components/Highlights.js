@@ -71,6 +71,7 @@ export default function Highlights() {
           gap: { xs: 3, sm: 6 },
         }}
       >
+
         <Box
           sx={{
             width: { sm: '100%', md: '60%' },

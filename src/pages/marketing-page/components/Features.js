@@ -72,6 +72,12 @@ function MobileLayout({ selectedItemIndex, handleItemClick, selectedFeature }) {
         display: { xs: 'flex', sm: 'none' },
         flexDirection: 'column',
         gap: 2,
+        position: 'absolute',
+        width: '100vw',
+        height: '100vh',
+        zIndex: -1,
+        background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+        opacity: 0.7,
       }}
     >
       <Box sx={{ display: 'flex', gap: 2, overflow: 'auto' }}>
