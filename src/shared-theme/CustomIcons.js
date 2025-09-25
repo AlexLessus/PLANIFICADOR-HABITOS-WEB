@@ -6,7 +6,7 @@ export function SitemarkIcon() {
     <SvgIcon
       viewBox="0 0 512 512"
 
-      sx={{ width: "4rem", height: "4rem" }}>
+      sx={{ width: "3rem", height: "3rem" }}>
 
       <g>
         <path

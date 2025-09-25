@@ -11,6 +11,7 @@ import Tasks from './pages/Task/Tasks';
 import Progress from './pages/Progress/Progress';
 import Calendar from './pages/Calendar/Calendar';
 import AboutUs from './pages/AboutUs/AboutUs';
+import Marketing from './pages/marketing-page/MarketingPage';
 
 import { AuthProvider } from './context/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
@@ -20,7 +21,8 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<AboutUs />} />
+          {/*<Route path="/" element={<AboutUs />} />*/}
+          <Route path="/" element={<Marketing />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/habits" element={<PrivateRoute><Habits /></PrivateRoute>} />

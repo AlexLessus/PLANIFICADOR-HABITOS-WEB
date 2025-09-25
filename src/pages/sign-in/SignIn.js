@@ -18,7 +18,7 @@ import { styled } from '@mui/material/styles';
 import ForgotPassword from './components/ForgotPassword';
 import AppTheme from '../shared-theme/AppTheme';
 import ColorModeSelect from '../shared-theme/ColorModeSelect';
-import { GoogleIcon, FacebookIcon, SitemarkIcon } from './components/CustomIcons';
+import { GoogleIcon, SitemarkIcon } from './components/CustomIcons';
 
 import authService from '../../services/authService';
 import AuthContext from '../../context/AuthContext'; // Importar el contexto
@@ -94,11 +94,11 @@ export default function SignIn(props) {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
-  
+
   const validateInputs = () => {
     // La validación ahora usa los datos del estado
     let isValid = true;
-    
+
     if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) {
       setEmailError(true);
       setEmailErrorMessage('Please enter a valid email address.');
@@ -125,15 +125,15 @@ export default function SignIn(props) {
     if (!validateInputs()) {
       return;
     }
-    
+
     try {
       await login(formData); // Llama a la función de login del contexto
-      
+
       setMessage('Inicio de sesión exitoso. Redirigiendo al dashboard...');
       setIsSuccess(true);
-      
+
       // Añade esta línea para redirigir al usuario
-      navigate('/dashboard'); 
+      navigate('/dashboard');
 
     } catch (error) {
       setMessage(error.message || 'Credenciales inválidas');
@@ -250,11 +250,11 @@ export default function SignIn(props) {
           </Box>
         </Card>
         {message && (
-          <Typography 
-            variant="body2" 
-            sx={{ 
-              color: isSuccess ? 'green' : 'red', 
-              textAlign: 'center' 
+          <Typography
+            variant="body2"
+            sx={{
+              color: isSuccess ? 'green' : 'red',
+              textAlign: 'center'
             }}
           >
             {message}
