@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-    Container, Typography, Fab, List, Card, CardContent, ListItemIcon, Checkbox,
+    Container, Typography, Fab, List, Card, CardContent, Checkbox,
     ListItemText, IconButton, Modal, TextField, Button
 } from '@mui/material';
 import Stack from '@mui/material/Stack';
@@ -19,10 +19,11 @@ import {
     dataGridCustomizations,
     datePickersCustomizations,
     treeViewCustomizations,
-} from '../DashboardPage/theme/customizations'; // Ajusta esta ruta si es necesario
+} from '../DashboardPage/theme/customizations'; 
 import Header from '../../globalComponents/Header';
 
-// --- NUEVO: Combinando las personalizaciones del tema ---
+
+// --- Combinando las personalizaciones del tema ---
 export const xThemeComponents = {
     ...chartsCustomizations,
     ...dataGridCustomizations,
@@ -30,24 +31,67 @@ export const xThemeComponents = {
     ...treeViewCustomizations,
 };
 
-// El estilo del modal se mantiene igual
+// Helper para headers con token
+const getAuthHeaders = (withJson = false) => {
+    const headers = {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+    };
+    if (withJson) headers['Content-Type'] = 'application/json';
+    return headers;
+};
+
+// Estilo del modal
 const modalStyle = {
     position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
     width: 400, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 24, p: 4,
 };
 
 function HabitsPage(props) {
-    // --- Toda la lógica de la página de hábitos se mantiene intacta ---
-    const [habits, setHabits] = useState([
-        { id: 1, name: 'Leer 30 minutos', streak: 5, lastCompleted: new Date('2025-09-19'), time: '22:00', location: 'En la sala' },
-        { id: 2, name: 'Hacer ejercicio', streak: 15, lastCompleted: new Date('2025-09-20'), time: '07:00', location: 'Gimnasio' },
-        { id: 3, name: 'Meditar 10 minutos', streak: 0, lastCompleted: null, time: '', location: '' },
-    ]);
+    const [habits, setHabits] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
     const [openModal, setOpenModal] = useState(false);
     const [currentHabit, setCurrentHabit] = useState(null);
 
+    // --- Lógica para cargar hábitos (Fetch) ---
+    useEffect(() => {
+        const fetchHabits = async () => {
+            
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                setError('Error: Debes iniciar sesión para ver tus hábitos.');
+                setLoading(false);
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/habits', {
+                    headers: getAuthHeaders(),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al cargar los hábitos');
+                }
+                const data = await response.json();
+                setHabits(data);
+                setError(null);
+            } catch (err) {
+                console.error(err);
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchHabits();
+    }, []);
+
+    // --- Lógica del Modal (Open/Close/Change) ---
     const handleOpenModal = (habit = null) => {
-        setCurrentHabit(habit ? { ...habit } : { id: null, name: '', streak: 0, lastCompleted: null, time: '', location: '' });
+        // CORRECCIÓN: Inicializar el hábito usando 'title' en lugar de 'name'
+        setCurrentHabit(habit ? { ...habit } : { id: null, title: '', streak: 0, lastCompleted: null, time: '', location: '' });
         setOpenModal(true);
     };
     const handleCloseModal = () => {
@@ -55,41 +99,96 @@ function HabitsPage(props) {
         setCurrentHabit(null);
     };
     const handleModalChange = (e) => {
+        // El campo de texto en el modal ahora usa name="title", por lo que esto funciona correctamente
         const { name, value } = e.target;
         setCurrentHabit(prev => ({ ...prev, [name]: value }));
     };
-    const handleSaveHabit = () => {
-        if (currentHabit.id) {
-            setHabits(habits.map(h => h.id === currentHabit.id ? currentHabit : h));
-        } else {
-            const newHabit = { ...currentHabit, id: Date.now() };
-            setHabits([...habits, newHabit]);
-        }
-        handleCloseModal();
-    };
-    const handleDeleteHabit = (habitId) => setHabits(habits.filter(h => h.id !== habitId));
-    const handleCheckIn = (habitId) => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        setHabits(habits.map(habit => {
-            if (habit.id === habitId) {
-                const lastCompleted = habit.lastCompleted ? new Date(habit.lastCompleted) : null;
-                if (lastCompleted) lastCompleted.setHours(0, 0, 0, 0);
-                if (lastCompleted && lastCompleted.getTime() === today.getTime()) return habit;
-                const yesterday = new Date(today);
-                yesterday.setDate(today.getDate() - 1);
-                const newStreak = (lastCompleted && lastCompleted.getTime() === yesterday.getTime()) ? habit.streak + 1 : 1;
-                return { ...habit, streak: newStreak, lastCompleted: new Date() };
+
+    // --- Operaciones CRUD (Create/Update/Delete/Checkin) ---
+    const handleSaveHabit = async () => {
+        try {
+            const url = currentHabit.id
+                ? `/api/habits/${currentHabit.id}`
+                : '/api/habits';
+            const method = currentHabit.id ? 'PUT' : 'POST';
+
+            const response = await fetch(`http://localhost:5000${url}`, {
+                method: method,
+                headers: getAuthHeaders(true),
+                body: JSON.stringify(currentHabit), // Enviamos 'title' si se usa 'name="title"' en el TextField
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error al ${currentHabit.id ? 'actualizar' : 'crear'} el hábito`);
             }
-            return habit;
-        }));
+
+            const savedHabit = await response.json();
+
+            if (currentHabit.id) {
+                setHabits(habits.map(h => h.id === savedHabit.id ? savedHabit : h));
+            } else {
+                setHabits([...habits, savedHabit]);
+            }
+
+            handleCloseModal();
+        } catch (err) {
+            console.error(err);
+            setError(err.message);
+        }
     };
+    const handleDeleteHabit = async (habitId) => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/habits/${habitId}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders(),
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al eliminar el hábito');
+            }
+
+            setHabits(habits.filter(h => h.id !== habitId));
+
+        } catch (err) {
+            console.error(err);
+            setError(err.message);
+        }
+    };
+    const handleCheckIn = async (habitId) => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/habits/${habitId}/checkin`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al registrar el hábito');
+            }
+
+            const updatedHabit = await response.json();
+            setHabits(habits.map(h => h.id === updatedHabit.id ? updatedHabit : h));
+
+        } catch (err) {
+            console.error(err);
+            setError(err.message);
+        }
+    };
+
+    // --- Helpers de UI ---
     const isCompletedToday = (lastCompletedDate) => {
         if (!lastCompletedDate) return false;
         const today = new Date();
         const lastDate = new Date(lastCompletedDate);
         return today.toDateString() === lastDate.toDateString();
     };
+
+    if (loading) {
+        return <p>Cargando hábitos...</p>;
+    }
+
+    if (error) {
+        return <p>Error: {error}</p>;
+    }
 
     return (
         <AppTheme {...props} themeComponents={xThemeComponents}>
@@ -103,13 +202,10 @@ function HabitsPage(props) {
                         flexGrow: 1,
                         backgroundColor: theme.vars ? `rgba(${theme.vars.palette.background.defaultChannel} / 1)` : alpha(theme.palette.background.default, 1),
                         overflow: 'auto',
-                        height: '100vh', // Asegura que el contenedor principal ocupe toda la altura
+                        height: '100vh',
                     })}
                 >
-                    {/* El contenedor del contenido ahora usa un padding consistente y el margen superior para la navbar */}
                     <Container maxWidth="lg" sx={{ pt: 5, pb: 5 }}>
-                        {/* --- Aquí comienza el contenido específico de la página de hábitos --- */}
-
                         <Typography variant="h4" component="h1" gutterBottom>
                             Mis Hábitos
                         </Typography>
@@ -120,7 +216,8 @@ function HabitsPage(props) {
                                     <CardContent>
                                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                             <Checkbox edge="start" checked={isCompletedToday(habit.lastCompleted)} onChange={() => handleCheckIn(habit.id)} />
-                                            <ListItemText primary={habit.name} secondary={`Racha: ${habit.streak} días`} />
+                                            {/*<ListItemText primary={habit.title} secondary={`Racha: ${habit.streak} días`} />  Alexis, dejaremos la racha pendiente */}
+                                            <ListItemText primary={habit.title} secondary={`Racha: 1 día`} /> {/* Estatico por el momento */}
                                             <IconButton onClick={() => handleOpenModal(habit)}><EditIcon /></IconButton>
                                             <IconButton onClick={() => handleDeleteHabit(habit.id)}><DeleteIcon /></IconButton>
                                         </Box>
@@ -143,7 +240,6 @@ function HabitsPage(props) {
                             ))}
                         </List>
 
-                        {/* --- El FAB y el Modal se mantienen igual --- */}
                         <Fab color="primary" aria-label="add" sx={{ position: 'fixed', bottom: 32, right: 32 }} onClick={() => handleOpenModal()}>
                             <AddIcon />
                         </Fab>
@@ -152,10 +248,22 @@ function HabitsPage(props) {
                             <Modal open={openModal} onClose={handleCloseModal}>
                                 <Box sx={modalStyle}>
                                     <Typography variant="h6" component="h2">{currentHabit.id ? 'Editar Hábito' : 'Añadir Nuevo Hábito'}</Typography>
-                                    <TextField autoFocus margin="dense" name="name" label="Nombre del Hábito" type="text" fullWidth variant="outlined" value={currentHabit.name} onChange={handleModalChange} sx={{ mt: 2 }} />
+                                    {/* CORRECCIÓN: Usar name="title" y value={currentHabit.title} */}
+                                    <TextField 
+                                        autoFocus 
+                                        margin="dense" 
+                                        name="title" 
+                                        label="Nombre del Hábito" 
+                                        type="text" 
+                                        fullWidth 
+                                        variant="outlined" 
+                                        value={currentHabit.title || ''} 
+                                        onChange={handleModalChange} 
+                                        sx={{ mt: 2 }} 
+                                    />
                                     <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-                                        <TextField name="time" label="Hora" type="time" fullWidth InputLabelProps={{ shrink: true }} value={currentHabit.time} onChange={handleModalChange} />
-                                        <TextField name="location" label="Lugar" type="text" fullWidth value={currentHabit.location} onChange={handleModalChange} />
+                                        <TextField name="time" label="Hora" type="time" fullWidth InputLabelProps={{ shrink: true }} value={currentHabit.time || ''} onChange={handleModalChange} />
+                                        <TextField name="location" label="Lugar" type="text" fullWidth value={currentHabit.location || ''} onChange={handleModalChange} />
                                     </Box>
                                     <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
                                         <Button onClick={handleCloseModal} sx={{ mr: 1 }}>Cancelar</Button>

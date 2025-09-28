@@ -1,9 +1,28 @@
+/**
+ * @fileoverview Controlador para la gestión de Autenticación (Registro y Login).
+ * Este módulo contiene la lógica de negocio para las rutas de autenticación, 
+ * interactuando con el modelo de usuario para verificar credenciales y 
+ * generar tokens de acceso JWT.
+ * * Responsabilidades Clave:
+ * 1. Validar datos de entrada para registro y login.
+ * 2. Utilizar userModel para buscar y crear usuarios.
+ * 3. Manejar el hashing y comparación de contraseñas.
+ * 4. Generar y firmar tokens JWT para usuarios autenticados.
+ * * @author Gustavo
+ * @version 1.0.0
+ * @module controllers/authController
+ */
+
+
 // Planificador/backend/src/controllers/authController.js
 const userModel = require('../models/userModel'); // Importa el modelo de usuario
 const jwt = require('jsonwebtoken');               // Importa jsonwebtoken
 require('dotenv').config();                        // Asegura que las variables de entorno estén cargadas
 
 const JWT_SECRET = process.env.JWT_SECRET; // Obtiene la clave secreta para JWT
+
+console.log("JWT_SECRET usado en authController:", JWT_SECRET);
+
 
 const authController = {
     /**
