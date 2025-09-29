@@ -72,12 +72,6 @@ function MobileLayout({ selectedItemIndex, handleItemClick, selectedFeature }) {
         display: { xs: 'flex', sm: 'none' },
         flexDirection: 'column',
         gap: 2,
-        position: 'absolute',
-        width: '100vw',
-        height: '100vh',
-        zIndex: -1,
-        background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
-        opacity: 0.7,
       }}
     >
       <Box sx={{ display: 'flex', gap: 2, overflow: 'auto' }}>
@@ -156,8 +150,8 @@ export default function Features() {
     <Container id="features" sx={{ py: { xs: 8, sm: 16 } }}>
       <Box sx={{ width: { sm: '100%', md: '60%' } }}>
         <Typography
-          component="h2"
-          variant="h4"
+          component="h1"
+          variant="h3"
           gutterBottom
           sx={{ color: 'text.primary' }}
         >
@@ -165,7 +159,7 @@ export default function Features() {
         </Typography>
         <Typography
           variant="body1"
-          sx={{ color: 'text.secondary', mb: { xs: 2, sm: 4 } }}
+          sx={{ color: 'text.secondary', mb: { xs: 2, sm: 4 }, fontSize: 18 }}
         >
           Descubre las características que hacen que nuestro planificador de hábitos y tareas sea la herramienta definitiva para transformar tu productividad y alcanzar tus metas diarias.
         </Typography>

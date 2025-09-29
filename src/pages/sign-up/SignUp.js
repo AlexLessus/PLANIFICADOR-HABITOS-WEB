@@ -154,6 +154,8 @@ export default function SignUp(props) {
       <CssBaseline enableColorScheme />
       <ColorModeSelect sx={{ position: 'fixed', top: '1rem', right: '1rem' }} />
       <SignUpContainer direction="column" justifyContent="space-between">
+        <Button variant="contained" color="secondary" href='/' sx={{ width: '8%', boxShadow: 2, fontSize: '1rem' }}>Regresar</Button>
+
         <Card variant="outlined">
           <SitemarkIcon />
           <Typography

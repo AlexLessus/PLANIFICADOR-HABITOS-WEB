@@ -145,6 +145,7 @@ export default function SignIn(props) {
     <AppTheme {...props}>
       <CssBaseline enableColorScheme />
       <SignInContainer direction="column" justifyContent="space-between">
+        <Button variant="contained" color="secondary" href='/' sx={{ width: '8%', boxShadow: 2, fontSize: '1rem' }}>Regresar</Button>
         <ColorModeSelect sx={{ position: 'fixed', top: '1rem', right: '1rem' }} />
         <Card variant="outlined">
           <SitemarkIcon sx={{ fontSize: '2rem', color: 'primary.main', centered: true }} />
