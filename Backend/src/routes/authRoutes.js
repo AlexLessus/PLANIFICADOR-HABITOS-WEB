@@ -1,3 +1,15 @@
+/**
+ * @fileoverview Definición de las rutas de Autenticación.
+ * Este módulo configura las rutas base '/register' y '/login' y las mapea a 
+ * las funciones correspondientes del authController.
+ * * Responsabilidades Clave:
+ * 1. Definir los endpoints de la API para Autenticación.
+ * 2. Conectar cada endpoint con la lógica del controlador (authController).
+ * * @author Gustavo
+ * @version 1.0.0
+ * @module routes/authRoutes
+ */
+
 // Planificador/backend/src/routes/authRoutes.js
 const express = require('express');
 const authController = require('../controllers/authController'); // Importa el controlador de autenticación

@@ -1,37 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
-    Container,
-    Typography,
-    Box,
-    Button,
-    Grid,
-    Card,
-    CardContent,
-    TextField,
-    IconButton,
-    List,
-    ListItemIcon,
-    Checkbox,
-    ListItemText,
-    Chip,
-    Modal,
-    Select,
-    MenuItem,
-    FormControl,
-    InputLabel,
-    ToggleButton,
-    ToggleButtonGroup,
-    Paper
+    Container, Typography, Box, IconButton, Card, CardContent,
+    TextField, List, Checkbox, ListItemText, Chip, Modal,
+    Select, MenuItem, FormControl, InputLabel, ToggleButtonGroup, ToggleButton, Paper, Button
 } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
-
-// --- Layout y Tema ---
-import MainLayout from '../../globalComponents/MainLayout';
-import Header from '../../globalComponents/Header';
-import AppTheme from '../../shared-theme/AppTheme';
-import { chartsCustomizations, dataGridCustomizations, datePickersCustomizations, treeViewCustomizations } from '../DashboardPage/theme/customizations';
-
-// --- Librerías de Fecha ---
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -41,19 +14,26 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
+// --- Layout y Tema ---
+import MainLayout from '../../globalComponents/MainLayout';
+import Header from '../../globalComponents/Header';
+import AppTheme from '../../shared-theme/AppTheme';
+import { chartsCustomizations, dataGridCustomizations, datePickersCustomizations, treeViewCustomizations } from '../DashboardPage/theme/customizations';
+
 const xThemeComponents = { ...chartsCustomizations, ...dataGridCustomizations, ...datePickersCustomizations, ...treeViewCustomizations };
 
-// Estilo para el modal
+// Helper para headers con token (Copiado de HabitsPage)
+const getAuthHeaders = (withJson = false) => {
+    const headers = {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+    };
+    if (withJson) headers['Content-Type'] = 'application/json';
+    return headers;
+};
+
 const modalStyle = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 450,
-    bgcolor: 'background.paper',
-    borderRadius: 2,
-    boxShadow: 24,
-    p: 4,
+    position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+    width: 450, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 24, p: 4,
 };
 
 // Objeto para mapear prioridades a colores del Chip
@@ -63,48 +43,67 @@ const priorityColors = {
     baja: 'success',
 };
 
-function Tasks(props) {
+function TasksPage(props) {
     // --- Estados del Componente ---
-    const [tasks, setTasks] = useState([
-        { id: 1, text: 'Terminar el reporte de ventas', completed: false, priority: 'alta', dueDate: new Date('2025-09-25') },
-        { id: 2, text: 'Agendar reunión con el equipo de diseño', completed: true, priority: 'media', dueDate: new Date('2025-09-22') },
-        { id: 3, text: 'Revisar correos pendientes', completed: false, priority: 'baja', dueDate: null },
-    ]);
-    const [newTaskText, setNewTaskText] = useState('');
-    const [filter, setFilter] = useState('all'); // 'all', 'pending', 'completed'
+    const [tasks, setTasks] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [newTaskTitle, setNewTaskTitle] = useState(''); // Cambiado de newTaskText a newTaskTitle
+    const [filter, setFilter] = useState('all'); // 'all', 'Pendiente', 'Completada'
     const [openModal, setOpenModal] = useState(false);
-    const [currentTask, setCurrentTask] = useState(null);
 
-    // --- Lógica para Añadir y Modificar Tareas ---
-    const handleAddTask = () => {
-        if (newTaskText.trim() === '') return;
-        const newTask = {
-            id: Date.now(),
-            text: newTaskText,
-            completed: false,
-            priority: 'media',
-            dueDate: null
+    // Estado inicial de la tarea, basado en los campos de la BD
+    const [currentTask, setCurrentTask] = useState({
+        id: null,
+        title: '',
+        priority: 'Media',
+        due_date: null, // null para la fecha
+        status: 'Pendiente',
+    });
+
+    // --- Carga de Datos Inicial (GET) ---
+    useEffect(() => {
+        const fetchTasks = async () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setError('Error: Debes iniciar sesión para ver tus tareas.');
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:5000/api/tasks', {
+                    headers: getAuthHeaders(),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al cargar las tareas');
+                }
+                const data = await response.json();
+
+                // Nota: Convertir 'title' a 'text' para compatibilidad con el código estático anterior (ahora lo cambiaremos)
+                setTasks(data); // Se espera que la BD devuelva los campos correctos (title, priority, etc.)
+                setError(null);
+            } catch (err) {
+                console.error(err);
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
         };
-        setTasks([newTask, ...tasks]);
-        setNewTaskText('');
-    };
+        fetchTasks();
+    }, []);
 
-    const handleToggleTask = (taskId) => {
-        setTasks(tasks.map(task => task.id === taskId ? { ...task, completed: !task.completed } : task));
-    };
-
-    const handleDeleteTask = (taskId) => {
-        setTasks(tasks.filter(task => task.id !== taskId));
-    };
-
-    const handleUpdateTask = () => {
-        setTasks(tasks.map(task => task.id === currentTask.id ? currentTask : task));
-        handleCloseModal();
-    };
-
-    // --- Lógica del Modal de Edición ---
-    const handleOpenModal = (task) => {
-        setCurrentTask({ ...task }); // Copiar la tarea para no mutar el estado directamente
+    // --- Lógica de Modales ---
+    const handleOpenModal = (task = null) => {
+        // Mapea los valores de la tarea existente o inicializa una nueva
+        setCurrentTask(task ? { ...task, due_date: task.due_date ? new Date(task.due_date) : null } : {
+            id: null,
+            title: '',
+            priority: 'Media',
+            due_date: null,
+            status: 'Pendiente',
+        });
         setOpenModal(true);
     };
 
@@ -114,24 +113,135 @@ function Tasks(props) {
     };
 
     const handleModalChange = (e) => {
-        setCurrentTask({ ...currentTask, [e.target.name]: e.target.value });
+        setCurrentTask(prev => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
     const handleDateChange = (newDate) => {
-        setCurrentTask({ ...currentTask, dueDate: newDate });
+        setCurrentTask(prev => ({ ...prev, due_date: newDate }));
     };
 
-    // --- Filtrado de Tareas ---
-    const filteredTasks = useMemo(() => {
-        switch (filter) {
-            case 'completed':
-                return tasks.filter(task => task.completed);
-            case 'pending':
-                return tasks.filter(task => !task.completed);
-            default:
-                return tasks;
+
+    // --- CRUD: POST y PUT (Guardar) ---
+    const handleSaveTask = async () => {
+        try {
+            // Prepara los datos (convertir la fecha a formato SQL AAAA-MM-DD)
+            const dueDateString = currentTask.due_date instanceof Date && !isNaN(currentTask.due_date)
+                ? currentTask.due_date.toISOString().split('T')[0]
+                : null;
+
+            const payload = {
+                title: currentTask.title,
+                priority: currentTask.priority,
+                due_date: dueDateString,
+                status: currentTask.status, // Necesario para la actualización (PUT)
+            };
+
+            const url = currentTask.id ? `/api/tasks/${currentTask.id}` : '/api/tasks';
+            const method = currentTask.id ? 'PUT' : 'POST';
+
+            const response = await fetch(`http://localhost:5000${url}`, {
+                method: method,
+                headers: getAuthHeaders(true),
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error al ${currentTask.id ? 'actualizar' : 'crear'} la tarea`);
+            }
+
+            const savedTask = await response.json();
+
+            // Actualiza el estado de las tareas
+            if (currentTask.id) {
+                setTasks(tasks.map(t => t.id === savedTask.id ? savedTask : t));
+            } else {
+                setTasks([...tasks, savedTask]);
+            }
+
+            handleCloseModal();
+        } catch (err) {
+            console.error(err);
+            setError(err.message);
         }
+    };
+
+    // --- CRUD: DELETE (Eliminar) ---
+    const handleDeleteTask = async (taskId) => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/tasks/${taskId}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders(),
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al eliminar la tarea');
+            }
+
+            setTasks(tasks.filter(t => t.id !== taskId));
+        } catch (err) {
+            console.error(err);
+            setError(err.message);
+        }
+    };
+
+    // --- CRUD: PUT (Cambiar Estado/Completar) ---
+    const handleToggleTask = async (task) => {
+        const newStatus = task.status === 'Completada' ? 'Pendiente' : 'Completada';
+
+        try {
+            const response = await fetch(`http://localhost:5000/api/tasks/${task.id}/status`, {
+                method: 'PUT',
+                headers: getAuthHeaders(true),
+                body: JSON.stringify({ status: newStatus }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al actualizar el estado');
+            }
+
+            const updatedTask = await response.json();
+
+            // Reemplaza la tarea antigua con la actualizada
+            setTasks(tasks.map(t => t.id === updatedTask.id ? updatedTask : t));
+
+        } catch (err) {
+            console.error(err);
+            setError(err.message);
+        }
+    };
+
+    // --- Filtrado Dinámico ---
+    const filteredTasks = useMemo(() => {
+        let list = tasks;
+
+        // 1. Filtrar por estado
+        if (filter === 'Pendiente') {
+            list = list.filter(task => task.status !== 'Completada');
+        } else if (filter === 'Completada') {
+            list = list.filter(task => task.status === 'Completada');
+        }
+
+        // 2. Opcional: Ordenar por prioridad/fecha (para mejor UX)
+        list.sort((a, b) => {
+            // Ordenar pendientes primero, luego por prioridad
+            const statusOrder = a.status === 'Completada' ? 1 : -1;
+            if (statusOrder !== 0) return statusOrder;
+
+            // Ordenar por prioridad (alta: 1, media: 2, baja: 3)
+            const priorityMap = { 'alta': 1, 'media': 2, 'baja': 3 };
+            return priorityMap[a.priority.toLowerCase()] - priorityMap[b.priority.toLowerCase()];
+        });
+
+        return list;
     }, [tasks, filter]);
+
+    if (loading) {
+        return <p>Cargando tareas...</p>;
+    }
+
+    if (error) {
+        return <p>Error: {error}</p>;
+    }
 
     return (
         <AppTheme {...props} themeComponents={xThemeComponents}>
@@ -151,11 +261,16 @@ function Tasks(props) {
                                 fullWidth
                                 variant="outlined"
                                 label="Añadir una nueva tarea..."
-                                value={newTaskText}
-                                onChange={(e) => setNewTaskText(e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && handleAddTask()}
+                                value={newTaskTitle}
+                                onChange={(e) => setNewTaskTitle(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && handleOpenModal({ title: newTaskTitle, status: 'Pendiente', priority: 'Media', due_date: null })}
                             />
-                            <IconButton color="primary" sx={{ ml: 1 }} onClick={handleAddTask} aria-label="Añadir Tarea">
+                            <IconButton
+                                color="primary"
+                                sx={{ ml: 1 }}
+                                onClick={() => handleOpenModal({ title: newTaskTitle, status: 'Pendiente', priority: 'Media', due_date: null })}
+                                aria-label="Añadir Tarea"
+                            >
                                 <AddCircleIcon sx={{ fontSize: '2rem' }} />
                             </IconButton>
                         </Box>
@@ -167,11 +282,12 @@ function Tasks(props) {
                             color="primary"
                             value={filter}
                             exclusive
+                            // El filtro ahora usa los valores de STATUS de la BD
                             onChange={(e, newFilter) => newFilter && setFilter(newFilter)}
                         >
                             <ToggleButton value="all">Todas</ToggleButton>
-                            <ToggleButton value="pending">Pendientes</ToggleButton>
-                            <ToggleButton value="completed">Completadas</ToggleButton>
+                            <ToggleButton value="Pendiente">Pendientes</ToggleButton>
+                            <ToggleButton value="Completada">Completadas</ToggleButton>
                         </ToggleButtonGroup>
                     </Box>
 
@@ -182,17 +298,17 @@ function Tasks(props) {
                                 <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                     <Checkbox
                                         edge="start"
-                                        checked={task.completed}
-                                        onChange={() => handleToggleTask(task.id)}
+                                        checked={task.status === 'Completada'}
+                                        onChange={() => handleToggleTask(task)}
                                     />
                                     <ListItemText
-                                        primary={task.text}
-                                        secondary={task.dueDate ? `Vence: ${new Date(task.dueDate).toLocaleDateString()}` : 'Sin fecha límite'}
-                                        sx={{ textDecoration: task.completed ? 'line-through' : 'none' }}
+                                        primary={task.title} // Cambiado de task.text a task.title
+                                        secondary={task.due_date ? `Vence: ${new Date(task.due_date).toLocaleDateString()}` : 'Sin fecha límite'}
+                                        sx={{ textDecoration: task.status === 'Completada' ? 'line-through' : 'none' }}
                                     />
                                     <Chip
                                         label={task.priority}
-                                        color={priorityColors[task.priority] || 'default'}
+                                        color={priorityColors[task.priority.toLowerCase()] || 'default'}
                                         size="small"
                                     />
                                     <Box>
@@ -208,13 +324,13 @@ function Tasks(props) {
                     {currentTask && (
                         <Modal open={openModal} onClose={handleCloseModal}>
                             <Box sx={modalStyle}>
-                                <Typography variant="h6" component="h2">Editar Tarea</Typography>
+                                <Typography variant="h6" component="h2">{currentTask.id ? 'Editar Tarea' : 'Añadir Nueva Tarea'}</Typography>
                                 <TextField
                                     fullWidth
                                     margin="normal"
                                     label="Nombre de la Tarea"
-                                    name="text"
-                                    value={currentTask.text}
+                                    name="title" // Cambiado de "text" a "title"
+                                    value={currentTask.title}
                                     onChange={handleModalChange}
                                 />
                                 <FormControl fullWidth margin="normal">
@@ -225,22 +341,36 @@ function Tasks(props) {
                                         label="Prioridad"
                                         onChange={handleModalChange}
                                     >
-                                        <MenuItem value="baja">Baja</MenuItem>
-                                        <MenuItem value="media">Media</MenuItem>
-                                        <MenuItem value="alta">Alta</MenuItem>
+                                        <MenuItem value="Baja">Baja</MenuItem>
+                                        <MenuItem value="Media">Media</MenuItem>
+                                        <MenuItem value="Alta">Alta</MenuItem>
                                     </Select>
                                 </FormControl>
+                                {currentTask.id && ( // Solo mostrar el selector de estado si estás editando
+                                    <FormControl fullWidth margin="normal">
+                                        <InputLabel>Estado</InputLabel>
+                                        <Select
+                                            name="status"
+                                            value={currentTask.status}
+                                            label="Estado"
+                                            onChange={handleModalChange}
+                                        >
+                                            <MenuItem value="Pendiente">Pendiente</MenuItem>
+                                            <MenuItem value="Completada">Completada</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                )}
                                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                                     <DatePicker
                                         label="Fecha de Vencimiento"
-                                        value={currentTask.dueDate ? new Date(currentTask.dueDate) : null}
+                                        value={currentTask.due_date}
                                         onChange={handleDateChange}
                                         sx={{ width: '100%', mt: 2 }}
                                     />
                                 </LocalizationProvider>
                                 <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
                                     <Button onClick={handleCloseModal}>Cancelar</Button>
-                                    <Button variant="contained" onClick={handleUpdateTask}>Guardar Cambios</Button>
+                                    <Button variant="contained" onClick={handleSaveTask}>Guardar Cambios</Button>
                                 </Box>
                             </Box>
                         </Modal>
@@ -251,4 +381,4 @@ function Tasks(props) {
     );
 }
 
-export default Tasks;
+export default TasksPage;

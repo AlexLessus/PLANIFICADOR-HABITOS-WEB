@@ -11,7 +11,6 @@ import MainLayout from '../../globalComponents/MainLayout';
 import MainGrid from './components/MainGrid';
 import Header from '../../globalComponents/Header';
 import AppTheme from '../shared-theme/AppTheme';
-import Button from '@mui/material/Button'; // Importamos el componente Button de MUI
 import Typography from '@mui/material/Typography'; // Importamos Typography para mostrar el nombre
 
 import {

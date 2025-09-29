@@ -1,3 +1,15 @@
+/**
+ * @fileoverview Servicio de Autenticación (authService).
+ * Este módulo es la capa de comunicación entre el frontend y la API de autenticación.
+ * Se encarga de:
+ * 1. Enviar credenciales (login/register) al backend.
+ * 2. **Almacenar/eliminar el token JWT en el localStorage bajo la clave 'token'.**
+ * 3. Proveer funciones de utilidad para la gestión de la sesión del usuario.
+ * * @author Gustavo
+ * @version 1.0.1
+ * @module services/authService
+ */
+
 // La URL base de tu backend.
 const API_URL = 'http://localhost:5000/api/auth';
 
@@ -53,7 +65,7 @@ const login = async (credentials) => {
         // Guardamos el token en el almacenamiento local del navegador
         // Esto permite que el usuario permanezca logueado incluso si cierra la pestaña
         if (data.token) {
-            localStorage.setItem('user', JSON.stringify(data));
+            localStorage.setItem('token', data.token);
         }
 
         // Devolvemos los datos del usuario logueado
@@ -69,7 +81,7 @@ const login = async (credentials) => {
  * Simplemente elimina el token del almacenamiento local.
  */
 const logout = () => {
-    localStorage.removeItem('user');
+    localStorage.removeItem('token');
 };
 
 /**
