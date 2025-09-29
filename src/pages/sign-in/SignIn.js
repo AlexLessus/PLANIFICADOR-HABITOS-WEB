@@ -178,7 +178,7 @@ export default function SignIn(props) {
                 id="email"
                 type="email"
                 name="email"
-                placeholder="Tigre@email.com"
+                placeholder="ejemplo@email.com"
                 autoComplete="email"
                 autoFocus
                 required

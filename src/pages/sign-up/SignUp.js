@@ -193,7 +193,7 @@ export default function SignUp(props) {
                 required
                 fullWidth
                 id="last_name"
-                placeholder="Salvaje"
+                placeholder="Valerio"
                 onChange={handleChange}
               />
             </FormControl>
