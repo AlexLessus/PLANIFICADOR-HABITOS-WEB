@@ -9,6 +9,13 @@ import Typography from '@mui/material/Typography';
 import MenuContent from './MenuContent';
 import OptionsMenu from './OptionsMenu';
 
+import { useContext } from 'react'; // Importamos useContext
+import { useNavigate } from 'react-router-dom'; // Importamos useNavigate
+import AuthContext from '../context/AuthContext'; // Importamos el contexto
+import Tooltip from '@mui/material/Tooltip';
+import { SitemarkIcon } from '../shared-theme/CustomIcons';
+
+
 const drawerWidth = 240;
 
 const Drawer = styled(MuiDrawer)({
@@ -23,6 +30,16 @@ const Drawer = styled(MuiDrawer)({
 });
 
 export default function SideMenu() {
+  // 1. Usa el hook useContext para acceder al estado global de autenticación
+  const { currentUser, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  // Si por alguna razón el usuario no está en el contexto, se redirige.
+  // Esto es una capa extra de seguridad.
+  if (!currentUser) {
+    navigate('/signin');
+    return null;
+  }
   return (
     <Drawer
       variant="permanent"
@@ -31,6 +48,7 @@ export default function SideMenu() {
         [`& .${drawerClasses.paper}`]: {
           backgroundColor: 'background.paper',
         },
+        marginTop: '64px',
       }}
     >
       <Box
@@ -40,8 +58,10 @@ export default function SideMenu() {
           p: 1.5,
         }}
       >
+
+        <SitemarkIcon />
         {/* <SelectContent /> */}
-        <Typography variant="h4" component="h1" sx={{ color: 'text.primary' }}>
+        <Typography variant="h4" component="h1" sx={{ color: 'text.primary', position: 'relative', left: 10, fontSize: 20, fontWeight: 'bold' }}>
           Tigre Habit Planner
         </Typography>
       </Box>
@@ -69,16 +89,26 @@ export default function SideMenu() {
         <Avatar
           sizes="big"
           alt="Tigre Valerio"
-          src="/static/images/avatar/6.jpg"
+          src="/static/images/avatar/1.jpg"
           sx={{ width: 36, height: 36 }}
         />
         <Box sx={{ mr: 'auto' }}>
-          <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: '16px' }}>
-            Tigre Valerio
-          </Typography>
-          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-            tigre@email.com
-          </Typography>
+          <Tooltip title={currentUser.email}>
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'text.primary',
+                maxWidth: 150,
+                fontSize: 16,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                display: 'block',
+              }}
+            >
+              {currentUser.first_name}
+            </Typography>
+          </Tooltip>
         </Box>
         <OptionsMenu />
       </Stack>
