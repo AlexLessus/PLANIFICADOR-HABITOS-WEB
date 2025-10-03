@@ -65,10 +65,10 @@ Asegúrese de tener instalado:
 
 ### 5.2. Configuración del Entorno
 
-1.  \*\*Clonar el repositorio:\*\*bash
+1.  \*\*Clonar el repositorio:\*\*
     
     ```
-    git clone [https://github.com/AlexLessus/PLANIFICADOR-HABITOS-WEB.git](https://www.google.com/search?q=https://github.com/AlexLessus/PLANIFICADOR-HABITOS-WEB.git)
+    git clone [https://github.com/AlexLessus/PLANIFICADOR-HABITOS-WEB](https://github.com/AlexLessus/PLANIFICADOR-HABITOS-WEB.git)
     cd PLANIFICADOR-HABITOS-WEB
     ```
 
