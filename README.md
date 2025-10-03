@@ -21,8 +21,6 @@
 
 El **Sistema Web Planificador de Tareas y Hábitos** es una herramienta digital multiplataforma diseñada para ayudar a los usuarios a gestionar su tiempo y mejorar su productividad. El sistema permite planificar actividades diarias, establecer y dar seguimiento a hábitos, configurar recordatorios automáticos (RF-06) y visualizar el progreso mediante reportes estadísticos (RF-08).
 
-El proyecto está formalmente guiado por un documento de Especificación de Requisitos de Software (SRS) conforme al estándar IEEE 830, lo que garantiza el cumplimiento de requisitos funcionales y no funcionales críticos, incluyendo estrictos umbrales de rendimiento (\< 500ms de respuesta de API) y seguridad (Inmunidad OWASP).
-
 ## 2\. Funcionalidades Clave (RFs)
 
 Basado en los Requisitos Funcionales definidos :
@@ -67,12 +65,11 @@ Asegúrese de tener instalado:
 
 ### 5.2. Configuración del Entorno
 
-1.  \*\*Clonar el repositorio:\*\*bash
-    git clone [https://github.com/AlexLessus/PLANIFICADOR-HABITOS-WEB.git](https://www.google.com/search?q=https://github.com/AlexLessus/PLANIFICADOR-HABITOS-WEB.git)
-    cd PLANIFICADOR-HABITOS-WEB
-
-    ```
+1.  **Clonar el repositorio:**
     
+    ```
+    git clone [https://github.com/AlexLessus/PLANIFICADOR-HABITOS-WEB](https://github.com/AlexLessus/PLANIFICADOR-HABITOS-WEB.git)
+    cd PLANIFICADOR-HABITOS-WEB
     ```
 
 2.  **Configuración de Variables de Entorno:**
@@ -133,9 +130,9 @@ El proyecto fue desarrollado por el equipo de **TIGERTECH SOFTWARE SOLUTIONS** c
 
 | Rol | Nombre | Contacto |
 |---|---|---|
-| Product Owner | Cristian Axel Gómez Melchor | `cristian.gomez@itcg.edu.mx` |
-| Scrum Master | Alexis De Jesús Pérez Carmona | `ale.xis@itcg.edu.mx` |
-| Developer | Gustavo Valerio Guzmán | `gustavo.valerio@itcg.edu.mx` |
-| UI/UX Designer | Ronaldo Varona Baranda | `rona@itcg.edu.mx` |
+| Product Owner | Cristian Axel Gómez Melchor | `---` |
+| Scrum Master | Alexis De Jesús Pérez Carmona | `l2290827@cdguzman.tenm.mx` |
+| Developer | Gustavo Valerio Guzmán | `---` |
+| UI/UX Designer | Ronaldo Varona Baranda | `---` |
 
 -----
