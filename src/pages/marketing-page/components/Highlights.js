@@ -35,7 +35,7 @@ const items = [
     icon: <ErrorIcon />,
     title: 'Nunca dejes de hacer un hábito dos veces.',
     description:
-      'Todos fallamos un día. Lo importante es volver al camino correcto lo antes posible. Nuestra aplicación te da una visión clara de tu progreso, permitiéndote identificar rápidamente si te estás desviando y ayudándote a retomar tu racha. Un solo tropiezo no define tu viaje.',
+      'Todos fallamos un día, lo importante es volver al camino correcto lo antes posible. Te ayudamos a crear una visión clara de tu progreso permitiéndote identificar rápidamente si te estás desviando y ayudándote a retomar tu racha. Un solo tropiezo no define tu viaje.',
   },
   {
     icon: <TipsAndUpdatesIcon />,
@@ -45,7 +45,7 @@ const items = [
   },
   {
     icon: <QueryStatsRoundedIcon />,
-    title: 'Los profesionales se ciñen a su programa; los aficionados se dejan llevar por la inspiración.',
+    title: 'Los profesionales se ciñen a su programa, los aficionados se dejan llevar por la inspiración.',
     description:
       'Los pequeños detalles marcan la diferencia. Desde la personalización de tus recordatorios hasta el análisis detallado de tus estadísticas, cada función está diseñada para que dejes de depender de la motivación y empieces a operar con un sistema.',
   },
@@ -84,7 +84,7 @@ export default function Highlights() {
           <Typography variant="body1" sx={{ color: 'grey.400', fontSize: 16 }}>
             Descubre cómo pequeños cambios pueden transformar tu vida diaria y ayudarte a
             alcanzar tus metas con nuestro planificador de hábitos y tareas. Nuestra aplicación
-            no es solo una lista de pendientes; es una herramienta diseñada con la ciencia del
+            no es solo una lista de pendientes, es una herramienta diseñada con la ciencia del
             comportamiento para hacer que el éxito sea inevitable.
           </Typography>
         </Box>
