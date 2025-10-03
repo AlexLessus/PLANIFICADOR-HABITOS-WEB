@@ -65,7 +65,7 @@ Asegúrese de tener instalado:
 
 ### 5.2. Configuración del Entorno
 
-1.  \*\*Clonar el repositorio:\*\*
+1.  **Clonar el repositorio:**
     
     ```
     git clone [https://github.com/AlexLessus/PLANIFICADOR-HABITOS-WEB](https://github.com/AlexLessus/PLANIFICADOR-HABITOS-WEB.git)
