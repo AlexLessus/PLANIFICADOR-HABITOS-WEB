@@ -18,7 +18,8 @@ import { styled } from '@mui/material/styles';
 import ForgotPassword from './components/ForgotPassword';
 import AppTheme from '../shared-theme/AppTheme';
 import ColorModeSelect from '../shared-theme/ColorModeSelect';
-import { GoogleIcon, SitemarkIcon } from './components/CustomIcons';
+import { SitemarkIcon } from './components/CustomIcons';
+import { GoogleLogin } from '@react-oauth/google';
 
 import authService from '../../services/authService';
 import AuthContext from '../../context/AuthContext'; // Importar el contexto
@@ -141,6 +142,23 @@ export default function SignIn(props) {
     }
   };
 
+  const handleGoogleLoginSuccess = async (credentialResponse) => {
+    try {
+      const response = await authService.googleLogin({ token: credentialResponse.credential });
+      localStorage.setItem('token', response.token);
+      navigate('/dashboard');
+    } catch (error) {
+      setMessage(error.message || 'Error en el inicio de sesión con Google');
+      setIsSuccess(false);
+    }
+  };
+
+  const handleGoogleLoginError = () => {
+    console.log('Login Failed');
+    setMessage('Error en el inicio de sesión con Google');
+    setIsSuccess(false);
+  };
+
   return (
     <AppTheme {...props}>
       <CssBaseline enableColorScheme />
@@ -229,15 +247,11 @@ export default function SignIn(props) {
             </Link>
           </Box>
           <Divider>o</Divider>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={() => alert('Sign in with Google')}
-              startIcon={<GoogleIcon />}
-            >
-              Iniciar sesión con Google
-            </Button>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center' }}>
+            <GoogleLogin
+              onSuccess={handleGoogleLoginSuccess}
+              onError={handleGoogleLoginError}
+            />
             <Typography sx={{ textAlign: 'center' }}>
               No tienes una cuenta?{' '}
               <Link

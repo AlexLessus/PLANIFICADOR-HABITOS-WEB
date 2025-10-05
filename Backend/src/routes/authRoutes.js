@@ -24,4 +24,8 @@ router.post('/register', authController.register);
 // POST /api/auth/login
 router.post('/login', authController.login);
 
+// Ruta para el inicio de sesión con Google
+// POST /api/auth/google-login
+router.post('/google-login', authController.googleLogin);
+
 module.exports = router; // Exporta el router para que pueda ser utilizado por app.js

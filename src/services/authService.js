@@ -77,6 +77,37 @@ const login = async (credentials) => {
 };
 
 /**
+ * Función para iniciar sesión con Google.
+ * @param {object} tokenData - El token de Google.
+ */
+const googleLogin = async (tokenData) => {
+    try {
+        const response = await fetch(`${API_URL}/google-login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(tokenData),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Error en el inicio de sesión con Google');
+        }
+
+        if (data.token) {
+            localStorage.setItem('token', data.token);
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Error al iniciar sesión con Google:', error);
+        throw error;
+    }
+};
+
+/**
  * Función para cerrar sesión.
  * Simplemente elimina el token del almacenamiento local.
  */
@@ -95,6 +126,7 @@ const getCurrentUser = () => {
 const authService = {
     register,
     login,
+    googleLogin,
     logout,
     getCurrentUser,
 };

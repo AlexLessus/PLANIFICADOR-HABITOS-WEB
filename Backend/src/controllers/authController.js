@@ -18,6 +18,9 @@
 const userModel = require('../models/userModel'); // Importa el modelo de usuario
 const jwt = require('jsonwebtoken');               // Importa jsonwebtoken
 require('dotenv').config();                        // Asegura que las variables de entorno estén cargadas
+const { OAuth2Client } = require('google-auth-library');
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const JWT_SECRET = process.env.JWT_SECRET; // Obtiene la clave secreta para JWT
 
@@ -114,7 +117,48 @@ const authController = {
             console.error('Error en el login:', error);
             res.status(500).json({ message: 'Error interno del servidor durante el inicio de sesión.', details: error.message });
         }
-    }
+    },
+
+    googleLogin: async (req, res) => {
+        const { token } = req.body;
+        try {
+            const ticket = await client.verifyIdToken({
+                idToken: token,
+                audience: process.env.GOOGLE_CLIENT_ID,
+            });
+            const { name, email, picture } = ticket.getPayload();
+
+            let userRows = await userModel.findByEmail(email);
+            let user;
+
+            if (userRows.length > 0) {
+                user = userRows[0];
+            } else {
+                // User does not exist, create a new one
+                // Note: You might want to handle the case where a user signs up with Google
+                // but the email is already taken by a regular account.
+                const result = await userModel.create(name, '', email, 'google-provided');
+                user = { id: result.insertId, email, first_name: name, last_name: '' };
+            }
+
+            const jwtToken = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
+
+            res.status(200).json({
+                message: 'Inicio de sesión con Google exitoso',
+                user: {
+                    id: user.id,
+                    first_name: user.first_name,
+                    last_name: user.last_name,
+                    email: user.email
+                },
+                token: jwtToken
+            });
+
+        } catch (error) {
+            console.error('Error en el inicio de sesión con Google:', error);
+            res.status(401).json({ message: 'Token de Google inválido.' });
+        }
+    },
 };
 
 module.exports = authController; // Exporta el controlador

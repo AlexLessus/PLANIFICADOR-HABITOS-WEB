@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Container, Typography, Fab, List, Card, CardContent, Checkbox,
-    ListItemText, IconButton, Modal, TextField, Button
+    Container, Typography, Fab, List, Card, CardContent, Chip,
+    IconButton, Modal, TextField, Button
 } from '@mui/material';
-import Stack from '@mui/material/Stack';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import ScheduleIcon from '@mui/icons-material/Schedule';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
+import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import { alpha } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
@@ -19,7 +19,7 @@ import {
     dataGridCustomizations,
     datePickersCustomizations,
     treeViewCustomizations,
-} from '../DashboardPage/theme/customizations'; 
+} from '../DashboardPage/theme/customizations';
 import Header from '../../globalComponents/Header';
 
 
@@ -57,7 +57,7 @@ function HabitsPage(props) {
     // --- Lógica para cargar hábitos (Fetch) ---
     useEffect(() => {
         const fetchHabits = async () => {
-            
+
             const token = localStorage.getItem('token');
 
             if (!token) {
@@ -65,7 +65,7 @@ function HabitsPage(props) {
                 setLoading(false);
                 return;
             }
-            
+
             try {
                 const response = await fetch('http://localhost:5000/api/habits', {
                     headers: getAuthHeaders(),
@@ -90,7 +90,6 @@ function HabitsPage(props) {
 
     // --- Lógica del Modal (Open/Close/Change) ---
     const handleOpenModal = (habit = null) => {
-        // CORRECCIÓN: Inicializar el hábito usando 'title' en lugar de 'name'
         setCurrentHabit(habit ? { ...habit } : { id: null, title: '', streak: 0, lastCompleted: null, time: '', location: '' });
         setOpenModal(true);
     };
@@ -99,7 +98,6 @@ function HabitsPage(props) {
         setCurrentHabit(null);
     };
     const handleModalChange = (e) => {
-        // El campo de texto en el modal ahora usa name="title", por lo que esto funciona correctamente
         const { name, value } = e.target;
         setCurrentHabit(prev => ({ ...prev, [name]: value }));
     };
@@ -115,7 +113,7 @@ function HabitsPage(props) {
             const response = await fetch(`http://localhost:5000${url}`, {
                 method: method,
                 headers: getAuthHeaders(true),
-                body: JSON.stringify(currentHabit), // Enviamos 'title' si se usa 'name="title"' en el TextField
+                body: JSON.stringify(currentHabit),
             });
 
             if (!response.ok) {
@@ -182,6 +180,17 @@ function HabitsPage(props) {
         return today.toDateString() === lastDate.toDateString();
     };
 
+    const isStreakInDanger = (habit) => {
+        if (!habit.lastCompleted || isCompletedToday(habit.lastCompleted)) {
+            return false;
+        }
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+        const lastDate = new Date(habit.lastCompleted);
+        return yesterday.toDateString() === lastDate.toDateString();
+    };
+
     if (loading) {
         return <p>Cargando hábitos...</p>;
     }
@@ -211,55 +220,74 @@ function HabitsPage(props) {
                         </Typography>
 
                         <List>
-                            {habits.map((habit) => (
-                                <Card key={habit.id} sx={{ marginBottom: 2 }}>
-                                    <CardContent>
-                                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                            <Checkbox edge="start" checked={isCompletedToday(habit.lastCompleted)} onChange={() => handleCheckIn(habit.id)} />
-                                            {/*<ListItemText primary={habit.title} secondary={`Racha: ${habit.streak} días`} />  Alexis, dejaremos la racha pendiente */}
-                                            <ListItemText primary={habit.title} secondary={`Racha: 1 día`} /> {/* Estatico por el momento */}
-                                            <IconButton onClick={() => handleOpenModal(habit)}><EditIcon /></IconButton>
-                                            <IconButton onClick={() => handleDeleteHabit(habit.id)}><DeleteIcon /></IconButton>
-                                        </Box>
-                                        <Stack spacing={1} sx={{ pl: 6, mt: 1 }}>
-                                            {habit.time && (
-                                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                    <ScheduleIcon sx={{ mr: 1, color: 'text.secondary' }} fontSize="small" />
-                                                    <Typography variant="body2" color="text.secondary">{habit.time}</Typography>
-                                                </Box>
-                                            )}
-                                            {habit.location && (
-                                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                    <LocationOnIcon sx={{ mr: 1, color: 'text.secondary' }} fontSize="small" />
-                                                    <Typography variant="body2" color="text.secondary">{habit.location}</Typography>
-                                                </Box>
-                                            )}
-                                        </Stack>
-                                    </CardContent>
-                                </Card>
-                            ))}
+                            {habits.map((habit) => {
+                                const completed = isCompletedToday(habit.lastCompleted);
+                                const inDanger = isStreakInDanger(habit);
+
+                                return (
+                                    <Box key={habit.id} sx={{ mb: 2 }}>
+                                        {inDanger && (
+                                            <Typography variant="body2" fontWeight="bold" color="warning.main" sx={{ ml: 1, mb: 0.5 }}>
+                                                ! Racha en Peligro
+                                            </Typography>
+                                        )}
+                                        <Card sx={{
+                                            border: 2,
+                                            borderColor: inDanger ? 'warning.main' : 'transparent',
+                                        }}>
+                                            <CardContent sx={{ display: 'flex', alignItems: 'center', p: '12px !important' }}>
+                                                <IconButton
+                                                    onClick={() => handleCheckIn(habit.id)}
+                                                    color={completed ? 'success' : 'default'}
+                                                    sx={{ mr: 1 }}
+                                                >
+                                                    {completed ? <CheckCircleIcon sx={{ fontSize: 48 }} /> : <RadioButtonUncheckedIcon sx={{ fontSize: 48 }} />}
+                                                </IconButton>
+                                                <Typography variant="h6" component="div" sx={{ flexGrow: 1, pl: 3, fontSize: '1.45rem' }}>
+                                                    {habit.title}
+                                                </Typography>
+                                                <Chip
+                                                    icon={<LocalFireDepartmentIcon sx={{ fontSize: 24 }} />}
+                                                    label={`${habit.streak || 0} días`}
+                                                    variant="outlined"
+                                                    color={completed ? 'success' : 'default'}
+                                                    sx={{ mr: 1, fontWeight: 'bold', height: 36, fontSize: '1rem' }}
+                                                />
+                                                <IconButton onClick={() => handleOpenModal(habit)}><EditIcon /></IconButton>
+                                                <IconButton onClick={() => handleDeleteHabit(habit.id)}><DeleteIcon /></IconButton>
+                                            </CardContent>
+                                        </Card>
+                                    </Box>
+                                );
+                            })}
                         </List>
 
-                        <Fab color="primary" aria-label="add" sx={{ position: 'fixed', bottom: 32, right: 32 }} onClick={() => handleOpenModal()}>
-                            <AddIcon />
+                        <Fab
+                            variant="extended"
+                            color="primary"
+                            aria-label="agregar habito"
+                            sx={{ position: 'fixed', bottom: 32, right: 32, }}
+                            onClick={() => handleOpenModal()}
+                        >
+                            <AddIcon sx={{ mr: 1 }} />
+                            Agregar Hábito
                         </Fab>
 
                         {currentHabit && (
                             <Modal open={openModal} onClose={handleCloseModal}>
                                 <Box sx={modalStyle}>
                                     <Typography variant="h6" component="h2">{currentHabit.id ? 'Editar Hábito' : 'Añadir Nuevo Hábito'}</Typography>
-                                    {/* CORRECCIÓN: Usar name="title" y value={currentHabit.title} */}
-                                    <TextField 
-                                        autoFocus 
-                                        margin="dense" 
-                                        name="title" 
-                                        label="Nombre del Hábito" 
-                                        type="text" 
-                                        fullWidth 
-                                        variant="outlined" 
-                                        value={currentHabit.title || ''} 
-                                        onChange={handleModalChange} 
-                                        sx={{ mt: 2 }} 
+                                    <TextField
+                                        autoFocus
+                                        margin="dense"
+                                        name="title"
+                                        label="Nombre del Hábito"
+                                        type="text"
+                                        fullWidth
+                                        variant="outlined"
+                                        value={currentHabit.title || ''}
+                                        onChange={handleModalChange}
+                                        sx={{ mt: 2 }}
                                     />
                                     <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
                                         <TextField name="time" label="Hora" type="time" fullWidth InputLabelProps={{ shrink: true }} value={currentHabit.time || ''} onChange={handleModalChange} />
