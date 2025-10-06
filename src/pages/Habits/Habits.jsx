@@ -52,7 +52,8 @@ function HabitsPage(props) {
     const [error, setError] = useState(null);
 
     const [openModal, setOpenModal] = useState(false);
-    const [currentHabit, setCurrentHabit] = useState(null);
+    // Aseguramos que los nuevos campos estén presentes en el estado
+    const [currentHabit, setCurrentHabit] = useState({ id: null, title: '', streak: 0, lastCompleted: null, time: '', location: '' });
 
     // --- Lógica para cargar hábitos (Fetch) ---
     useEffect(() => {
@@ -67,6 +68,7 @@ function HabitsPage(props) {
             }
 
             try {
+                // El backend ahora devuelve 'streak' y 'lastCompleted'
                 const response = await fetch('http://localhost:5000/api/habits', {
                     headers: getAuthHeaders(),
                 });
@@ -90,7 +92,12 @@ function HabitsPage(props) {
 
     // --- Lógica del Modal (Open/Close/Change) ---
     const handleOpenModal = (habit = null) => {
-        setCurrentHabit(habit ? { ...habit } : { id: null, title: '', streak: 0, lastCompleted: null, time: '', location: '' });
+        // Aseguramos que el estado inicial tenga 'streak' y 'lastCompleted'
+        const initialHabit = habit
+            ? { ...habit }
+            : { id: null, title: '', streak: 0, lastCompleted: null, time: '', location: '' };
+
+        setCurrentHabit(initialHabit);
         setOpenModal(true);
     };
     const handleCloseModal = () => {
@@ -122,10 +129,16 @@ function HabitsPage(props) {
 
             const savedHabit = await response.json();
 
+            // Si es PUT, el backend solo devuelve title/time/location.
+            // Mantenemos la racha y lastCompleted que ya teníamos en el frontend.
+            const updatedHabitData = currentHabit.id
+                ? { ...savedHabit, streak: currentHabit.streak, lastCompleted: currentHabit.lastCompleted }
+                : savedHabit; // Si es POST, el backend ya devuelve streak: 0 y lastCompleted: null
+
             if (currentHabit.id) {
-                setHabits(habits.map(h => h.id === savedHabit.id ? savedHabit : h));
+                setHabits(habits.map(h => h.id === updatedHabitData.id ? updatedHabitData : h));
             } else {
-                setHabits([...habits, savedHabit]);
+                setHabits([...habits, updatedHabitData]);
             }
 
             handleCloseModal();
@@ -134,6 +147,7 @@ function HabitsPage(props) {
             setError(err.message);
         }
     };
+
     const handleDeleteHabit = async (habitId) => {
         try {
             const response = await fetch(`http://localhost:5000/api/habits/${habitId}`, {
@@ -152,6 +166,8 @@ function HabitsPage(props) {
             setError(err.message);
         }
     };
+
+    // --- FUNCIÓN MODIFICADA PARA LA RACHA ---
     const handleCheckIn = async (habitId) => {
         try {
             const response = await fetch(`http://localhost:5000/api/habits/${habitId}/checkin`, {
@@ -163,7 +179,9 @@ function HabitsPage(props) {
                 throw new Error('Error al registrar el hábito');
             }
 
+            // El backend ahora devuelve el objeto de hábito COMPLETO con streak y lastCompleted actualizados
             const updatedHabit = await response.json();
+
             setHabits(habits.map(h => h.id === updatedHabit.id ? updatedHabit : h));
 
         } catch (err) {
@@ -173,31 +191,44 @@ function HabitsPage(props) {
     };
 
     // --- Helpers de UI ---
+    // MODIFICADO para usar comparación de cadenas YYYY-MM-DD
     const isCompletedToday = (lastCompletedDate) => {
         if (!lastCompletedDate) return false;
+
+        // Formatear la fecha actual a YYYY-MM-DD
         const today = new Date();
-        const lastDate = new Date(lastCompletedDate);
-        return today.toDateString() === lastDate.toDateString();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const todayString = `${yyyy}-${mm}-${dd}`;
+
+        // lastCompletedDate debe venir como 'YYYY-MM-DD' del backend para esta comparación
+        return todayString === lastCompletedDate.substring(0, 10);
     };
 
-    const isStreakInDanger = (habit) => {
+const isStreakInDanger = (habit) => {
+        // 1. Si no hay fecha o si se completó hoy, no hay peligro.
         if (!habit.lastCompleted || isCompletedToday(habit.lastCompleted)) {
             return false;
         }
-        const today = new Date();
-        const yesterday = new Date(today);
-        yesterday.setDate(today.getDate() - 1);
-        const lastDate = new Date(habit.lastCompleted);
-        return yesterday.toDateString() === lastDate.toDateString();
+
+        // 2. Formatear la fecha de AYER a YYYY-MM-DD (de forma segura).
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        const yyyy = yesterday.getFullYear();
+        const mm = String(yesterday.getMonth() + 1).padStart(2, '0');
+        const dd = String(yesterday.getDate()).padStart(2, '0');
+        const yesterdayString = `${yyyy}-${mm}-${dd}`;
+        
+        // 3. Comparar la fecha de AYER con la última fecha completada.
+        // El habit.lastCompleted viene del backend como 'YYYY-MM-DD' o similar.
+        // Usamos substring(0, 10) para asegurar que solo comparamos la fecha.
+        return yesterdayString === habit.lastCompleted.substring(0, 10);
     };
 
-    if (loading) {
-        return <p>Cargando hábitos...</p>;
-    }
-
-    if (error) {
-        return <p>Error: {error}</p>;
-    }
+    if (loading) {}
+    if (error) {}
 
     return (
         <AppTheme {...props} themeComponents={xThemeComponents}>
@@ -221,6 +252,7 @@ function HabitsPage(props) {
 
                         <List>
                             {habits.map((habit) => {
+                                // Los campos streak y lastCompleted ahora vienen del servidor
                                 const completed = isCompletedToday(habit.lastCompleted);
                                 const inDanger = isStreakInDanger(habit);
 
@@ -248,6 +280,7 @@ function HabitsPage(props) {
                                                 </Typography>
                                                 <Chip
                                                     icon={<LocalFireDepartmentIcon sx={{ fontSize: 24 }} />}
+                                                    // Usamos habit.streak que ahora viene del backend
                                                     label={`${habit.streak || 0} días`}
                                                     variant="outlined"
                                                     color={completed ? 'success' : 'default'}
