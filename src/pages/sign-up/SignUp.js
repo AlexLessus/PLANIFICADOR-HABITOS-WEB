@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { useState } from 'react'; // Importar useState
-import { useNavigate } from 'react-router-dom'; // Importar useNavigate
+import { useState, useContext } from 'react'; // Importar useContext
+import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
@@ -17,9 +17,11 @@ import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
 import AppTheme from '../shared-theme/AppTheme';
 import ColorModeSelect from '../shared-theme/ColorModeSelect';
-import { GoogleIcon, SitemarkIcon } from './components/CustomIcons';
+import { SitemarkIcon } from './components/CustomIcons';
+import { GoogleLogin } from '@react-oauth/google'; // Importar GoogleLogin
 
-import authService from '../../services/authService'; // Importa el servicio de autenticación
+import authService from '../../services/authService';
+import AuthContext from '../../context/AuthContext'; // Importar el contexto
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -64,74 +66,26 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
 }));
 
 export default function SignUp(props) {
-  // Estado para los datos del formulario
   const [formData, setFormData] = useState({
-    first_name: '',
-    last_name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
   });
 
-  // Estados para manejar mensajes de éxito o error
   const [message, setMessage] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
 
-  // Puedes seguir usando tus estados de error para la validación del frontend
-  const [emailError, setEmailError] = useState(false);
-  const [emailErrorMessage, setEmailErrorMessage] = useState('');
-  const [passwordError, setPasswordError] = useState(false);
-  const [passwordErrorMessage, setPasswordErrorMessage] = useState('');
-  const [nameError, setNameError] = useState(false);
-  const [nameErrorMessage, setNameErrorMessage] = useState('');
-
+  const { login } = useContext(AuthContext); // Obtenemos la función de login del contexto
   const navigate = useNavigate();
 
-  // Función para actualizar el estado cuando se escribe en los inputs
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const validateInputs = () => {
-    // La validación ahora usa los datos del estado
-    let isValid = true;
-
-    if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) {
-      setEmailError(true);
-      setEmailErrorMessage('Please enter a valid email address.');
-      isValid = false;
-    } else {
-      setEmailError(false);
-      setEmailErrorMessage('');
-    }
-
-    if (!formData.password || formData.password.length < 6) {
-      setPasswordError(true);
-      setPasswordErrorMessage('Password must be at least 6 characters long.');
-      isValid = false;
-    } else {
-      setPasswordError(false);
-      setPasswordErrorMessage('');
-    }
-
-    if (!formData.first_name || formData.first_name.length < 1) {
-      setNameError(true);
-      setNameErrorMessage('Name is required.');
-      isValid = false;
-    } else {
-      setNameError(false);
-      setNameErrorMessage('');
-    }
-
-    return isValid;
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    if (!validateInputs()) {
-      return;
-    }
-
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
       const response = await authService.register(formData);
 
@@ -149,133 +103,67 @@ export default function SignUp(props) {
     }
   };
 
+  // Funciones para el login con Google (copiadas de SignIn.js)
+  const handleGoogleLoginSuccess = async (credentialResponse) => {
+    try {
+      await login({ googleToken: credentialResponse.credential });
+
+      setMessage('Inicio de sesión con Google exitoso. Redirigiendo...');
+      setIsSuccess(true);
+      navigate('/dashboard');
+
+    } catch (error) {
+      setMessage(error.message || 'Error en el inicio de sesión con Google');
+      setIsSuccess(false);
+    }
+  };
+
+  const handleGoogleLoginError = () => {
+    console.log('Login Failed');
+    setMessage('Error en el inicio de sesión con Google');
+    setIsSuccess(false);
+  };
+
   return (
     <AppTheme {...props}>
       <CssBaseline enableColorScheme />
       <ColorModeSelect sx={{ position: 'fixed', top: '1rem', right: '1rem' }} />
       <SignUpContainer direction="column" justifyContent="space-between">
         <Button variant="contained" color="secondary" href='/' sx={{ width: '8%', boxShadow: 2, fontSize: '1rem' }}>Regresar</Button>
-
-        <Card variant="outlined">
-          <SitemarkIcon />
-          <Typography
-            component="h1"
-            variant="h4"
-            sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
-          >
-            Crear cuenta
+        <Card>
+          <SitemarkIcon sx={{ fontSize: '2rem', color: 'primary.main', centered: 'true' }} />
+          <Typography component="h1" variant="h4" sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}>
+            Regístrate
           </Typography>
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
-          >
-            <FormControl>
-              <FormLabel htmlFor="first_name">Nombre</FormLabel>
-              <TextField
-                autoComplete="first-name"
-                name="first_name"
-                required
-                fullWidth
-                id="first_name"
-                placeholder="Tigre"
-                error={nameError}
-                helperText={nameErrorMessage}
-                color={nameError ? 'error' : 'primary'}
-                onChange={handleChange}
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel htmlFor="last_name">Apellido</FormLabel>
-              <TextField
-                autoComplete="last-name"
-                name="last_name"
-                required
-                fullWidth
-                id="last_name"
-                placeholder="Valerio"
-                onChange={handleChange}
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel htmlFor="email">Correo electrónico</FormLabel>
-              <TextField
-                required
-                fullWidth
-                id="email"
-                placeholder="tigre@email.com"
-                name="email"
-                autoComplete="email"
-                variant="outlined"
-                error={emailError}
-                helperText={emailErrorMessage}
-                color={passwordError ? 'error' : 'primary'}
-                onChange={handleChange}
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel htmlFor="password">Contraseña</FormLabel>
-              <TextField
-                required
-                fullWidth
-                name="password"
-                placeholder="••••••"
-                type="password"
-                id="password"
-                autoComplete="new-password"
-                variant="outlined"
-                error={passwordError}
-                helperText={passwordErrorMessage}
-                color={passwordError ? 'error' : 'primary'}
-                onChange={handleChange}
-              />
-            </FormControl>
-            {/*}
-            <FormControlLabel
-              control={<Checkbox value="allowExtraEmails" color="primary" />}
-              label="Quiero recibir actualizaciones por correo."
-            />
-            */}
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-            >
-              Crear cuenta
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Crea una cuenta para empezar a organizar tus hábitos.
+          </Typography>
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <TextField margin="normal" required fullWidth id="firstName" label="Nombre" name="firstName" autoComplete="given-name" autoFocus onChange={handleChange} />
+            <TextField margin="normal" required fullWidth id="lastName" label="Apellido" name="lastName" autoComplete="family-name" onChange={handleChange} />
+            <TextField margin="normal" required fullWidth id="email" label="Correo Electrónico" name="email" autoComplete="email" onChange={handleChange} />
+            <TextField margin="normal" required fullWidth name="password" label="Contraseña" type="password" id="password" autoComplete="new-password" onChange={handleChange} />
+            <FormControlLabel control={<Checkbox value="allowExtraEmails" color="primary" />} label="Quiero recibir inspiración, promociones de marketing y actualizaciones por correo electrónico." />
+            <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+              Registrarse
             </Button>
           </Box>
-          <Divider>
-            <Typography sx={{ color: 'text.secondary' }}>o</Typography>
-          </Divider>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={() => alert('Registrarse con Google')}
-              startIcon={<GoogleIcon />}
-            >
-              Registrarse con Google
-            </Button>
+          <Divider>o continúa con</Divider>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center', mt: 2 }}>
+            <GoogleLogin
+              onSuccess={handleGoogleLoginSuccess}
+              onError={handleGoogleLoginError}
+            />
             <Typography sx={{ textAlign: 'center' }}>
               ¿Ya tienes una cuenta?{' '}
-              <Link
-                href="/signin"
-                variant="body2"
-                sx={{ alignSelf: 'center' }}
-              >
-                Iniciar sesión
+              <Link href="/signin" variant="body2">
+                Inicia sesión
               </Link>
             </Typography>
           </Box>
         </Card>
         {message && (
-          <Typography
-            variant="body2"
-            sx={{
-              color: isSuccess ? 'green' : 'red',
-              textAlign: 'center'
-            }}
-          >
+          <Typography variant="body2" sx={{ color: isSuccess ? 'green' : 'red', textAlign: 'center', mt: 2 }}>
             {message}
           </Typography>
         )}

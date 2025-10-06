@@ -6,7 +6,7 @@
  * 2. Proporcionar las funciones `login` y `logout` que interactúan con el servicio de API.
  * 3. Notificar a los componentes hijos sobre los cambios en el estado del usuario.
  * * @author Gustavo
- * @version 1.0.0
+ * @version 1.1.0
  * @module context/AuthContext
  */
 
@@ -20,17 +20,25 @@ export function AuthProvider({ children }) {
   // Estado para guardar el usuario
   const [currentUser, setCurrentUser] = useState(authService.getCurrentUser());
 
-  // Función para manejar el login
+  // Función para manejar el login (ahora unificada)
   const login = async (credentials) => {
     try {
-      // Llama al servicio, que ya se encarga de guardar el token en localStorage
-      const user = await authService.login(credentials);
-      // **CORRECCIÓN:** Actualiza el estado con el token o la información del usuario
-      // El servicio authService.js ya está devolviendo el token en el objeto 'user'
+      let user;
+      // Comprobamos si las credenciales contienen un token de Google
+      if (credentials.googleToken) {
+        // Si es así, llamamos a la función de login con Google del servicio
+        user = await authService.googleLogin({ token: credentials.googleToken });
+      } else {
+        // De lo contrario, usamos el login con correo y contraseña
+        user = await authService.login(credentials);
+      }
+
+      // Actualizamos el estado del usuario en el contexto
       setCurrentUser(user.user);
 
       return user;
     } catch (error) {
+      // Si hay un error, lo lanzamos para que el componente que llama (SignIn) lo pueda manejar
       throw error;
     }
   };

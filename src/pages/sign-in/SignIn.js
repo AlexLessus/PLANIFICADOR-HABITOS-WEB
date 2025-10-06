@@ -100,7 +100,7 @@ export default function SignIn(props) {
     // La validación ahora usa los datos del estado
     let isValid = true;
 
-    if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) {
+    if (!formData.email || !/\\S+@\\S+\\.\\S+/.test(formData.email)) {
       setEmailError(true);
       setEmailErrorMessage('Please enter a valid email address.');
       isValid = false;
@@ -144,9 +144,14 @@ export default function SignIn(props) {
 
   const handleGoogleLoginSuccess = async (credentialResponse) => {
     try {
-      const response = await authService.googleLogin({ token: credentialResponse.credential });
-      localStorage.setItem('token', response.token);
+      // Ahora, en lugar de llamar a authService directamente,
+      // llamamos a la función `login` del contexto, pasándole el token de Google.
+      await login({ googleToken: credentialResponse.credential });
+
+      setMessage('Inicio de sesión con Google exitoso. Redirigiendo...');
+      setIsSuccess(true);
       navigate('/dashboard');
+
     } catch (error) {
       setMessage(error.message || 'Error en el inicio de sesión con Google');
       setIsSuccess(false);
