@@ -135,15 +135,14 @@ export default function SignUp(props) {
           <Typography component="h1" variant="h4" sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}>
             Regístrate
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 0 }}>
             Crea una cuenta para empezar a organizar tus hábitos.
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 0, display: 'flex', flexDirection: 'column', gap: 1 }}>
             <TextField margin="normal" required fullWidth id="firstName" label="Nombre" name="firstName" autoComplete="given-name" autoFocus onChange={handleChange} />
             <TextField margin="normal" required fullWidth id="lastName" label="Apellido" name="lastName" autoComplete="family-name" onChange={handleChange} />
             <TextField margin="normal" required fullWidth id="email" label="Correo Electrónico" name="email" autoComplete="email" onChange={handleChange} />
             <TextField margin="normal" required fullWidth name="password" label="Contraseña" type="password" id="password" autoComplete="new-password" onChange={handleChange} />
-            <FormControlLabel control={<Checkbox value="allowExtraEmails" color="primary" />} label="Quiero recibir inspiración, promociones de marketing y actualizaciones por correo electrónico." />
             <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
               Registrarse
             </Button>
