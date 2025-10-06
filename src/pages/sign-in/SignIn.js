@@ -100,7 +100,7 @@ export default function SignIn(props) {
     // La validación ahora usa los datos del estado
     let isValid = true;
 
-    if (!formData.email || !/\\S+@\\S+\\.\\S+/.test(formData.email)) {
+    if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) {
       setEmailError(true);
       setEmailErrorMessage('Please enter a valid email address.');
       isValid = false;
@@ -201,7 +201,7 @@ export default function SignIn(props) {
                 id="email"
                 type="email"
                 name="email"
-                placeholder="ejemplo@email.com"
+                placeholder="Tigre@email.com"
                 autoComplete="email"
                 autoFocus
                 required
