@@ -23,6 +23,7 @@ import { GoogleLogin } from '@react-oauth/google'; // Importar GoogleLogin
 import authService from '../../services/authService';
 import AuthContext from '../../context/AuthContext'; // Importar el contexto
 
+
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -72,6 +73,13 @@ export default function SignUp(props) {
     email: '',
     password: '',
   });
+  const [emailError, setEmailError] = useState(false);
+  const [emailErrorMessage, setEmailErrorMessage] = useState('');
+  const [passwordError, setPasswordError] = useState(false);
+  const [passwordErrorMessage, setPasswordErrorMessage] = useState('');
+  const [nameError, setNameError] = useState(false);
+  const [nameErrorMessage, setNameErrorMessage] = useState('');
+
 
   const [message, setMessage] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
@@ -84,8 +92,46 @@ export default function SignUp(props) {
     setFormData({ ...formData, [name]: value });
   };
 
+  const validateInputs = () => {
+    // La validación ahora usa los datos del estado
+    let isValid = true;
+
+    if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) {
+      setEmailError(true);
+      setEmailErrorMessage('Please enter a valid email address.');
+      isValid = false;
+    } else {
+      setEmailError(false);
+      setEmailErrorMessage('');
+    }
+
+    if (!formData.password || formData.password.length < 6) {
+      setPasswordError(true);
+      setPasswordErrorMessage('Password must be at least 6 characters long.');
+      isValid = false;
+    } else {
+      setPasswordError(false);
+      setPasswordErrorMessage('');
+    }
+
+    if (!formData.first_name || formData.first_name.length < 1) {
+      setNameError(true);
+      setNameErrorMessage('Name is required.');
+      isValid = false;
+    } else {
+      setNameError(false);
+      setNameErrorMessage('');
+    }
+
+    return isValid;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateInputs()) {
+      return;
+    }
+
     try {
       const response = await authService.register(formData);
 
@@ -139,8 +185,8 @@ export default function SignUp(props) {
             Crea una cuenta para empezar a organizar tus hábitos.
           </Typography>
           <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 0, display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <TextField margin="normal" required fullWidth id="firstName" label="Nombre" name="firstName" autoComplete="given-name" autoFocus onChange={handleChange} />
-            <TextField margin="normal" required fullWidth id="lastName" label="Apellido" name="lastName" autoComplete="family-name" onChange={handleChange} />
+            <TextField margin="normal" required fullWidth id="first_name" label="Nombre" name="first_name" autoComplete="given-name" autoFocus onChange={handleChange} />
+            <TextField margin="normal" required fullWidth id="last_name" label="Apellido" name="last_name" autoComplete="family-name" onChange={handleChange} />
             <TextField margin="normal" required fullWidth id="email" label="Correo Electrónico" name="email" autoComplete="email" onChange={handleChange} />
             <TextField margin="normal" required fullWidth name="password" label="Contraseña" type="password" id="password" autoComplete="new-password" onChange={handleChange} />
             <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
