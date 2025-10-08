@@ -167,9 +167,10 @@ export default function SignIn(props) {
   return (
     <AppTheme {...props}>
       <CssBaseline enableColorScheme />
+      <ColorModeSelect sx={{ position: 'fixed', top: '1.5rem', right: '1.5rem' }} />
+      <Button variant="outlined" color="secondary" href='/' sx={{ width: '8%', boxShadow: 2, fontSize: '1rem', top: '1.5rem', left: '1.5rem', position: 'fixed' }}>Regresar</Button>
       <SignInContainer direction="column" justifyContent="space-between">
-        <Button variant="contained" color="secondary" href='/' sx={{ width: '8%', boxShadow: 2, fontSize: '1rem' }}>Regresar</Button>
-        <ColorModeSelect sx={{ position: 'fixed', top: '1rem', right: '1rem' }} />
+
         <Card variant="outlined">
           <SitemarkIcon sx={{ fontSize: '2rem', color: 'primary.main', centered: true }} />
           <Typography
@@ -179,7 +180,7 @@ export default function SignIn(props) {
           >
             Iniciar sesión
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
             Accede a tu cuenta para gestionar tus hábitos y rutinas diarias.
           </Typography>
           <Box
@@ -194,29 +195,29 @@ export default function SignIn(props) {
             }}
           >
             <FormControl>
-              <FormLabel htmlFor="email">Email</FormLabel>
               <TextField
                 error={emailError}
                 helperText={emailErrorMessage}
                 id="email"
                 type="email"
                 name="email"
+                label="Correo Electrónico"
                 placeholder="Tigre@email.com"
                 autoComplete="email"
                 autoFocus
                 required
                 fullWidth
-                variant="outlined"
+                variant="standard"
                 color={emailError ? 'error' : 'primary'}
                 onChange={handleChange}
               />
             </FormControl>
             <FormControl>
-              <FormLabel htmlFor="password">Contraseña</FormLabel>
               <TextField
                 error={passwordError}
                 helperText={passwordErrorMessage}
                 name="password"
+                label="Contraseña"
                 placeholder="••••••"
                 type="password"
                 id="password"
@@ -224,7 +225,7 @@ export default function SignIn(props) {
                 autoFocus
                 required
                 fullWidth
-                variant="outlined"
+                variant="standard"
                 color={passwordError ? 'error' : 'primary'}
                 onChange={handleChange}
               />

@@ -22,6 +22,7 @@ import { GoogleLogin } from '@react-oauth/google'; // Importar GoogleLogin
 
 import authService from '../../services/authService';
 import AuthContext from '../../context/AuthContext'; // Importar el contexto
+import IconButton from '@mui/material/IconButton';
 
 
 const Card = styled(MuiCard)(({ theme }) => ({
@@ -173,28 +174,29 @@ export default function SignUp(props) {
   return (
     <AppTheme {...props}>
       <CssBaseline enableColorScheme />
-      <ColorModeSelect sx={{ position: 'fixed', top: '1rem', right: '1rem' }} />
-      <SignUpContainer direction="column" justifyContent="space-between">
-        <Button variant="contained" color="secondary" href='/' sx={{ width: '8%', boxShadow: 2, fontSize: '1rem' }}>Regresar</Button>
-        <Card>
+      <ColorModeSelect sx={{ position: 'fixed', top: '1.5rem', right: '1.5rem' }} />
+      <Button variant="outlined" color="secondary" href='/' sx={{ width: '8%', boxShadow: 2, fontSize: '1rem', top: '1.5rem', left: '1.5rem', position: 'fixed' }}>Regresar</Button>
+
+      <SignUpContainer direction="column" justifyContent="space-between" sx={{ mt: -4 }}>
+        <Card variant='outlined'>
           <SitemarkIcon sx={{ fontSize: '2rem', color: 'primary.main', centered: 'true' }} />
           <Typography component="h1" variant="h4" sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}>
             Regístrate
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 0 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: -3 }}>
             Crea una cuenta para empezar a organizar tus hábitos.
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 0, display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <TextField margin="normal" required fullWidth id="first_name" label="Nombre" name="first_name" autoComplete="given-name" autoFocus onChange={handleChange} />
-            <TextField margin="normal" required fullWidth id="last_name" label="Apellido" name="last_name" autoComplete="family-name" onChange={handleChange} />
-            <TextField margin="normal" required fullWidth id="email" label="Correo Electrónico" name="email" autoComplete="email" onChange={handleChange} />
-            <TextField margin="normal" required fullWidth name="password" label="Contraseña" type="password" id="password" autoComplete="new-password" onChange={handleChange} />
-            <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 0, display: 'flex', flexDirection: 'column', gap: .3 }}>
+            <TextField margin="normal" variant='standard' required fullWidth id="first_name" label="Nombre" name="first_name" autoComplete="given-name" autoFocus onChange={handleChange} />
+            <TextField margin="normal" variant='standard' required fullWidth id="last_name" label="Apellido" name="last_name" autoComplete="family-name" onChange={handleChange} />
+            <TextField margin="normal" variant='standard' required fullWidth id="email" label="Correo Electrónico" name="email" autoComplete="email" onChange={handleChange} />
+            <TextField margin="normal" variant='standard' required fullWidth name="password" label="Contraseña" type="password" id="password" autoComplete="new-password" onChange={handleChange} />
+            <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 1 }}>
               Registrarse
             </Button>
           </Box>
           <Divider>o continúa con</Divider>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center', mt: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'center', mt: 0.4 }}>
             <GoogleLogin
               onSuccess={handleGoogleLoginSuccess}
               onError={handleGoogleLoginError}
