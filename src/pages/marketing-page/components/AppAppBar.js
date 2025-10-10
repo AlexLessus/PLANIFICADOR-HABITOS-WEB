@@ -67,21 +67,38 @@ export default function AppAppBar() {
             }}
           >
             <SitemarkIcon />
-            <Button variant="text" color="info" size="large" sx={{ ml: 1, fontWeight: 'bold' }}>
+            <Button 
+              variant="text" 
+              color="info" 
+              size="large" 
+              href="#features"
+              sx={{ ml: 1, fontWeight: 'bold' }}>
               Características
             </Button>
-            <Button variant="text" color="info" size="large">
+            <Button 
+              variant="text" 
+              color="info" 
+              size="large">
               Destacados
             </Button>
-            <Button variant="text" color="info" size="medium" sx={{ minWidth: 0 }}>
+            <Button 
+              variant="text" 
+              color="info" 
+              size="medium" 
+              sx={{ minWidth: 0 }}>
               Preguntas
             </Button>
-            <Button variant="text" color="info" size="small" sx={{ minWidth: 0 }}>
+            <Button 
+              variant="text" 
+              color="info" 
+              size="small" 
+              sx={{ minWidth: 0 }}>
               Blog
             </Button>
           </Box>
           
-          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' }, alignItems: 'center' }}>
+          <Box 
+            sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' }, alignItems: 'center' }}>
             <SitemarkIcon />
           </Box>
           
