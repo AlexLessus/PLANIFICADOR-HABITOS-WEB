@@ -14,6 +14,10 @@ import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import ColorModeIconDropdown from '../../shared-theme/ColorModeIconDropdown';
 import { SitemarkIcon } from '../../../shared-theme/CustomIcons';
 
+// 🔥 LÍNEAS ELIMINADAS: 
+// import Dock from '../Dock'; 
+// import { VscHome, VscArchive, VscAccount, VscSettingsGear } from 'react-icons/vsc'; 
+
 const StyledToolbar = styled(Toolbar)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -37,6 +41,7 @@ export default function AppAppBar() {
     setOpen(newOpen);
   };
 
+
   return (
     <AppBar
       position="fixed"
@@ -50,7 +55,17 @@ export default function AppAppBar() {
     >
       <Container maxWidth="lg">
         <StyledToolbar variant="dense" disableGutters>
-          <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', px: 0 }}>
+          
+
+          <Box 
+            sx={{ 
+              flexGrow: 1, 
+              display: 'flex', 
+              alignItems: 'center', 
+              px: 0,
+              display: { xs: 'none', md: 'flex' } 
+            }}
+          >
             <SitemarkIcon />
             <Button variant="text" color="info" size="large" sx={{ ml: 1, fontWeight: 'bold' }}>
               Características
@@ -65,6 +80,11 @@ export default function AppAppBar() {
               Blog
             </Button>
           </Box>
+          
+          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' }, alignItems: 'center' }}>
+            <SitemarkIcon />
+          </Box>
+          
           <Box
             sx={{
               display: { xs: 'none', md: 'flex' },
@@ -80,6 +100,7 @@ export default function AppAppBar() {
             </Button>
             <ColorModeIconDropdown />
           </Box>
+          
           <Box sx={{ display: { xs: 'flex', md: 'none' }, gap: 1 }}>
             <ColorModeIconDropdown size="medium" />
             <IconButton aria-label="Menu button" onClick={toggleDrawer(true)}>
