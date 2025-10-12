@@ -10,18 +10,17 @@ import Features from './components/Features';
 // import LiquidEther from './LiquidEther';
 
 export default function MarketingPage(props) {
-  return (
-    <AppTheme {...props}>
-      <CssBaseline enableColorScheme />
-      <AppAppBar />
-      <Hero />
-
-      <Box> {/* Usamos Box en lugar de <div> */}
-        <Features />
-        <Divider />
-        <Highlights /> 
-        <Divider />
-      </Box>
-    </AppTheme>
-  );
+    return (
+        <AppTheme {...props}>
+            <CssBaseline enableColorScheme />
+            <AppAppBar />
+            <Hero />
+            <Box> {/* Usamos Box en lugar de <div> */}
+                <Features />
+                <Divider />
+                <Highlights />
+                <Divider />
+            </Box>
+        </AppTheme>
+    );
 }
