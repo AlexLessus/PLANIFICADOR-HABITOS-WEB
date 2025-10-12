@@ -57,6 +57,41 @@ const userModel = {
             console.error('Error al comparar contraseñas:', error);
             throw error;
         }
+    },
+
+    savePasswordResetToken: async (userId, tokenHash, expires) => {
+        try {
+            const [result] = await db.query(
+                'UPDATE users SET reset_token_hash = ?, reset_token_expires = ? WHERE id = ?',
+                [tokenHash, expires, userId]
+            );
+            return result;
+        } catch (error) {
+            console.error('Error al guardar el token de reseteo de contraseña:', error);
+            throw error;
+        }
+    },
+
+    findUserByResetToken: async (tokenHash) => {
+        try {
+            const [rows] = await db.query('SELECT * FROM users WHERE reset_token_hash = ? AND reset_token_expires > NOW()', [tokenHash]);
+            return rows;
+        } catch (error) {
+            console.error('Error al buscar usuario por token de reseteo:', error);
+            throw error;
+        }
+    },
+
+    updateUserPassword: async (userId, newPassword) => {
+        try {
+            const salt = await bcrypt.genSalt(10);
+            const password_hash = await bcrypt.hash(newPassword, salt);
+            const [result] = await db.query('UPDATE users SET password_hash = ?, reset_token_hash = NULL, reset_token_expires = NULL WHERE id = ?', [password_hash, userId]);
+            return result;
+        } catch (error) {
+            console.error('Error al actualizar la contraseña del usuario:', error);
+            throw error;
+        }
     }
 };
 
