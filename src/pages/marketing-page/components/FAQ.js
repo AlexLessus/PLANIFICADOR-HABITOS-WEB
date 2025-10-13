@@ -39,9 +39,13 @@ export default function FAQ() {
           textAlign: { sm: 'left', md: 'center' },
         }}
       >
-        Frequently asked questions
+        Preguntas Frecuentes
       </Typography>
-      <Box sx={{ width: '100%' }}>
+      
+      {/* Aumentamos el ancho de la "tabla" al 100% */}
+      <Box sx={{ width: '100%', maxWidth: '900px' }}> 
+        
+        {/* -------------------- PREGUNTA 1 -------------------- */}
         <Accordion
           expanded={expanded.includes('panel1')}
           onChange={handleChange('panel1')}
@@ -51,23 +55,24 @@ export default function FAQ() {
             aria-controls="panel1d-content"
             id="panel1d-header"
           >
-            <Typography component="span" variant="subtitle2">
-              How do I contact customer support if I have a question or issue?
+            <Typography component="span" variant="h6"> {/* Aumentado de subtitle2 a h6 */}
+              ¿Cómo puedo contactar a soporte si tengo dudas o algún problema?
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
             <Typography
-              variant="body2"
+              variant="body1" // Aumentado de body2 a body1
               gutterBottom
-              sx={{ maxWidth: { sm: '100%', md: '70%' } }}
+              sx={{ maxWidth: { sm: '100%', md: '90%' } }} // Aumentado el ancho de la respuesta
             >
-              You can reach our customer support team by emailing&nbsp;
-              <Link href="mailto:support@email.com">support@email.com</Link>
-              &nbsp;or calling our toll-free number. We&apos;re here to assist you
-              promptly.
+              Puedes contactar a nuestro equipo de soporte al correo electrónico&nbsp;
+              <Link href="mailto:support@email.com">supportTigertech@email.com</Link>
+              &nbsp;o llamar totalmente gratis al número 341. Asistiremos tu duda lo antes posible.
             </Typography>
           </AccordionDetails>
         </Accordion>
+        
+        {/* -------------------- PREGUNTA 2 -------------------- */}
         <Accordion
           expanded={expanded.includes('panel2')}
           onChange={handleChange('panel2')}
@@ -77,22 +82,24 @@ export default function FAQ() {
             aria-controls="panel2d-content"
             id="panel2d-header"
           >
-            <Typography component="span" variant="subtitle2">
-              Can I return the product if it doesn&apos;t meet my expectations?
+            <Typography component="span" variant="h6"> {/* Aumentado de subtitle2 a h6 */}
+              ¿Puedo devolver el producto si no cumple mis expectativas?
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
             <Typography
-              variant="body2"
+              variant="body1" // Aumentado de body2 a body1
               gutterBottom
-              sx={{ maxWidth: { sm: '100%', md: '70%' } }}
+              sx={{ maxWidth: { sm: '100%', md: '90%' } }}
             >
-              Absolutely! We offer a hassle-free return policy. If you&apos;re not
-              completely satisfied, you can return the product within [number of
-              days] days for a full refund or exchange.
+              ¡Absolutamente! Ofrecemos una política de devolución sin complicaciones. Si no
+              estás completamente satisfecho(a), puedes devolver el producto dentro de [30]
+              días para un reembolso completo o un cambio.
             </Typography>
           </AccordionDetails>
         </Accordion>
+        
+        {/* -------------------- PREGUNTA 3 -------------------- */}
         <Accordion
           expanded={expanded.includes('panel3')}
           onChange={handleChange('panel3')}
@@ -102,22 +109,24 @@ export default function FAQ() {
             aria-controls="panel3d-content"
             id="panel3d-header"
           >
-            <Typography component="span" variant="subtitle2">
-              What makes your product stand out from others in the market?
+            <Typography component="span" variant="h6"> {/* Aumentado de subtitle2 a h6 */}
+              ¿Qué hace que su producto se destaque de otros en el mercado?
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
             <Typography
-              variant="body2"
+              variant="body1" // Aumentado de body2 a body1
               gutterBottom
-              sx={{ maxWidth: { sm: '100%', md: '70%' } }}
+              sx={{ maxWidth: { sm: '100%', md: '90%' } }}
             >
-              Our product distinguishes itself through its adaptability, durability,
-              and innovative features. We prioritize user satisfaction and
-              continually strive to exceed expectations in every aspect.
+              Nuestro producto se distingue por su **adaptabilidad**, **durabilidad**
+              y **características innovadoras** enfocadas en el comportamiento. Priorizamos la satisfacción del usuario y
+              nos esforzamos continuamente por superar las expectativas en todos los aspectos.
             </Typography>
           </AccordionDetails>
         </Accordion>
+        
+        {/* -------------------- PREGUNTA 4 -------------------- */}
         <Accordion
           expanded={expanded.includes('panel4')}
           onChange={handleChange('panel4')}
@@ -127,20 +136,19 @@ export default function FAQ() {
             aria-controls="panel4d-content"
             id="panel4d-header"
           >
-            <Typography component="span" variant="subtitle2">
-              Is there a warranty on the product, and what does it cover?
+            <Typography component="span" variant="h6"> {/* Aumentado de subtitle2 a h6 */}
+              ¿El producto tiene garantía y qué cubre?
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
             <Typography
-              variant="body2"
+              variant="body1" // Aumentado de body2 a body1
               gutterBottom
-              sx={{ maxWidth: { sm: '100%', md: '70%' } }}
+              sx={{ maxWidth: { sm: '100%', md: '90%' } }}
             >
-              Yes, our product comes with a [length of warranty] warranty. It covers
-              defects in materials and workmanship. If you encounter any issues
-              covered by the warranty, please contact our customer support for
-              assistance.
+              Sí, nuestro producto viene con una garantía de [30].
+              Cubre defectos en los materiales y la mano de obra. Si encuentras algún problema
+              cubierto por la garantía, contacta a nuestro soporte para asistencia.
             </Typography>
           </AccordionDetails>
         </Accordion>

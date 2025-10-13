@@ -5,8 +5,10 @@ import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { alpha } from '@mui/material/styles'; // Necesaria para la transparencia de las tarjetas
+import { alpha } from '@mui/material/styles'; 
 // ELIMINAMOS: import LiquidEther from '../LiquidEther'; 
+//estilo de animacion para el cursor y componentes
+import GlowCard from './GlowCard';
 
 // ... Importaciones de Iconos
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -100,7 +102,7 @@ export default function Highlights() {
                 <Grid container spacing={2}>
                     {items.map((item, index) => (
                         <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
-                            <Stack
+                            <GlowCard
                                 direction="column"
                                 component={Card}
                                 spacing={1}
@@ -124,7 +126,7 @@ export default function Highlights() {
                                         {item.description}
                                     </Typography>
                                 </div>
-                            </Stack>
+                            </GlowCard>
                         </Grid>
                     ))}
                 </Grid>

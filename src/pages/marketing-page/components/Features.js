@@ -9,6 +9,8 @@ import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import habitPageImg from '../../../assets/screenshots/habitPage.png';
 import Dashboard from '../../../assets/screenshots/dashboard.jpg';
+//animacion de componente
+import GlowCard from './GlowCard'; 
 
 import TaskIcon from '@mui/icons-material/Task';
 import InsightsIcon from '@mui/icons-material/Insights';
@@ -139,10 +141,23 @@ export { MobileLayout };
 
 export default function Features() {
   const [selectedItemIndex, setSelectedItemIndex] = React.useState(0);
+  // Definimos la constante para el intervalo de cambio (5 segundos)
+  const AUTOPLAY_INTERVAL = 5000; 
+  const totalItems = items.length;
 
   const handleItemClick = (index) => {
     setSelectedItemIndex(index);
   };
+
+  // LÓGICA DE CARRUSEL AUTOMÁTICO
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      // Cambiar al siguiente índice: (índice actual + 1) % número total de ítems
+      setSelectedItemIndex((prevIndex) => (prevIndex + 1) % totalItems);
+    }, AUTOPLAY_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, [totalItems]); 
 
   const selectedFeature = items[selectedItemIndex];
 
@@ -234,16 +249,16 @@ export default function Features() {
           sx={{
             display: { xs: 'none', sm: 'flex' },
             width: { xs: '100%', md: '70%' },
-            height: 'var(--items-image-height)',
+            height: 'var(--items-image-height)', 
           }}
         >
-          <Card
+          <GlowCard 
+            component={Card} 
             variant="outlined"
             sx={{
               height: '100%',
               width: '100%',
               display: { xs: 'none', sm: 'flex' },
-              pointerEvents: 'none',
             }}
           >
             <Box
@@ -252,6 +267,8 @@ export default function Features() {
                 width: 420,
                 height: 500,
                 backgroundSize: 'contain',
+                backgroundRepeat: 'no-repeat', 
+                backgroundPosition: 'center', 
                 backgroundImage: 'var(--items-imageLight)',
                 ...theme.applyStyles('dark', {
                   backgroundImage: 'var(--items-imageDark)',
@@ -266,7 +283,7 @@ export default function Features() {
                   : {}
               }
             />
-          </Card>
+          </GlowCard>
         </Box>
       </Box>
     </Container>
