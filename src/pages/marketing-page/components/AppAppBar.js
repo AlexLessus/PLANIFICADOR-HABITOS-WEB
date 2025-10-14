@@ -14,9 +14,7 @@ import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import ColorModeIconDropdown from '../../shared-theme/ColorModeIconDropdown';
 import { SitemarkIcon } from '../../../shared-theme/CustomIcons';
 
-// 🔥 LÍNEAS ELIMINADAS: 
-// import Dock from '../Dock'; 
-// import { VscHome, VscArchive, VscAccount, VscSettingsGear } from 'react-icons/vsc'; 
+
 
 const StyledToolbar = styled(Toolbar)(({ theme }) => ({
   display: 'flex',
@@ -78,6 +76,7 @@ export default function AppAppBar() {
             <Button 
               variant="text" 
               color="info" 
+              href='#highlights'
               size="large">
               Destacados
             </Button>
@@ -85,16 +84,19 @@ export default function AppAppBar() {
               variant="text" 
               color="info" 
               size="medium" 
+              href="#faq"
               sx={{ minWidth: 0 }}>
               Preguntas
             </Button>
             <Button 
               variant="text" 
               color="info" 
-              size="small" 
+              size="medium" 
+              href='#contact-us'
               sx={{ minWidth: 0 }}>
-              Blog
+              Nosotros
             </Button>
+           
           </Box>
           
           <Box 

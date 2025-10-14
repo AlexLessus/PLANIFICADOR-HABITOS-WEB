@@ -234,9 +234,9 @@ function TasksPage(props) {
 
         return list;
     }, [tasks, filter]);
-
+    //Componente para carga 
     if (loading) {
-        return <p>Cargando tareas...</p>;
+        
     }
 
     if (error) {
