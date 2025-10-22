@@ -32,7 +32,7 @@ router.get('/', authenticateToken, async (req, res) => {
     try {
         const [rows] = await pool.query(
             // **CORRECCIÓN: Usar la tabla 'tasks'**
-            'SELECT id, title, priority, due_date, status, created_at FROM tasks WHERE user_id = ?',
+            'SELECT id, title, description, priority, due_date, status, created_at FROM tasks WHERE user_id = ?',
             [userId]
         );
         res.json(rows);
@@ -46,19 +46,19 @@ router.get('/', authenticateToken, async (req, res) => {
 router.post('/', authenticateToken, async (req, res) => {
     const { id: userId } = req.user;
     // **CORRECCIÓN: Obtener campos de tarea, el status usará el valor DEFAULT**
-    const { title, priority, due_date } = req.body; 
+    const { title, description, priority, due_date } = req.body; 
     
     try {
         const [result] = await pool.query(
             // **CORRECCIÓN: Usar la tabla 'tasks' e insertar sus campos**
-            'INSERT INTO tasks (user_id, title, priority, due_date) VALUES (?, ?, ?, ?)',
-            [userId, title, priority, due_date]
+            'INSERT INTO tasks (user_id, title, description, priority, due_date) VALUES (?, ?, ?, ?, ?)',
+            [userId, title, description, priority, due_date]
         );
         
         const newTaskId = result.insertId;
         const [newTask] = await pool.query(
             // **CORRECCIÓN: Usar la tabla 'tasks' y seleccionar sus campos**
-            'SELECT id, title, priority, due_date, status, created_at FROM tasks WHERE id = ?',
+            'SELECT id, title, description, priority, due_date, status, created_at FROM tasks WHERE id = ?',
             [newTaskId]
         );
         
@@ -74,13 +74,13 @@ router.put('/:id', authenticateToken, async (req, res) => {
     const { id: userId } = req.user;
     const { id } = req.params;
     // **CORRECCIÓN: Obtener todos los campos actualizables de la tarea**
-    const { title, priority, due_date, status } = req.body; 
+    const { title, priority, description, due_date, status } = req.body; 
     
     try {
         const [updateResult] = await pool.query(
             // **CORRECCIÓN: Usar la tabla 'tasks' y filtrar por user_id**
-            'UPDATE tasks SET title = ?, priority = ?, due_date = ?, status = ? WHERE id = ? AND user_id = ?',
-            [title, priority, due_date, status, id, userId]
+            'UPDATE tasks SET title = ?, description = ?, priority = ?, due_date = ?, status = ? WHERE id = ? AND user_id = ?',
+            [title, description, priority, due_date, status, id, userId]
         );
 
         if (updateResult.affectedRows === 0) {
@@ -89,7 +89,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
         
         // Devolver la tarea actualizada
         const [updatedTask] = await pool.query(
-            'SELECT id, title, priority, due_date, status, created_at FROM tasks WHERE id = ?',
+            'SELECT id, title, description, priority, due_date, status, created_at FROM tasks WHERE id = ?',
             [id]
         );
         
@@ -130,7 +130,9 @@ router.put('/:id/status', authenticateToken, async (req, res) => {
     const { status } = req.body; // El frontend enviará el nuevo estado (ej: 'Completada')
 
     try {
-        const [updateResult] = await pool.query(
+        const [updateResult
+            
+        ] = await pool.query(
             'UPDATE tasks SET status = ? WHERE id = ? AND user_id = ?',
             [status, id, userId]
         );
@@ -140,7 +142,7 @@ router.put('/:id/status', authenticateToken, async (req, res) => {
         }
         
         const [updatedTask] = await pool.query(
-            'SELECT id, title, priority, due_date, status, created_at FROM tasks WHERE id = ?',
+            'SELECT id, title, description, priority, due_date, status, created_at FROM tasks WHERE id = ?',
             [id]
         );
         
