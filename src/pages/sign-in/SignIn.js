@@ -1,13 +1,12 @@
 import * as React from 'react';
 import { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import CssBaseline from '@mui/material/CssBaseline';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Divider from '@mui/material/Divider';
-import FormLabel from '@mui/material/FormLabel';
 import FormControl from '@mui/material/FormControl';
 import Link from '@mui/material/Link';
 import TextField from '@mui/material/TextField';
@@ -15,13 +14,11 @@ import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
-import ForgotPassword from './components/ForgotPassword';
 import AppTheme from '../shared-theme/AppTheme';
 import ColorModeSelect from '../shared-theme/ColorModeSelect';
 import { SitemarkIcon } from './components/CustomIcons';
 import { GoogleLogin } from '@react-oauth/google';
 
-import authService from '../../services/authService';
 import AuthContext from '../../context/AuthContext'; // Importar el contexto
 
 const Card = styled(MuiCard)(({ theme }) => ({
@@ -78,18 +75,9 @@ export default function SignIn(props) {
   const [emailErrorMessage, setEmailErrorMessage] = useState('');
   const [passwordError, setPasswordError] = useState(false);
   const [passwordErrorMessage, setPasswordErrorMessage] = useState('');
-  const [open, setOpen] = useState(false);
 
   const { login } = useContext(AuthContext); // Obtenemos la función de login del contexto
   const navigate = useNavigate(); // Importamos el hook para la redirección
-
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -97,7 +85,6 @@ export default function SignIn(props) {
   };
 
   const validateInputs = () => {
-    // La validación ahora usa los datos del estado
     let isValid = true;
 
     if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) {
@@ -128,12 +115,11 @@ export default function SignIn(props) {
     }
 
     try {
-      await login(formData); // Llama a la función de login del contexto
+      await login(formData);
 
       setMessage('Inicio de sesión exitoso. Redirigiendo al dashboard...');
       setIsSuccess(true);
 
-      // Añade esta línea para redirigir al usuario
       navigate('/dashboard');
 
     } catch (error) {
@@ -144,8 +130,6 @@ export default function SignIn(props) {
 
   const handleGoogleLoginSuccess = async (credentialResponse) => {
     try {
-      // Ahora, en lugar de llamar a authService directamente,
-      // llamamos a la función `login` del contexto, pasándole el token de Google.
       await login({ googleToken: credentialResponse.credential });
 
       setMessage('Inicio de sesión con Google exitoso. Redirigiendo...');
@@ -167,9 +151,10 @@ export default function SignIn(props) {
   return (
     <AppTheme {...props}>
       <CssBaseline enableColorScheme />
+      <ColorModeSelect sx={{ position: 'fixed', top: '1.5rem', right: '1.5rem' }} />
+      <Button variant="outlined" color="secondary" href='/' sx={{ width: '8%', boxShadow: 2, fontSize: '1rem', top: '1.5rem', left: '1.5rem', position: 'fixed' }}>Regresar</Button>
       <SignInContainer direction="column" justifyContent="space-between">
-        <Button variant="contained" color="secondary" href='/' sx={{ width: '8%', boxShadow: 2, fontSize: '1rem' }}>Regresar</Button>
-        <ColorModeSelect sx={{ position: 'fixed', top: '1rem', right: '1rem' }} />
+
         <Card variant="outlined">
           <SitemarkIcon sx={{ fontSize: '2rem', color: 'primary.main', centered: true }} />
           <Typography
@@ -179,7 +164,7 @@ export default function SignIn(props) {
           >
             Iniciar sesión
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
             Accede a tu cuenta para gestionar tus hábitos y rutinas diarias.
           </Typography>
           <Box
@@ -194,29 +179,29 @@ export default function SignIn(props) {
             }}
           >
             <FormControl>
-              <FormLabel htmlFor="email">Email</FormLabel>
               <TextField
                 error={emailError}
                 helperText={emailErrorMessage}
                 id="email"
                 type="email"
                 name="email"
+                label="Correo Electrónico"
                 placeholder="Tigre@email.com"
                 autoComplete="email"
                 autoFocus
                 required
                 fullWidth
-                variant="outlined"
+                variant="standard"
                 color={emailError ? 'error' : 'primary'}
                 onChange={handleChange}
               />
             </FormControl>
             <FormControl>
-              <FormLabel htmlFor="password">Contraseña</FormLabel>
               <TextField
                 error={passwordError}
                 helperText={passwordErrorMessage}
                 name="password"
+                label="Contraseña"
                 placeholder="••••••"
                 type="password"
                 id="password"
@@ -224,7 +209,7 @@ export default function SignIn(props) {
                 autoFocus
                 required
                 fullWidth
-                variant="outlined"
+                variant="standard"
                 color={passwordError ? 'error' : 'primary'}
                 onChange={handleChange}
               />
@@ -233,7 +218,6 @@ export default function SignIn(props) {
               control={<Checkbox value="remember" color="primary" />}
               label="Recuérdame"
             />
-            <ForgotPassword open={open} handleClose={handleClose} />
             <Button
               type="submit"
               fullWidth
@@ -242,9 +226,8 @@ export default function SignIn(props) {
               Iniciar sesión
             </Button>
             <Link
-              component="button"
-              type="button"
-              onClick={handleClickOpen}
+              component={RouterLink}
+              to="/forgot-password"
               variant="body2"
               sx={{ alignSelf: 'center' }}
             >
@@ -260,7 +243,8 @@ export default function SignIn(props) {
             <Typography sx={{ textAlign: 'center' }}>
               No tienes una cuenta?{' '}
               <Link
-                href="/signup"
+                component={RouterLink}
+                to="/signup"
                 variant="body2"
                 sx={{ alignSelf: 'center' }}
               >

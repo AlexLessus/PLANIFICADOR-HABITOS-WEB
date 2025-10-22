@@ -28,4 +28,16 @@ router.post('/login', authController.login);
 // POST /api/auth/google-login
 router.post('/google-login', authController.googleLogin);
 
+// Ruta para solicitar el restablecimiento de contraseña
+// POST /api/auth/forgot-password
+router.post('/forgot-password', authController.forgotPassword);
+
+// Ruta para restablecer la contraseña
+// POST /api/auth/reset-password/:token
+router.post('/reset-password/:token', authController.resetPassword);
+
+// Ruta para verificar el token de restablecimiento
+// GET /api/auth/verify-reset-token/:token
+router.get('/verify-reset-token/:token', authController.verifyResetToken);
+
 module.exports = router; // Exporta el router para que pueda ser utilizado por app.js
