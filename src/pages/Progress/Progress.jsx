@@ -71,7 +71,8 @@ const habitsStreakData = [
 function Progress(props) {
     const [timeRange, setTimeRange] = useState('semanal');
     const [exportData, setExportData] = useState('ambos');
-    const [dateRange, setDateRange] = useState([null, null]);
+    // dateRange[0] = fecha de inicio, dateRange[1] = fecha de fin
+    const [dateRange, setDateRange] = useState([null, null]); 
 
     const handleTimeRangeChange = (event, newRange) => {
         if (newRange !== null) {
@@ -79,12 +80,23 @@ function Progress(props) {
         }
     };
 
+    // 🔥 FUNCIÓN CORREGIDA PARA USAR LA URL ABSOLUTA DEL BACKEND (PUERTO 5000)
     const handleExport = (format) => {
-        // En un caso real, aquí iría la lógica para generar y descargar el archivo.
-        console.log(`Exportando a ${format}:`);
-        console.log('Datos:', exportData);
-        console.log('Rango de fechas:', dateRange);
-        alert(`Se iniciarìa la exportación a ${format}. Revisa la consola para ver los datos.`);
+        const dataScope = exportData; 
+        const [startDate, endDate] = dateRange;
+
+        // 1. Formatear las fechas a YYYY-MM-DD para la API (maneja null)
+        const formattedStartDate = startDate ? new Date(startDate).toISOString().split('T')[0] : '';
+        const formattedEndDate = endDate ? new Date(endDate).toISOString().split('T')[0] : '';
+        
+        const formatLower = format.toLowerCase(); 
+
+        // 2. Construir la URL utilizando el puerto 5000 DIRECTAMENTE
+        const exportURL = 
+            `http://localhost:5000/api/export/${dataScope}/${formatLower}?start=${formattedStartDate}&end=${formattedEndDate}`;
+
+        // 3. Abrir la URL absoluta para iniciar la descarga.
+        window.open(exportURL, '_blank');
     };
 
 
@@ -188,8 +200,20 @@ function Progress(props) {
                                         </Grid>
                                         <Grid item xs={12} md={3}>
                                             <Box sx={{ display: 'flex', gap: 1 }}>
-                                                <Button variant="outlined" startIcon={<PictureAsPdfIcon />} onClick={() => handleExport('PDF')}>PDF</Button>
-                                                <Button variant="outlined" startIcon={<TableViewIcon />} onClick={() => handleExport('Excel')}>Excel</Button>
+                                                <Button 
+                                                    variant="outlined" 
+                                                    startIcon={<PictureAsPdfIcon />} 
+                                                    onClick={() => handleExport('PDF')}
+                                                >
+                                                    PDF
+                                                </Button>
+                                                <Button 
+                                                    variant="outlined" 
+                                                    startIcon={<TableViewIcon />} 
+                                                    onClick={() => handleExport('Excel')}
+                                                >
+                                                    Excel
+                                                </Button>
                                             </Box>
                                         </Grid>
                                     </Grid>
