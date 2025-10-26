@@ -64,6 +64,11 @@ const login = async (credentials) => {
             localStorage.setItem('token', data.token);
         }
 
+        // Guardar datos del usuario en localStorage
+        if (data.user) {
+            localStorage.setItem('user', JSON.stringify(data.user));
+        }
+
         return data;
     } catch (error) {
         console.error('Error al iniciar sesión:', error);
@@ -93,6 +98,11 @@ const googleLogin = async (tokenData) => {
 
         if (data.token) {
             localStorage.setItem('token', data.token);
+        }
+
+        // Guardar datos del usuario en localStorage
+        if (data.user) {
+            localStorage.setItem('user', JSON.stringify(data.user));
         }
 
         return data;
@@ -160,6 +170,7 @@ const verifyResetToken = async (token) => {
  */
 const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
 };
 
 /**
