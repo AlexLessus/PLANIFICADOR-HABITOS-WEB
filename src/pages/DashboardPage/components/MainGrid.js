@@ -1,17 +1,7 @@
 import * as React from 'react';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import Copyright from '../internals/components/Copyright';
-import ChartUserByCountry from './ChartUserByCountry';
-import CustomizedTreeView from './CustomizedTreeView';
-import CustomizedDataGrid from './CustomizedDataGrid';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import ListSubheader from '@mui/material/ListSubheader';
-import HighlightedCard from './HighlightedCard';
 
 // Importar las nuevas tarjetas de estadísticas
 import TasksTodayCard from './stats/TasksTodayCard';

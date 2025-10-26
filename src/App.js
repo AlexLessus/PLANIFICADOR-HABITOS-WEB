@@ -12,7 +12,6 @@ import Habits from './pages/Habits/Habits';
 import Tasks from './pages/Task/Tasks';
 import Progress from './pages/Progress/Progress';
 import Calendar from './pages/Calendar/Calendar';
-import AboutUs from './pages/AboutUs/AboutUs';
 import Marketing from './pages/marketing-page/MarketingPage';
 
 import { AuthProvider } from './context/AuthContext';
