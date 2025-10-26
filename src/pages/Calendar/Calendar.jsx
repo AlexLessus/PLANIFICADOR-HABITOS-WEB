@@ -4,7 +4,6 @@ import {
     Typography,
     Box,
     Button,
-    Modal,
     TextField,
     Dialog,
     DialogTitle,
@@ -15,8 +14,14 @@ import {
     ToggleButtonGroup,
     ToggleButton,
     Alert,
-    CircularProgress
+    CircularProgress,
+    IconButton,
+    List,
+    Card,
+    CardContent
 } from '@mui/material';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import EditIcon from '@mui/icons-material/Edit';
 import CssBaseline from '@mui/material/CssBaseline';
 
 // --- Layout y Tema ---
@@ -24,6 +29,9 @@ import MainLayout from '../../globalComponents/MainLayout';
 import Header from '../../globalComponents/Header';
 import AppTheme from '../../shared-theme/AppTheme';
 import { chartsCustomizations, dataGridCustomizations, datePickersCustomizations, treeViewCustomizations } from '../DashboardPage/theme/customizations';
+
+// --- Componentes del Calendario ---
+import EditTaskModal from './components/EditTaskModal';
 
 // --- Componentes de FullCalendar ---
 import FullCalendar from '@fullcalendar/react';
@@ -44,8 +52,8 @@ const COLORS = {
         media: '#ff9800',   // Naranja
         baja: '#2196f3'     // Azul
     },
-    taskCompleted: '#9e9e9e', // Gris para tareas completadas
-    habit: '#4caf50'     // Verde para hábitos
+    taskCompleted: '#31dd1eff', // Gris para tareas completadas
+    habit: '#1de0e7ff'     // Verde para hábitos
 };
 
 // Estilo para el modal
@@ -55,7 +63,7 @@ const modalStyle = {
     left: '50%',
     transform: 'translate(-50%, -50%)',
     width: 400,
-    bgcolor: 'background.paper',
+    bgcolor: '#5c5a5a72',
     borderRadius: 2,
     boxShadow: 24,
     p: 4,
@@ -65,11 +73,27 @@ const modalStyle = {
 function CalendarPage(props) {
     const [events, setEvents] = useState([]);
     const [openModal, setOpenModal] = useState(false);
+    const [openEditModal, setOpenEditModal] = useState(false);
     const [selectedDate, setSelectedDate] = useState(null);
     const [newTaskTitle, setNewTaskTitle] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [filter, setFilter] = useState('all'); // 'all', 'tasks', 'habits'
+    
+    // Estado para la tarea en edición
+    const [editingTask, setEditingTask] = useState({
+        id: null,
+        title: '',
+        description: '',
+        priority: 'Media',
+        due_date: null,
+        status: 'Pendiente'
+    });
+    
+    // Estado para vista de día completo
+    const [openDayViewModal, setOpenDayViewModal] = useState(false);
+    const [selectedDayTasks, setSelectedDayTasks] = useState([]);
+    const [selectedDayDate, setSelectedDayDate] = useState(null);
 
     // --- Funciones de Transformación de Datos ---
     const getTaskColor = (priority, status) => {
@@ -129,7 +153,15 @@ function CalendarPage(props) {
                 headers: getAuthHeaders()
             });
             
-            if (!tasksRes.ok) throw new Error('Error al cargar tareas');
+            if (tasksRes.status === 401 || tasksRes.status === 403) {
+                setError('Sesión expirada. Por favor, inicia sesión nuevamente.');
+                setLoading(false);
+                return;
+            }
+            
+            if (!tasksRes.ok) {
+                throw new Error(`Error al cargar tareas: ${tasksRes.status}`);
+            }
             const tasks = await tasksRes.json();
 
             // 2. Obtener hábitos completados
@@ -137,7 +169,20 @@ function CalendarPage(props) {
                 headers: getAuthHeaders()
             });
             
-            if (!habitsRes.ok) throw new Error('Error al cargar hábitos');
+            if (habitsRes.status === 401 || habitsRes.status === 403) {
+                setError('Sesión expirada. Por favor, inicia sesión nuevamente.');
+                setLoading(false);
+                return;
+            }
+            
+            if (!habitsRes.ok) {
+                console.warn('No se pudieron cargar los hábitos completados');
+                // Continuar solo con tareas si los hábitos fallan
+                const taskEvents = transformTasksToEvents(tasks);
+                setEvents(taskEvents);
+                setLoading(false);
+                return;
+            }
             const habitCompletions = await habitsRes.json();
 
             // 3. Transformar a formato FullCalendar
@@ -147,7 +192,7 @@ function CalendarPage(props) {
             setEvents([...taskEvents, ...habitEvents]);
         } catch (err) {
             console.error('Error cargando datos del calendario:', err);
-            setError(err.message);
+            setError(err.message || 'Error al cargar los datos del calendario');
         } finally {
             setLoading(false);
         }
@@ -159,24 +204,52 @@ function CalendarPage(props) {
 
     // --- Manejadores de Eventos del Calendario ---
     const handleDateClick = (arg) => {
-        setSelectedDate(arg.dateStr);
-        setOpenModal(true);
+        console.log('=== DEBUG handleDateClick ===');
+        console.log('Fecha clickeada:', arg.dateStr);
+        console.log('Total eventos:', events.length);
+        
+        // Obtener todas las tareas de ese día
+        const tasksForDay = events.filter(event => {
+            // Extraer solo la parte de fecha (YYYY-MM-DD) del evento
+            const eventDate = event.date ? event.date.split('T')[0] : null;
+            console.log('Comparando:', eventDate, '===', arg.dateStr, '?', eventDate === arg.dateStr);
+            return eventDate === arg.dateStr && event.extendedProps?.type === 'task';
+        });
+        
+        console.log('Tareas encontradas para', arg.dateStr, ':', tasksForDay.length);
+        console.log('Tareas:', tasksForDay);
+        
+        if (tasksForDay.length >= 2) {
+            // Si hay 2 o más tareas, mostrar vista de día completo
+            console.log('✅ Abriendo modal de vista diaria');
+            setSelectedDayTasks(tasksForDay);
+            setSelectedDayDate(arg.dateStr);
+            setOpenDayViewModal(true);
+        } else {
+            // Si hay 0 o 1 tarea, abrir modal de añadir rápida
+            console.log('📝 Abriendo modal de añadir rápida');
+            setSelectedDate(arg.dateStr);
+            setOpenModal(true);
+        }
     };
 
     const handleEventClick = (clickInfo) => {
-        const { type, priority, status, description, time, location } = clickInfo.event.extendedProps;
+        const { type, taskId, priority, status, description, time, location } = clickInfo.event.extendedProps;
         
         if (type === 'task') {
-            const details = [
-                `📋 Tarea: ${clickInfo.event.title}`,
-                `📅 Fecha: ${clickInfo.event.start.toLocaleDateString('es-ES')}`,
-                `⚡ Prioridad: ${priority}`,
-                `📊 Estado: ${status}`,
-                description ? `📝 Descripción: ${description}` : ''
-            ].filter(Boolean).join('\n');
-            
-            alert(details);
+            // Abrir modal de edición para tareas
+            const dateStr = clickInfo.event.start.toISOString().split('T')[0];
+            setEditingTask({
+                id: taskId,
+                title: clickInfo.event.title.replace('✓ ', ''),
+                description: description || '',
+                priority: priority,
+                due_date: new Date(dateStr),
+                status: status
+            });
+            setOpenEditModal(true);
         } else if (type === 'habit') {
+            // Mostrar información del hábito (solo lectura)
             const details = [
                 `✅ Hábito completado: ${clickInfo.event.title.replace('✓ ', '')}`,
                 `📅 Fecha: ${clickInfo.event.start.toLocaleDateString('es-ES')}`,
@@ -225,6 +298,114 @@ function CalendarPage(props) {
         }
     };
 
+    // --- Lógica del Modal de Edición ---
+    const handleCloseEditModal = () => {
+        setOpenEditModal(false);
+        setEditingTask({
+            id: null,
+            title: '',
+            description: '',
+            priority: 'Media',
+            due_date: null,
+            status: 'Pendiente'
+        });
+    };
+
+    const handleEditTaskChange = (e) => {
+        setEditingTask(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    };
+
+    const handleEditDateChange = (newDate) => {
+        setEditingTask(prev => ({ ...prev, due_date: newDate }));
+    };
+
+    const handleUpdateTask = async () => {
+        if (!editingTask.title.trim()) {
+            alert('El título de la tarea es obligatorio');
+            return;
+        }
+
+        try {
+            const dueDateString = editingTask.due_date instanceof Date && !isNaN(editingTask.due_date)
+                ? editingTask.due_date.toISOString().split('T')[0]
+                : null;
+
+            const response = await fetch(`http://localhost:5000/api/tasks/${editingTask.id}`, {
+                method: 'PUT',
+                headers: {
+                    ...getAuthHeaders(),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    title: editingTask.title,
+                    description: editingTask.description,
+                    priority: editingTask.priority,
+                    due_date: dueDateString,
+                    status: editingTask.status
+                })
+            });
+
+            if (!response.ok) throw new Error('Error al actualizar la tarea');
+            
+            // Recargar eventos del calendario
+            await fetchCalendarData();
+            handleCloseEditModal();
+        } catch (err) {
+            console.error('Error al actualizar tarea:', err);
+            alert('Error al actualizar la tarea. Inténtalo de nuevo.');
+        }
+    };
+
+    const handleDeleteTask = async () => {
+        if (!window.confirm('¿Estás seguro de que deseas eliminar esta tarea?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:5000/api/tasks/${editingTask.id}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders()
+            });
+
+            if (!response.ok) throw new Error('Error al eliminar la tarea');
+            
+            // Recargar eventos del calendario
+            await fetchCalendarData();
+            handleCloseEditModal();
+        } catch (err) {
+            console.error('Error al eliminar tarea:', err);
+            alert('Error al eliminar la tarea. Inténtalo de nuevo.');
+        }
+    };
+
+    // --- Lógica del Modal de Vista Diaria ---
+    const handleCloseDayViewModal = () => {
+        setOpenDayViewModal(false);
+        setSelectedDayTasks([]);
+        setSelectedDayDate(null);
+    };
+
+    const handleOpenTaskFromDayView = (task) => {
+        // Cerrar modal de vista diaria y abrir modal de edición
+        handleCloseDayViewModal();
+        setEditingTask({
+            id: task.extendedProps.taskId,
+            title: task.title.replace('✓ ', ''),
+            description: task.extendedProps.description || '',
+            priority: task.extendedProps.priority,
+            due_date: new Date(task.date),
+            status: task.extendedProps.status
+        });
+        setOpenEditModal(true);
+    };
+
+    const handleAddTaskFromDayView = () => {
+        // Cerrar modal de vista diaria y abrir modal de añadir
+        handleCloseDayViewModal();
+        setSelectedDate(selectedDayDate);
+        setOpenModal(true);
+    };
+
     // --- Filtrado de Eventos ---
     const filteredEvents = events.filter(event => {
         if (filter === 'all') return true;
@@ -236,10 +417,18 @@ function CalendarPage(props) {
     return (
         <AppTheme {...props} themeComponents={xThemeComponents}>
             <CssBaseline enableColorScheme />
-            <Header />
             <Box sx={{ display: 'flex' }}>
                 <MainLayout />
-                <Container maxWidth="xl" sx={{ marginTop: 0, flexGrow: 1, padding: 3 }}>
+                <Box
+                    component="main"
+                    sx={{
+                        flexGrow: 1,
+                        backgroundColor: 'background.default',
+                        overflow: 'auto',
+                    }}
+                >
+                    <Header />
+                    <Container maxWidth="xl" sx={{ pt: 2, pb: 3 }}>
                     <Typography variant="h4" component="h1" gutterBottom>
                         Calendario
                     </Typography>
@@ -284,10 +473,8 @@ function CalendarPage(props) {
                     ) : (
                     <Paper sx={{ p: 2 }}>
                         <FullCalendar
-                            // CAMBIO 1: Elimina 'materialV5Plugin' del arreglo
                             plugins={[dayGridPlugin, interactionPlugin]}
                             initialView="dayGridMonth"
-                            // CAMBIO 2: Cambia 'material-v5' a simplemente 'material'
                             themeSystem="material"
                             headerToolbar={{
                                 left: 'prev,next today',
@@ -304,6 +491,13 @@ function CalendarPage(props) {
                                 week: 'Semana',
                             }}
                             height="80vh"
+                            // Limitar eventos mostrados por día
+                            dayMaxEvents={2}
+                            moreLinkClick="popover"
+                            moreLinkText={(num) => `+${num} más`}
+                            // Mejorar visualización
+                            eventDisplay="block"
+                            displayEventTime={false}
                         />
                     </Paper>
                     )}
@@ -331,7 +525,152 @@ function CalendarPage(props) {
                             <Button onClick={handleAddTask} variant="contained">Añadir</Button>
                         </DialogActions>
                     </Dialog>
+
+                    {/* Modal para editar tarea */}
+                    <EditTaskModal
+                        open={openEditModal}
+                        onClose={handleCloseEditModal}
+                        task={editingTask}
+                        onTaskChange={handleEditTaskChange}
+                        onDateChange={handleEditDateChange}
+                        onUpdate={handleUpdateTask}
+                        onDelete={handleDeleteTask}
+                    />
+
+                    {/* Modal de Vista Diaria - Muestra todas las tareas del día */}
+                    <Dialog 
+                        open={openDayViewModal} 
+                        onClose={handleCloseDayViewModal}
+                        maxWidth="md"
+                        fullWidth
+                    >
+                        <DialogTitle>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <Box>
+                                    <Typography variant="h6">
+                                        📅 Tareas del {selectedDayDate && new Date(selectedDayDate + 'T00:00:00').toLocaleDateString('es-ES', { 
+                                            weekday: 'long', 
+                                            year: 'numeric', 
+                                            month: 'long', 
+                                            day: 'numeric' 
+                                        })}
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary">
+                                        {selectedDayTasks.length} {selectedDayTasks.length === 1 ? 'tarea' : 'tareas'}
+                                    </Typography>
+                                </Box>
+                                <Button 
+                                    variant="contained" 
+                                    size="small"
+                                    onClick={handleAddTaskFromDayView}
+                                    startIcon={<AddCircleIcon />}
+                                >
+                                    Nueva Tarea
+                                </Button>
+                            </Box>
+                        </DialogTitle>
+                        <DialogContent dividers>
+                            <List>
+                                {selectedDayTasks.map((task, index) => (
+                                    <Card 
+                                        key={task.id} 
+                                        sx={{ 
+                                            mb: 1.5,
+                                            cursor: 'pointer',
+                                            '&:hover': {
+                                                boxShadow: 3,
+                                                transform: 'translateY(-2px)',
+                                                transition: 'all 0.2s'
+                                            }
+                                        }}
+                                        onClick={() => handleOpenTaskFromDayView(task)}
+                                    >
+                                        <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, '&:last-child': { pb: 2 } }}>
+                                            {/* Indicador de color por prioridad */}
+                                            <Box 
+                                                sx={{ 
+                                                    width: 4, 
+                                                    height: 40, 
+                                                    bgcolor: task.color,
+                                                    borderRadius: 1
+                                                }} 
+                                            />
+                                            
+                                            {/* Contenido de la tarea */}
+                                            <Box sx={{ flexGrow: 1 }}>
+                                                <Typography 
+                                                    variant="body1" 
+                                                    fontWeight="bold"
+                                                    sx={{ 
+                                                        textDecoration: task.extendedProps.status === 'Completada' ? 'line-through' : 'none'
+                                                    }}
+                                                >
+                                                    {task.title}
+                                                </Typography>
+                                                {task.extendedProps.description && (
+                                                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                                                        {task.extendedProps.description}
+                                                    </Typography>
+                                                )}
+                                            </Box>
+
+                                            {/* Chips de estado y prioridad */}
+                                            <Box sx={{ display: 'flex', gap: 1, flexShrink: 0 }}>
+                                                <Chip 
+                                                    label={task.extendedProps.priority} 
+                                                    size="small"
+                                                    sx={{ 
+                                                        bgcolor: task.color,
+                                                        color: 'white',
+                                                        fontWeight: 'bold'
+                                                    }}
+                                                />
+                                                {task.extendedProps.status === 'Completada' && (
+                                                    <Chip 
+                                                        label="✓ Completada" 
+                                                        size="small"
+                                                        color="success"
+                                                        variant="outlined"
+                                                    />
+                                                )}
+                                            </Box>
+
+                                            {/* Ícono de editar */}
+                                            <IconButton 
+                                                size="small"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleOpenTaskFromDayView(task);
+                                                }}
+                                            >
+                                                <EditIcon fontSize="small" />
+                                            </IconButton>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </List>
+
+                            {selectedDayTasks.length === 0 && (
+                                <Box sx={{ textAlign: 'center', py: 4 }}>
+                                    <Typography variant="body1" color="text.secondary">
+                                        No hay tareas para este día
+                                    </Typography>
+                                    <Button 
+                                        variant="outlined" 
+                                        sx={{ mt: 2 }}
+                                        onClick={handleAddTaskFromDayView}
+                                    >
+                                        Añadir Primera Tarea
+                                    </Button>
+                                </Box>
+                            )}
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={handleCloseDayViewModal}>Cerrar</Button>
+                        </DialogActions>
+                    </Dialog>
                 </Container>
+                </Box>
             </Box>
         </AppTheme>
     );

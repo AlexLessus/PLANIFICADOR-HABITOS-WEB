@@ -1,11 +1,11 @@
 import * as React from 'react';
 import Stack from '@mui/material/Stack';
 import NotificationsRoundedIcon from '@mui/icons-material/NotificationsRounded';
-import CustomDatePicker from '../pages/DashboardPage/components/CustomDatePicker';
-import NavbarBreadcrumbs from './NavbarBreadcrumbs';
+import DynamicBreadcrumbs from './DynamicBreadcrumbs';
 import ColorModeIconDropdown from '../shared-theme/ColorModeIconDropdown';
 import MenuButton from './MenuButton';
-import Search from '../pages/DashboardPage/components/Search';
+import SearchBar from './SearchBar';
+import NotificationsPanel from './NotificationsPanel';
 
 export default function Header() {
   return (
@@ -21,13 +21,10 @@ export default function Header() {
       }}
       spacing={2}
     >
-      <NavbarBreadcrumbs />
+      <DynamicBreadcrumbs />
       <Stack direction="row" sx={{ gap: 1 }}>
-        <Search />
-        <CustomDatePicker />
-        <MenuButton showBadge aria-label="Open notifications">
-          <NotificationsRoundedIcon />
-        </MenuButton>
+        <SearchBar />
+        <NotificationsPanel />
         <ColorModeIconDropdown />
       </Stack>
     </Stack>

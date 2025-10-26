@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
     Container, Typography, Box, IconButton, Card, CardContent,
     TextField, List, Checkbox, ListItemText, Chip, Modal,
@@ -44,6 +45,7 @@ const priorityColors = {
 };
 
 function TasksPage(props) {
+    const location = useLocation();
     // --- Estados del Componente ---
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -61,6 +63,15 @@ function TasksPage(props) {
         due_date: null, // null para la fecha
         status: 'Pendiente',
     });
+
+    // --- Detectar si viene de búsqueda y abrir modal ---
+    useEffect(() => {
+        if (location.state?.openEditModal && location.state?.task) {
+            handleOpenModal(location.state.task);
+            // Limpiar el state para que no se abra de nuevo al recargar
+            window.history.replaceState({}, document.title);
+        }
+    }, [location]);
 
     // --- Carga de Datos Inicial (GET) ---
     useEffect(() => {

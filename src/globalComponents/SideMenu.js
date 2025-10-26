@@ -29,6 +29,30 @@ const Drawer = styled(MuiDrawer)({
   },
 });
 
+// Función para obtener iniciales del nombre
+const getInitials = (firstName, lastName) => {
+  const first = firstName ? firstName.charAt(0).toUpperCase() : '';
+  const last = lastName ? lastName.charAt(0).toUpperCase() : '';
+  return `${first}${last}` || '?';
+};
+
+// Función para generar color basado en el nombre
+const getAvatarColor = (name) => {
+  const colors = [
+    '#f44336', '#e91e63', '#9c27b0', '#673ab7',
+    '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4',
+    '#009688', '#4caf50', '#8bc34a', '#cddc39',
+    '#ff9800', '#ff5722', '#795548', '#607d8b'
+  ];
+  
+  if (!name) return colors[0];
+  
+  // Generar índice basado en el código del primer carácter
+  const charCode = name.charCodeAt(0);
+  const index = charCode % colors.length;
+  return colors[index];
+};
+
 export default function SideMenu() {
   // 1. Usa el hook useContext para acceder al estado global de autenticación
   const { currentUser, logout } = useContext(AuthContext);
@@ -88,10 +112,16 @@ export default function SideMenu() {
       >
         <Avatar
           sizes="big"
-          alt="Tigre Valerio"
-          src="/static/images/avatar/1.jpg"
-          sx={{ width: 36, height: 36 }}
-        />
+          alt={currentUser.first_name}
+          sx={{ 
+            width: 36, 
+            height: 36,
+            bgcolor: getAvatarColor(currentUser.first_name),
+            fontWeight: 'bold'
+          }}
+        >
+          {getInitials(currentUser.first_name, currentUser.last_name)}
+        </Avatar>
         <Box sx={{ mr: 'auto' }}>
           <Tooltip title={currentUser.email}>
             <Typography

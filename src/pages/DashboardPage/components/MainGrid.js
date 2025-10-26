@@ -13,6 +13,22 @@ import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 import HighlightedCard from './HighlightedCard';
 
+// Importar las nuevas tarjetas de estadísticas
+import TasksTodayCard from './stats/TasksTodayCard';
+import ActiveHabitsCard from './stats/ActiveHabitsCard';
+import CurrentStreakCard from './stats/CurrentStreakCard';
+import NextTaskCard from './stats/NextTaskCard';
+
+// Importar componentes de tareas
+import UpcomingTasksList from './tasks/UpcomingTasksList';
+
+// Importar componentes de hábitos
+import TodayHabitsPanel from './habits/TodayHabitsPanel';
+import HabitsProgressChart from './habits/HabitsProgressChart';
+
+// Importar componentes de estadísticas
+import MonthlyStats from './statistics/MonthlyStats';
+
 // const data = [
 //   {
 //     title: 'Users',
@@ -53,51 +69,43 @@ export default function MainGrid() {
       <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
         Resumen
       </Typography>
-      <Grid container spacing={1} >
-        <Grid size={8} sx={{ overflow: 'auto', mb: 4, maxHeight: 300 }}>
-          <Grid container spacing={2} columns={12} sx={{ mb: 2 }}>
-            <Grid size={6} item xs={12} sm={6} md={4}>
-              <HighlightedCard />
-            </Grid>
-            <Grid size={6} item xs={12} sm={6} md={4}>
-              <HighlightedCard />
-            </Grid>
-            <Grid size={6} item xs={12} sm={6} md={4}>
-              <HighlightedCard />
-            </Grid>
-            <Grid size={6} item xs={12} sm={6} md={4}>
-              <HighlightedCard />
-            </Grid>
-          </Grid>
-
+      <Grid container spacing={2} >
+        {/* Tarjetas de estadísticas */}
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <TasksTodayCard />
         </Grid>
-        <Grid size={4}>
-          <List
-            sx={{
-              width: '100%',
-              maxWidth: 360,
-              bgcolor: 'background.paper',
-              position: 'relative',
-              overflow: 'auto',
-              maxHeight: 300,
-              '& ul': { padding: 0 },
-            }}
-            subheader={<li />}
-          >
-            {["Matemáticas", "Ciencias", "Historia"].map((sectionId) => (
-              <li key={`section-${sectionId}`}>
-                <ul>
-                  <ListSubheader>{`Materia: ${sectionId}`}</ListSubheader>
-                  {[0, 1, 2].map((item) => (
-                    <ListItem key={`Tarea-${sectionId}-${item}`}>
-                      <ListItemText primary={`Tarea ${item}`} />
-                    </ListItem>
-                  ))}
-                </ul>
-              </li>
-            ))}
-          </List>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <ActiveHabitsCard />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <CurrentStreakCard />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <NextTaskCard />
+        </Grid>
+      </Grid>
 
+      {/* Sección de tareas y hábitos */}
+      <Grid container spacing={2} sx={{ mt: 2 }}>
+        <Grid size={{ xs: 12, md: 8 }}>
+          {/* Lista de tareas próximas */}
+          <UpcomingTasksList />
+        </Grid>
+        <Grid size={{ xs: 12, md: 4 }}>
+          {/* Panel de hábitos de hoy */}
+          <TodayHabitsPanel />
+        </Grid>
+      </Grid>
+
+      {/* Sección de gráficos y estadísticas */}
+      <Grid container spacing={2} sx={{ mt: 2 }}>
+        <Grid size={{ xs: 12, md: 8 }}>
+          {/* Gráfico de progreso de hábitos */}
+          <HabitsProgressChart />
+        </Grid>
+        <Grid size={{ xs: 12, md: 4 }}>
+          {/* Estadísticas mensuales */}
+          <MonthlyStats />
         </Grid>
       </Grid>
 
