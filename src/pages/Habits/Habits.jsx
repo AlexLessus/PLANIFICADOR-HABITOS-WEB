@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
     Container, Typography, Fab, List, Card, CardContent, Chip,
     IconButton, Modal, TextField, Button
@@ -47,6 +48,7 @@ const modalStyle = {
 };
 
 function HabitsPage(props) {
+    const location = useLocation();
     const [habits, setHabits] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -54,6 +56,15 @@ function HabitsPage(props) {
     const [openModal, setOpenModal] = useState(false);
     // Aseguramos que los nuevos campos estén presentes en el estado
     const [currentHabit, setCurrentHabit] = useState({ id: null, title: '', streak: 0, lastCompleted: null, time: '', location: '' });
+
+    // --- Detectar si viene de búsqueda y abrir modal ---
+    useEffect(() => {
+        if (location.state?.openEditModal && location.state?.habit) {
+            handleOpenModal(location.state.habit);
+            // Limpiar el state para que no se abra de nuevo al recargar
+            window.history.replaceState({}, document.title);
+        }
+    }, [location]);
 
     // --- Lógica para cargar hábitos (Fetch) ---
     useEffect(() => {
@@ -233,7 +244,6 @@ const isStreakInDanger = (habit) => {
     return (
         <AppTheme {...props} themeComponents={xThemeComponents}>
             <CssBaseline enableColorScheme />
-            <Header />
             <Box sx={{ display: 'flex' }}>
                 <MainLayout />
                 <Box
@@ -242,10 +252,10 @@ const isStreakInDanger = (habit) => {
                         flexGrow: 1,
                         backgroundColor: theme.vars ? `rgba(${theme.vars.palette.background.defaultChannel} / 1)` : alpha(theme.palette.background.default, 1),
                         overflow: 'auto',
-                        height: '100vh',
                     })}
                 >
-                    <Container maxWidth="lg" sx={{ pt: 5, pb: 5 }}>
+                    <Header />
+                    <Container maxWidth="lg" sx={{ pt: 2, pb: 5 }}>
                         <Typography variant="h4" component="h1" gutterBottom>
                             Mis Hábitos
                         </Typography>

@@ -19,6 +19,14 @@ const userModel = require('../models/userModel'); // Importa el modelo de usuari
 const jwt = require('jsonwebtoken');               // Importa jsonwebtoken
 require('dotenv').config();                        // Asegura que las variables de entorno estén cargadas
 const { OAuth2Client } = require('google-auth-library');
+const crypto = require('crypto');
+const sgMail = require('@sendgrid/mail');
+const handlebars = require('handlebars');
+const fs = require('fs');
+const path = require('path');
+
+// Configuración de SendGrid
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -67,7 +75,6 @@ const authController = {
 
         } catch (error) {
             console.error('Error en el registro:', error);
-            // Si el error es una violación de UNIQUE (por email, aunque ya lo chequeamos antes), podríamos ser más específicos.
             res.status(500).json({ message: 'Error interno del servidor durante el registro.', details: error.message });
         }
     },
@@ -80,26 +87,22 @@ const authController = {
     login: async (req, res) => {
         const { email, password } = req.body;
 
-        // Validación básica
         if (!email || !password) {
             return res.status(400).json({ message: 'El correo electrónico y la contraseña son obligatorios.' });
         }
 
         try {
-            // 1. Buscar el usuario por email
             const userRows = await userModel.findByEmail(email);
             if (userRows.length === 0) {
                 return res.status(401).json({ message: 'Credenciales inválidas.' });
             }
-            const user = userRows[0]; // El usuario encontrado
+            const user = userRows[0];
 
-            // 2. Comparar la contraseña proporcionada con el hash almacenado
             const isMatch = await userModel.comparePassword(password, user.password_hash);
             if (!isMatch) {
                 return res.status(401).json({ message: 'Credenciales inválidas.' });
             }
 
-            // 3. Generar un token JWT si las credenciales son correctas
             const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
 
             res.status(200).json({
@@ -134,9 +137,6 @@ const authController = {
             if (userRows.length > 0) {
                 user = userRows[0];
             } else {
-                // User does not exist, create a new one
-                // Note: You might want to handle the case where a user signs up with Google
-                // but the email is already taken by a regular account.
                 const result = await userModel.create(name, '', email, 'google-provided');
                 user = { id: result.insertId, email, first_name: name, last_name: '' };
             }
@@ -159,6 +159,90 @@ const authController = {
             res.status(401).json({ message: 'Token de Google inválido.' });
         }
     },
+
+    forgotPassword: async (req, res) => {
+        const { email } = req.body;
+        try {
+            const userRows = await userModel.findByEmail(email);
+            if (userRows.length === 0) {
+                return res.status(404).json({ message: 'No se encontró un usuario con ese correo electrónico.' });
+            }
+            const user = userRows[0];
+
+            const resetToken = crypto.randomBytes(32).toString('hex');
+            const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
+            const resetTokenExpires = new Date(Date.now() + 3600000); // 1 hora
+
+            await userModel.savePasswordResetToken(user.id, resetTokenHash, resetTokenExpires);
+
+            // El enlace debe apuntar a la ruta del frontend donde el usuario restablecerá su contraseña.
+            // Lo he cambiado a 'localhost:3000', pero ajústalo a la URL de tu frontend si es diferente.
+            const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
+            const emailTemplateSource = fs.readFileSync(path.join(__dirname, '../templates/passwordReset.hbs'), 'utf8');
+            const template = handlebars.compile(emailTemplateSource);
+            const htmlToSend = template({
+                name: user.first_name,
+                resetUrl: resetUrl
+            });
+
+            const msg = {
+                to: user.email,
+                from: 'equipotigretech@gmail.com', 
+                subject: 'Restablecimiento de contraseña',
+                html: htmlToSend,
+            };
+
+            await sgMail.send(msg);
+
+            res.status(200).json({ message: 'Se ha enviado un correo de restablecimiento de contraseña.' });
+
+        } catch (error) {
+            console.error('Error en forgotPassword:', error);
+            if (error.response) {
+                console.error(error.response.body)
+            }
+            res.status(500).json({ message: 'Error interno del servidor.' });
+        }
+    },
+
+    resetPassword: async (req, res) => {
+        const { token } = req.params;
+        const { password } = req.body;
+
+        const resetTokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+        try {
+            const userRows = await userModel.findUserByResetToken(resetTokenHash);
+            if (userRows.length === 0) {
+                return res.status(400).json({ message: 'El token de restablecimiento de contraseña es inválido o ha expirado.' });
+            }
+            const user = userRows[0];
+
+            await userModel.updateUserPassword(user.id, password);
+
+            res.status(200).json({ message: 'La contraseña ha sido actualizada exitosamente.' });
+        } catch (error) {
+            console.error('Error en resetPassword:', error);
+            res.status(500).json({ message: 'Error interno del servidor.' });
+        }
+    },
+
+    verifyResetToken: async (req, res) => {
+        const { token } = req.params;
+        const resetTokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+        try {
+            const userRows = await userModel.findUserByResetToken(resetTokenHash);
+            if (userRows.length === 0) {
+                return res.status(400).json({ message: 'El token de restablecimiento de contraseña es inválido o ha expirado.' });
+            }
+
+            res.status(200).json({ message: 'Token válido.' });
+        } catch (error) {
+            console.error('Error en verifyResetToken:', error);
+            res.status(500).json({ message: 'Error interno del servidor.' });
+        }
+    },
 };
 
-module.exports = authController; // Exporta el controlador
+module.exports = authController;

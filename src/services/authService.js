@@ -6,7 +6,7 @@
  * 2. **Almacenar/eliminar el token JWT en el localStorage bajo la clave 'token'.**
  * 3. Proveer funciones de utilidad para la gestión de la sesión del usuario.
  * * @author Gustavo
- * @version 1.0.1
+ * @version 1.0.2
  * @module services/authService
  */
 
@@ -29,16 +29,14 @@ const register = async (userData) => {
 
         const data = await response.json();
 
-        // Si la respuesta no es exitosa (ej. status 400, 500), lanzamos un error
         if (!response.ok) {
             throw new Error(data.message || 'Error en el registro');
         }
 
-        // Si el registro es exitoso, devolvemos los datos
         return data;
     } catch (error) {
         console.error('Error al registrar usuario:', error);
-        throw error; // Propagamos el error para que el componente lo pueda manejar
+        throw error;
     }
 };
 
@@ -62,13 +60,15 @@ const login = async (credentials) => {
             throw new Error(data.message || 'Credenciales inválidas');
         }
 
-        // Guardamos el token en el almacenamiento local del navegador
-        // Esto permite que el usuario permanezca logueado incluso si cierra la pestaña
         if (data.token) {
             localStorage.setItem('token', data.token);
         }
 
-        // Devolvemos los datos del usuario logueado
+        // Guardar datos del usuario en localStorage
+        if (data.user) {
+            localStorage.setItem('user', JSON.stringify(data.user));
+        }
+
         return data;
     } catch (error) {
         console.error('Error al iniciar sesión:', error);
@@ -100,6 +100,11 @@ const googleLogin = async (tokenData) => {
             localStorage.setItem('token', data.token);
         }
 
+        // Guardar datos del usuario en localStorage
+        if (data.user) {
+            localStorage.setItem('user', JSON.stringify(data.user));
+        }
+
         return data;
     } catch (error) {
         console.error('Error al iniciar sesión con Google:', error);
@@ -108,11 +113,64 @@ const googleLogin = async (tokenData) => {
 };
 
 /**
+ * Solicita un enlace para restablecer la contraseña.
+ * @param {object} email - El correo del usuario.
+ */
+const forgotPassword = async (email) => {
+    const response = await fetch(`${API_URL}/forgot-password`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(email),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.message || 'Error al solicitar el restablecimiento de contraseña');
+    }
+    return data;
+};
+
+/**
+ * Restablece la contraseña usando un token.
+ * @param {string} token - El token de restablecimiento de la URL.
+ * @param {object} password - El nuevo objeto de contraseña.
+ */
+const resetPassword = async (token, password) => {
+    const response = await fetch(`${API_URL}/reset-password/${token}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(password),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.message || 'Error al restablecer la contraseña');
+    }
+    return data;
+};
+
+/**
+ * Verifica si un token de restablecimiento es válido.
+ * @param {string} token - El token de restablecimiento de la URL.
+ */
+const verifyResetToken = async (token) => {
+    const response = await fetch(`${API_URL}/verify-reset-token/${token}`);
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.message || 'Token inválido o expirado');
+    }
+    return data;
+};
+
+
+/**
  * Función para cerrar sesión.
- * Simplemente elimina el token del almacenamiento local.
  */
 const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
 };
 
 /**
@@ -129,6 +187,9 @@ const authService = {
     googleLogin,
     logout,
     getCurrentUser,
+    forgotPassword, 
+    resetPassword,
+    verifyResetToken,
 };
 
 export default authService;

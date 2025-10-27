@@ -57,7 +57,33 @@ const STREAK_QUERY_VARS_SINGLE = `
 
 // NOTA: Se ha ELIMINADO la función getStreakData para evitar problemas de conexión.
 
-// 1. GET /api/habits - Obtener todos los hábitos del usuario con racha y última finalización
+// 1. GET /api/habits/completions - Obtener todas las fechas de completado de hábitos del usuario
+// IMPORTANTE: Este endpoint debe estar ANTES de cualquier ruta con parámetros dinámicos (:id)
+router.get('/completions', authenticateToken, async (req, res) => {
+    const { id: userId } = req.user;
+    
+    try {
+        const [completions] = await pool.query(`
+            SELECT 
+                hc.habit_id,
+                hc.completion_date,
+                h.title,
+                h.time,
+                h.location
+            FROM habit_completions hc
+            JOIN habits h ON h.id = hc.habit_id
+            WHERE h.user_id = ?
+            ORDER BY hc.completion_date DESC
+        `, [userId]);
+        
+        res.json(completions);
+    } catch (err) {
+        console.error("Error al obtener completados de hábitos:", err);
+        res.status(500).send('Error al obtener completados');
+    }
+});
+
+// 2. GET /api/habits - Obtener todos los hábitos del usuario con racha y última finalización
 router.get('/', authenticateToken, async (req, res) => {
     const { id: userId } = req.user;
     // Eliminado: let connection;
@@ -101,7 +127,7 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 
-// 2. POST /api/habits - Crear un nuevo hábito (Sin Cambios en la lógica)
+// 3. POST /api/habits - Crear un nuevo hábito (Sin Cambios en la lógica)
 router.post('/', authenticateToken, async (req, res) => {
     const { id: userId } = req.user;
     const { title, time, location } = req.body;
@@ -126,7 +152,7 @@ router.post('/', authenticateToken, async (req, res) => {
     }
 });
 
-// 3. PUT /api/habits/:id - Actualizar un hábito (Sin Cambios)
+// 4. PUT /api/habits/:id - Actualizar un hábito (Sin Cambios)
 router.put('/:id', authenticateToken, async (req, res) => {
     const { id: userId } = req.user;
     const { id } = req.params;
@@ -150,7 +176,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// 4. DELETE /api/habits/:id - Eliminar un hábito (Sin Cambios)
+// 5. DELETE /api/habits/:id - Eliminar un hábito (Sin Cambios)
 router.delete('/:id', authenticateToken, async (req, res) => {
     const { id: userId } = req.user;
     const { id } = req.params;
@@ -167,7 +193,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// 5. POST /api/habits/:id/checkin - Registrar una finalización de hábito y calcular racha
+// 6. POST /api/habits/:id/checkin - Registrar una finalización de hábito y calcular racha
 router.post('/:id/checkin', authenticateToken, async (req, res) => {
     const { id: userId } = req.user;
     const { id: habitId } = req.params;

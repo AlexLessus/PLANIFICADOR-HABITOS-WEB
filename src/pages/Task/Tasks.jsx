@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
     Container, Typography, Box, IconButton, Card, CardContent,
     TextField, List, Checkbox, ListItemText, Chip, Modal,
@@ -44,6 +45,7 @@ const priorityColors = {
 };
 
 function TasksPage(props) {
+    const location = useLocation();
     // --- Estados del Componente ---
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -56,10 +58,20 @@ function TasksPage(props) {
     const [currentTask, setCurrentTask] = useState({
         id: null,
         title: '',
+        description: '',
         priority: 'Media',
         due_date: null, // null para la fecha
         status: 'Pendiente',
     });
+
+    // --- Detectar si viene de búsqueda y abrir modal ---
+    useEffect(() => {
+        if (location.state?.openEditModal && location.state?.task) {
+            handleOpenModal(location.state.task);
+            // Limpiar el state para que no se abra de nuevo al recargar
+            window.history.replaceState({}, document.title);
+        }
+    }, [location]);
 
     // --- Carga de Datos Inicial (GET) ---
     useEffect(() => {
@@ -97,9 +109,10 @@ function TasksPage(props) {
     // --- Lógica de Modales ---
     const handleOpenModal = (task = null) => {
         // Mapea los valores de la tarea existente o inicializa una nueva
-        setCurrentTask(task ? { ...task, due_date: task.due_date ? new Date(task.due_date) : null } : {
+        setCurrentTask(task ? { ...task, description: task.description || '', due_date: task.due_date ? new Date(task.due_date) : null } : {
             id: null,
             title: '',
+            description: '',
             priority: 'Media',
             due_date: null,
             status: 'Pendiente',
@@ -131,6 +144,7 @@ function TasksPage(props) {
 
             const payload = {
                 title: currentTask.title,
+                description: currentTask.description,
                 priority: currentTask.priority,
                 due_date: dueDateString,
                 status: currentTask.status, // Necesario para la actualización (PUT)
@@ -263,12 +277,12 @@ function TasksPage(props) {
                                 label="Añadir una nueva tarea..."
                                 value={newTaskTitle}
                                 onChange={(e) => setNewTaskTitle(e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && handleOpenModal({ title: newTaskTitle, status: 'Pendiente', priority: 'Media', due_date: null })}
+                                onKeyPress={(e) => e.key === 'Enter' && handleOpenModal({ title: newTaskTitle, description: '', status: 'Pendiente', priority: 'Media', due_date: null })}
                             />
                             <IconButton
                                 color="primary"
                                 sx={{ ml: 1 }}
-                                onClick={() => handleOpenModal({ title: newTaskTitle, status: 'Pendiente', priority: 'Media', due_date: null })}
+                                onClick={() => handleOpenModal({ title: newTaskTitle, description: '', status: 'Pendiente', priority: 'Media', due_date: null })}
                                 aria-label="Añadir Tarea"
                             >
                                 <AddCircleIcon sx={{ fontSize: '2rem' }} />
@@ -292,6 +306,7 @@ function TasksPage(props) {
                     </Box>
 
                     {/* Lista de Tareas */}
+
                     <List>
                         {filteredTasks.map(task => (
                             <Card key={task.id} sx={{ mb: 2 }}>
@@ -301,17 +316,55 @@ function TasksPage(props) {
                                         checked={task.status === 'Completada'}
                                         onChange={() => handleToggleTask(task)}
                                     />
-                                    <ListItemText
-                                        primary={task.title} // Cambiado de task.text a task.title
-                                        secondary={task.due_date ? `Vence: ${new Date(task.due_date).toLocaleDateString()}` : 'Sin fecha límite'}
-                                        sx={{ textDecoration: task.status === 'Completada' ? 'line-through' : 'none' }}
-                                    />
+
+                                    {/* 1. Contenedor del Título y Descripción (Flex-Grow) */}
+                                    <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+
+                                        {/* A. Título y Subtítulo (Fecha) */}
+                                        <ListItemText
+                                            primary={task.title}
+                                            secondary={task.due_date ? `Vence: ${new Date(task.due_date).toLocaleDateString()}` : 'Sin fecha límite'}
+                                            sx={{ textDecoration: task.status === 'Completada' ? 'line-through' : 'none', m: 0 }}
+                                            primaryTypographyProps={{
+                                                noWrap: true, // Para prevenir que el título también choque
+                                                variant: 'body1',
+                                                fontWeight: 'bold'
+                                            }}
+                                        />
+
+                                        {/* B. Descripción (Solo si existe) */}
+                                        {task.description && (
+                                            <Typography
+                                                variant="body2"
+                                                color="text.secondary"
+                                                // Quitamos todos los estilos de 'whiteSpace: nowrap' y 'textOverflow: ellipsis'
+                                                // para permitir que la descripción salte de línea.
+                                                sx={{
+                                                    mt: 0.5,
+                                                    ml: 0, // Ajuste para alineación con el título
+                                                    fontStyle: 'italic',
+                                                    // OPCIONAL: Puedes limitar las líneas a 2 o 3 si lo deseas:
+                                                    // display: '-webkit-box',
+                                                    // overflow: 'hidden',
+                                                    // WebkitBoxOrient: 'vertical',
+                                                    // WebkitLineClamp: 2, 
+                                                }}
+                                            >
+                                                {task.description}
+                                            </Typography>
+                                        )}
+                                    </Box>
+
+                                    {/* 2. Prioridad */}
                                     <Chip
                                         label={task.priority}
                                         color={priorityColors[task.priority.toLowerCase()] || 'default'}
                                         size="small"
+                                        sx={{ flexShrink: 0 }} // Para evitar que se comprima
                                     />
-                                    <Box>
+
+                                    {/* 3. Acciones */}
+                                    <Box sx={{ flexShrink: 0 }}>
                                         <IconButton size="small" onClick={() => handleOpenModal(task)}><EditIcon /></IconButton>
                                         <IconButton size="small" onClick={() => handleDeleteTask(task.id)}><DeleteIcon /></IconButton>
                                     </Box>
@@ -332,6 +385,17 @@ function TasksPage(props) {
                                     name="title" // Cambiado de "text" a "title"
                                     value={currentTask.title}
                                     onChange={handleModalChange}
+                                />
+
+                                <TextField
+                                    fullWidth
+                                    margin="normal"
+                                    label="Descripción (Opcional)"
+                                    name="description"
+                                    value={currentTask.description || ''}
+                                    onChange={handleModalChange}
+                                    multiline
+                                    rows={3}
                                 />
                                 <FormControl fullWidth margin="normal">
                                     <InputLabel>Prioridad</InputLabel>

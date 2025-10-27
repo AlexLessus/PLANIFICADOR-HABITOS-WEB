@@ -103,13 +103,21 @@ function Progress(props) {
     return (
         <AppTheme {...props} themeComponents={xThemeComponents}>
             <CssBaseline enableColorScheme />
-            <Header />
             <Box sx={{ display: 'flex' }}>
                 <MainLayout />
-                <Container maxWidth="lg" sx={{ marginTop: 0, flexGrow: 1, padding: 3 }}>
-                    <Typography variant="h4" component="h1" gutterBottom>
-                        Estadísticas y Reportes
-                    </Typography>
+                <Box
+                    component="main"
+                    sx={{
+                        flexGrow: 1,
+                        backgroundColor: 'background.default',
+                        overflow: 'auto',
+                    }}
+                >
+                    <Header />
+                    <Container maxWidth="lg" sx={{ pt: 2, pb: 3 }}>
+                        <Typography variant="h4" component="h1" gutterBottom>
+                            Estadísticas y Reportes
+                        </Typography>
 
                     {/* Filtros de Rango de Tiempo */}
                     <Box sx={{ marginBottom: 3 }}>
@@ -222,6 +230,7 @@ function Progress(props) {
                         </Grid>
                     </Grid>
                 </Container>
+                </Box>
             </Box>
         </AppTheme>
     );
