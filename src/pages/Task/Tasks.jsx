@@ -3,7 +3,9 @@ import { useLocation } from 'react-router-dom';
 import {
     Container, Typography, Box, IconButton, Card, CardContent,
     TextField, List, Checkbox, ListItemText, Chip, Modal,
-    Select, MenuItem, FormControl, InputLabel, ToggleButtonGroup, ToggleButton, Paper, Button
+    Select, MenuItem, FormControl, InputLabel, ToggleButtonGroup, ToggleButton, Paper, Button,
+    // Componentes nuevos para Recurrencia
+    FormControlLabel, Switch
 } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -44,6 +46,11 @@ const priorityColors = {
     baja: 'success',
 };
 
+// **Nuevas constantes para RF-05**
+const RECURRENCE_FREQUENCIES = [
+    'Diaria', 'Semanal', 'Mensual', 
+];
+
 function TasksPage(props) {
     const location = useLocation();
     // --- Estados del Componente ---
@@ -62,6 +69,10 @@ function TasksPage(props) {
         priority: 'Media',
         due_date: null, // null para la fecha
         status: 'Pendiente',
+        // --- Campos de Recurrencia (RF-05) ---
+        is_recurring: false,
+        frequency: 'Semanal', // Valor por defecto
+        recurrence_end_date: null, // null para fecha de fin opcional
     });
 
     // --- Detectar si viene de búsqueda y abrir modal ---
@@ -93,8 +104,14 @@ function TasksPage(props) {
                 }
                 const data = await response.json();
 
-                // Nota: Convertir 'title' a 'text' para compatibilidad con el código estático anterior (ahora lo cambiaremos)
-                setTasks(data); // Se espera que la BD devuelva los campos correctos (title, priority, etc.)
+                // Mapear datos, asegurando que los nuevos campos estén presentes para evitar errores
+                setTasks(data.map(t => ({
+                    ...t,
+                    is_recurring: !!t.is_recurring, // Asegurar boolean
+                    frequency: t.frequency || 'Semanal',
+                    recurrence_end_date: t.recurrence_end_date ? new Date(t.recurrence_end_date) : null
+                }))); 
+
                 setError(null);
             } catch (err) {
                 console.error(err);
@@ -108,15 +125,29 @@ function TasksPage(props) {
 
     // --- Lógica de Modales ---
     const handleOpenModal = (task = null) => {
-        // Mapea los valores de la tarea existente o inicializa una nueva
-        setCurrentTask(task ? { ...task, description: task.description || '', due_date: task.due_date ? new Date(task.due_date) : null } : {
+        const initialTask = task ? {
+            ...task,
+            description: task.description || '',
+            due_date: task.due_date ? new Date(task.due_date) : null,
+            // Mapeo de campos de recurrencia
+            is_recurring: !!task.is_recurring, 
+            frequency: task.frequency || 'Semanal',
+            recurrence_end_date: task.recurrence_end_date ? new Date(task.recurrence_end_date) : null,
+        } : {
             id: null,
-            title: '',
+            title: newTaskTitle || '', // Usa el título del TextField si existe
             description: '',
             priority: 'Media',
             due_date: null,
             status: 'Pendiente',
-        });
+            // Valores por defecto de recurrencia
+            is_recurring: false,
+            frequency: 'Semanal',
+            recurrence_end_date: null,
+        };
+        
+        setCurrentTask(initialTask);
+        setNewTaskTitle(''); // Limpiar el campo de entrada rápida
         setOpenModal(true);
     };
 
@@ -126,28 +157,49 @@ function TasksPage(props) {
     };
 
     const handleModalChange = (e) => {
-        setCurrentTask(prev => ({ ...prev, [e.target.name]: e.target.value }));
+        const { name, value, type, checked } = e.target;
+        // Manejar Switch/Checkbox
+        if (type === 'checkbox') {
+            setCurrentTask(prev => ({ ...prev, [name]: checked }));
+        } else {
+            setCurrentTask(prev => ({ ...prev, [name]: value }));
+        }
     };
 
     const handleDateChange = (newDate) => {
         setCurrentTask(prev => ({ ...prev, due_date: newDate }));
     };
 
+    // **Nuevo handler para la fecha de fin de recurrencia**
+    const handleRecurrenceEndDateChange = (newDate) => {
+        setCurrentTask(prev => ({ ...prev, recurrence_end_date: newDate }));
+    };
 
     // --- CRUD: POST y PUT (Guardar) ---
     const handleSaveTask = async () => {
         try {
-            // Prepara los datos (convertir la fecha a formato SQL AAAA-MM-DD)
-            const dueDateString = currentTask.due_date instanceof Date && !isNaN(currentTask.due_date)
-                ? currentTask.due_date.toISOString().split('T')[0]
-                : null;
-
+            // Helper para convertir Date a formato SQL AAAA-MM-DD
+            const dateToSql = (date) => (
+                date instanceof Date && !isNaN(date)
+                    ? date.toISOString().split('T')[0]
+                    : null
+            );
+            
+            // 1. Convertir fechas
+            const dueDateString = dateToSql(currentTask.due_date);
+            const recurrenceEndDateString = dateToSql(currentTask.recurrence_end_date);
+            
+            // 2. Crear Payload, incluyendo los campos de recurrencia
             const payload = {
                 title: currentTask.title,
                 description: currentTask.description,
                 priority: currentTask.priority,
                 due_date: dueDateString,
-                status: currentTask.status, // Necesario para la actualización (PUT)
+                status: currentTask.status, 
+                // --- Campos de Recurrencia ---
+                is_recurring: currentTask.is_recurring,
+                frequency: currentTask.frequency,
+                recurrence_end_date: currentTask.is_recurring ? recurrenceEndDateString : null,
             };
 
             const url = currentTask.id ? `/api/tasks/${currentTask.id}` : '/api/tasks';
@@ -167,9 +219,20 @@ function TasksPage(props) {
 
             // Actualiza el estado de las tareas
             if (currentTask.id) {
-                setTasks(tasks.map(t => t.id === savedTask.id ? savedTask : t));
+                // Asegurar que los datos de recurrencia se mantengan como booleans/Dates
+                const updatedTaskData = {
+                    ...savedTask,
+                    is_recurring: !!savedTask.is_recurring,
+                    recurrence_end_date: savedTask.recurrence_end_date ? new Date(savedTask.recurrence_end_date) : null
+                };
+                setTasks(tasks.map(t => t.id === updatedTaskData.id ? updatedTaskData : t));
             } else {
-                setTasks([...tasks, savedTask]);
+                const newTaskData = {
+                    ...savedTask,
+                    is_recurring: !!savedTask.is_recurring,
+                    recurrence_end_date: savedTask.recurrence_end_date ? new Date(savedTask.recurrence_end_date) : null
+                };
+                setTasks([...tasks, newTaskData]);
             }
 
             handleCloseModal();
@@ -248,10 +311,8 @@ function TasksPage(props) {
 
         return list;
     }, [tasks, filter]);
-    //Componente para carga 
-    if (loading) {
-        
-    }
+    
+    if (loading) {}
 
     if (error) {
         return <p>Error: {error}</p>;
@@ -277,11 +338,13 @@ function TasksPage(props) {
                                 label="Añadir una nueva tarea..."
                                 value={newTaskTitle}
                                 onChange={(e) => setNewTaskTitle(e.target.value)}
+                                // Usar el handler del modal con los valores iniciales
                                 onKeyPress={(e) => e.key === 'Enter' && handleOpenModal({ title: newTaskTitle, description: '', status: 'Pendiente', priority: 'Media', due_date: null })}
                             />
                             <IconButton
                                 color="primary"
                                 sx={{ ml: 1 }}
+                                // Usar el handler del modal con los valores iniciales
                                 onClick={() => handleOpenModal({ title: newTaskTitle, description: '', status: 'Pendiente', priority: 'Media', due_date: null })}
                                 aria-label="Añadir Tarea"
                             >
@@ -304,8 +367,6 @@ function TasksPage(props) {
                             <ToggleButton value="Completada">Completadas</ToggleButton>
                         </ToggleButtonGroup>
                     </Box>
-
-                    {/* Lista de Tareas */}
 
                     <List>
                         {filteredTasks.map(task => (
@@ -337,20 +398,20 @@ function TasksPage(props) {
                                             <Typography
                                                 variant="body2"
                                                 color="text.secondary"
-                                                // Quitamos todos los estilos de 'whiteSpace: nowrap' y 'textOverflow: ellipsis'
-                                                // para permitir que la descripción salte de línea.
                                                 sx={{
                                                     mt: 0.5,
-                                                    ml: 0, // Ajuste para alineación con el título
-                                                    fontStyle: 'italic',
-                                                    // OPCIONAL: Puedes limitar las líneas a 2 o 3 si lo deseas:
-                                                    // display: '-webkit-box',
-                                                    // overflow: 'hidden',
-                                                    // WebkitBoxOrient: 'vertical',
-                                                    // WebkitLineClamp: 2, 
+                                                    ml: 0,
+                               
                                                 }}
                                             >
                                                 {task.description}
+                                            </Typography>
+                                        )}
+
+                                        {/* C. Indicador de Recurrencia (NUEVO) */}
+                                        {task.is_recurring && (
+                                            <Typography variant="caption" color="primary" sx={{ mt: 0.2 }}>
+                                                🔁 Repite {task.frequency} ({task.recurrence_end_date ? `Fin: ${new Date(task.recurrence_end_date).toLocaleDateString()}` : 'Siempre'})
                                             </Typography>
                                         )}
                                     </Box>
@@ -377,12 +438,12 @@ function TasksPage(props) {
                     {currentTask && (
                         <Modal open={openModal} onClose={handleCloseModal}>
                             <Box sx={modalStyle}>
-                                <Typography variant="h6" component="h2">{currentTask.id ? 'Editar Tarea' : 'Añadir Nueva Tarea'}</Typography>
+                                <Typography variant="h6" component="h2" gutterBottom>{currentTask.id ? 'Editar Tarea' : 'Añadir Nueva Tarea'}</Typography>
                                 <TextField
                                     fullWidth
                                     margin="normal"
                                     label="Nombre de la Tarea"
-                                    name="title" // Cambiado de "text" a "title"
+                                    name="title"
                                     value={currentTask.title}
                                     onChange={handleModalChange}
                                 />
@@ -394,9 +455,9 @@ function TasksPage(props) {
                                     name="description"
                                     value={currentTask.description || ''}
                                     onChange={handleModalChange}
-                                    multiline
                                     rows={3}
                                 />
+
                                 <FormControl fullWidth margin="normal">
                                     <InputLabel>Prioridad</InputLabel>
                                     <Select
@@ -410,7 +471,9 @@ function TasksPage(props) {
                                         <MenuItem value="Alta">Alta</MenuItem>
                                     </Select>
                                 </FormControl>
-                                {currentTask.id && ( // Solo mostrar el selector de estado si estás editando
+                                
+                                {/* Selector de Estado (Solo si editas) */}
+                                {currentTask.id && ( 
                                     <FormControl fullWidth margin="normal">
                                         <InputLabel>Estado</InputLabel>
                                         <Select
@@ -424,14 +487,59 @@ function TasksPage(props) {
                                         </Select>
                                     </FormControl>
                                 )}
+                                
+                                {/* --- CONTROLES DE RECURRENCIA (RF-05) --- */}
+                                <Box sx={{ mt: 2, border: 1, borderColor: 'divider', p: 2, borderRadius: 1 }}>
+                                    <FormControlLabel
+                                        control={
+                                            <Switch
+                                                checked={currentTask.is_recurring}
+                                                onChange={handleModalChange}
+                                                name="is_recurring" // Usar name en el Switch para handleModalChange
+                                            />
+                                        }
+                                        label="Tarea Recurrente"
+                                        sx={{ mb: 1 }}
+                                    />
+
+                                    {currentTask.is_recurring && (
+                                        <>
+                                            <FormControl fullWidth margin="normal" size="small">
+                                                <InputLabel>Frecuencia de Repetición</InputLabel>
+                                                <Select
+                                                    name="frequency"
+                                                    value={currentTask.frequency}
+                                                    label="Frecuencia de Repetición"
+                                                    onChange={handleModalChange}
+                                                >
+                                                    {RECURRENCE_FREQUENCIES.map(freq => (
+                                                        <MenuItem key={freq} value={freq}>{freq}</MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
+
+                                            <LocalizationProvider dateAdapter={AdapterDateFns}>
+                                                <DatePicker
+                                                    label="Fecha de Finalización (Opcional)"
+                                                    value={currentTask.recurrence_end_date}
+                                                    onChange={handleRecurrenceEndDateChange}
+                                                    slotProps={{ textField: { fullWidth: true, size: 'small', sx: { mt: 1 } } }}
+                                                />
+                                            </LocalizationProvider>
+                                        </>
+                                    )}
+                                </Box>
+                                {/* --- FIN CONTROLES DE RECURRENCIA --- */}
+
                                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                                     <DatePicker
-                                        label="Fecha de Vencimiento"
+                                        label="Fecha de Vencimiento (Instancia Actual)"
                                         value={currentTask.due_date}
                                         onChange={handleDateChange}
                                         sx={{ width: '100%', mt: 2 }}
                                     />
                                 </LocalizationProvider>
+
                                 <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
                                     <Button onClick={handleCloseModal}>Cancelar</Button>
                                     <Button variant="contained" onClick={handleSaveTask}>Guardar Cambios</Button>
