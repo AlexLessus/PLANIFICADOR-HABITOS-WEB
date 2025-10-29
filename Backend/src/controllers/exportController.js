@@ -1,13 +1,11 @@
 // Backend/src/controllers/exportController.js
 
-// 🚨 REVISE ESTAS IMPORTACIONES: 
-// Asegúrese de que su conexión a MySQL y middleware estén bien importados
 const db = require('../database/db'); 
 const ExcelJS = require('exceljs');
 const pdf = require('html-pdf');
-const util = require('util');
+// const util = require('util'); // No es necesario si se usa la función de promesa a continuación
 
-// Promisificamos pdf.create().toStream para usar async/await
+// Promisifica pdf.create().toStream para usar async/await
 const pdfCreateStream = (html, options) => {
     return new Promise((resolve, reject) => {
         pdf.create(html, options).toStream((err, stream) => {
@@ -17,34 +15,35 @@ const pdfCreateStream = (html, options) => {
     });
 };
 
-// --- FUNCIÓN BASE PARA CONSULTAR DATOS ---
-const fetchDataToExport = async (dataType, userId, startDate, endDate) => {
+// --- FUNCIÓN BASE PARA CONSULTAR DATOS (CORREGIDA) ---
+const fetchDataToExport = async (dataType, userId) => {
     let query = '';
     let params = [];
 
-    // 🔥 MODIFICACIÓN CLAVE: ELIMINAMOS el filtro WHERE user_id
+    // ✅ CORRECCIÓN CLAVE: FILTRADO POR user_id
     if (dataType === 'tareas' || dataType === 'ambos') {
-        // DEPUREMOS: Consulta todas las tareas, ignorando el usuario por ahora
         query = `
             SELECT title AS Título, priority AS Prioridad, status AS Estado, DATE_FORMAT(due_date, '%Y-%m-%d') AS 'Fecha Límite' 
             FROM tasks 
+            WHERE user_id = ?  
             LIMIT 50
         `;
-        params = []; // Ya no necesitamos userId ni fechas
+        params = [userId]; // <-- ¡PARÁMETRO AÑADIDO!
+
     } else if (dataType === 'habitos') {
         query = `
             SELECT name AS Hábito, current_streak AS 'Racha Actual', longest_streak AS 'Racha Más Larga' 
             FROM habits 
+            WHERE user_id = ?  
             LIMIT 50
         `;
-        params = []; 
+        params = [userId]; // <-- ¡PARÁMETRO AÑADIDO!
     } else {
         return [];
     }
 
     try {
         const [rows] = await db.query(query, params); 
-        // VITAL: Muestra los datos que se obtuvieron ANTES de intentar exportar.
         console.log(`[EXPORT DEBUG] Datos obtenidos para ${dataType}: ${rows.length} filas.`);
         return rows;
     } catch (error) {
@@ -54,18 +53,19 @@ const fetchDataToExport = async (dataType, userId, startDate, endDate) => {
 };
 
 
-// --- EXPORTAR A EXCEL (XLSX) ---
+// --- EXPORTAR A EXCEL (XLSX) (CORREGIDO) ---
 exports.exportToExcel = async (req, res) => {
     const { dataType } = req.params;
-    const { start, end } = req.query; 
-    // ⚠️ Reemplace 1 con la variable de usuario real después de autenticación
-    const userId = req.user ? req.user.id : 1; 
+    // ⚠️ Importante: El middleware de autenticación (authMiddleware) debe ejecutarse antes
+    const userId = req.user.id; // Ya no hay necesidad de un fallback a 1
 
     try {
-        const data = await fetchDataToExport(dataType, userId, start, end);
+        // Nota: Se elimina el paso de 'start' y 'end' de fetchDataToExport por simplicidad,
+        // ya que no se estaban usando en la consulta SQL.
+        const data = await fetchDataToExport(dataType, userId); 
 
         if (data.length === 0) {
-            return res.status(404).send('No se encontraron datos para exportar en Excel.');
+            return res.status(404).send('No se encontraron datos para exportar en Excel para este usuario.');
         }
 
         const workbook = new ExcelJS.Workbook();
@@ -74,32 +74,30 @@ exports.exportToExcel = async (req, res) => {
         worksheet.columns = Object.keys(data[0]).map(key => ({ header: key, key: key, width: 25 }));
         worksheet.addRows(data);
 
-        // 🔥 CABECERAS CRÍTICAS PARA LA DESCARGA
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename=Reporte_${dataType}_${new Date().toISOString().split('T')[0]}.xlsx`);
 
         await workbook.xlsx.write(res);
-        res.end(); // Finaliza la respuesta y fuerza la descarga
+        res.end();
     } catch (error) {
         console.error('Error durante la exportación a Excel:', error);
         res.status(500).send('Error interno del servidor al generar el Excel.');
     }
 };
 
-// --- EXPORTAR A PDF ---
+// --- EXPORTAR A PDF (CORREGIDO) ---
 exports.exportToPDF = async (req, res) => {
     const { dataType } = req.params;
-    const { start, end } = req.query;
-    const userId = req.user ? req.user.id : 1;
+    const userId = req.user.id; // Ya no hay necesidad de un fallback a 1
 
     try {
-        const data = await fetchDataToExport(dataType, userId, start, end);
+        const data = await fetchDataToExport(dataType, userId);
         
         if (data.length === 0) {
-            return res.status(404).send('No se encontraron datos para exportar en PDF.');
+            return res.status(404).send('No se encontraron datos para exportar en PDF para este usuario.');
         }
 
-        // Generación de contenido HTML para el PDF
+        // ... (el código de generación HTML y PDF es correcto)
         let htmlContent = `
             <html><head><style>body{font-family:sans-serif;} table{width:100%; border-collapse:collapse;} th,td{border:1px solid #ddd; padding:10px; text-align:left;} th{background-color:#3f51b5; color:white;}</style></head><body>
             <h1>Reporte de ${dataType.toUpperCase()} - TIGERTECH</h1>
@@ -116,10 +114,8 @@ exports.exportToPDF = async (req, res) => {
         `;
 
         const options = { format: 'A4', border: '1cm' };
-        
         const pdfStream = await pdfCreateStream(htmlContent, options);
 
-        // 🔥 CABECERAS CRÍTICAS PARA LA DESCARGA
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename=Reporte_${dataType}_${new Date().toISOString().split('T')[0]}.pdf`);
         

@@ -6,25 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../database/db'); 
-const jwt = require('jsonwebtoken');
-
-const JWT_SECRET = process.env.JWT_SECRET;
-
-console.log("JWT_SECRET usado en habits:", JWT_SECRET);
-
-// Middleware para verificar la autenticación del usuario
-const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (token == null) return res.sendStatus(401); 
-    
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) return res.sendStatus(403);
-        req.user = user;
-        next();
-    });
-};
+const authenticateToken = require('../middleware/authMiddleware');
 
 /**
  * Consulta única y segura para calcular la racha, inicializando variables DENTRO 
