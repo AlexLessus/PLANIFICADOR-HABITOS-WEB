@@ -1,3 +1,4 @@
+
 /**
  * @fileoverview Módulo Principal de la aplicación Planificador API.
  * Este archivo inicializa el servidor Express, configura los middlewares, 
@@ -13,28 +14,23 @@
  * @module app
  */
 
-// Planificador/backend/src/app.js
 require('dotenv').config(); // Carga las variables de entorno al inicio
 const express = require('express');
 const cors = require('cors');
 
-// 🚨 CORRECCIÓN DE RUTAS: Usamos './database/db' y 'express'
+// Importaciones de DB, Rutas y Middleware
 const db = require('./database/db'); 
-
-// Importa todas las rutas y middleware
 const authRoutes = require('./routes/authRoutes'); 
 const habitsRoutes = require('./routes/habits'); 
-const tasksRouter = require('./routes/tasks'); 
-const authMiddleware = require('./middleware/authMiddleware'); // Asumiendo que está en src/middleware/
-const exportController = require('./controllers/exportController'); // Asumiendo que está en src/controllers/
+const tasksRouter = require('./routes/tasks');
+const exportRoutes = require('./routes/exportRoutes'); // Archivo de rutas de exportación
+
+const exportController = require('./controllers/exportController'); // No es necesario importarlo si solo se usa en exportRoutes
 
 const app = express();
 const PORT = process.env.PORT || 5000; 
 
-// Nota: habitsRoutes es un objeto o función importada, no se imprime directamente
-// console.log(habitsRoutes) 
-
-// Middleware
+// Middleware Global
 app.use(cors());
 app.use(express.json());
 
@@ -45,7 +41,6 @@ app.use(express.json());
 // Ruta de Prueba de Conexión a la Base de Datos
 app.get('/api/test-db', async (req, res) => {
     try {
-        // Ejecuta una consulta simple para validar la conexión
         const [rows] = await db.query('SELECT 1 + 1 AS solution');
         console.log('[API DB Test] Resultado de la prueba de DB:', rows[0].solution);
         res.status(200).json({
@@ -53,7 +48,6 @@ app.get('/api/test-db', async (req, res) => {
             solution: rows[0].solution
         });
     } catch (err) {
-        // 🔥 Muestra el error exacto de MySQL en la terminal
         console.error('[API DB Test] CRITICAL ERROR: Error al conectar/consultar la base de datos:', err.message);
         res.status(500).json({
             error: 'Error al conectar/consultar la base de datos. Verifique credenciales.',
@@ -69,36 +63,22 @@ app.get('/', (req, res) => {
 
 
 // Montaje de rutas
+// Los middlewares de autenticación se aplican DENTRO de cada archivo de ruta (ej. tasks, habits, export)
 app.use('/api/auth', authRoutes); 
 app.use('/api/habits', habitsRoutes); 
 app.use('/api/tasks', tasksRouter); 
 
-
-// 🔥 RUTA DE EXPORTACIÓN FINAL PARA PDF/EXCEL
-// Estructura de la URL: /api/export/:dataType/:format?start=...&end=...
-app.get('/api/export/:dataType/:format', authMiddleware, (req, res) => {
-    const { format } = req.params;
-    
-    if (format === 'excel') {
-        return exportController.exportToExcel(req, res);
-    } else if (format === 'pdf') {
-        return exportController.exportToPDF(req, res);
-    } else {
-        return res.status(400).send('Formato de exportación no soportado.');
-    }
-});
-
+// MONTAJE CORRECTO DE LA RUTA DE EXPORTACIÓN
+// Se monta el archivo de rutas exportRoutes, que internamente usa el authMiddleware.
+app.use('/api/export', exportRoutes); 
 
 // --------------------------------------------------------------------------
-// 🔥 MANEJO GLOBAL DE ERRORES (IMPORTANTE PARA DEPURACIÓN SILENCIOSA)
-// Captura cualquier error que no haya sido atrapado por un try/catch
+// MANEJO GLOBAL DE ERRORES (IMPORTANTE PARA DEPURACIÓN SILENCIOSA)
 app.use((err, req, res, next) => {
     console.error('[GLOBAL ERROR HANDLER]', err.stack);
-    // Si la respuesta ya ha sido enviada (cabeceras ya enviadas), no hagas nada
     if (res.headersSent) {
         return next(err);
     }
-    // Para errores en el proceso de streaming de archivos (que fallan silenciosamente)
     res.status(500).send({
         error: "Internal Server Error during file generation.",
         message: err.message
@@ -119,7 +99,7 @@ app.listen(PORT, () => {
             connection.release();
         })
         .catch(err => {
-            // Este error ocurre si las credenciales son totalmente incorrectas
             console.error('No se pudo establecer conexión inicial con la base de datos:', err.message);
         });
 });
+
