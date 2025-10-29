@@ -8,21 +8,9 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../database/db'); 
-const jwt = require('jsonwebtoken'); 
-const JWT_SECRET = process.env.JWT_SECRET;
+const authenticateToken = require('../middleware/authMiddleware');
 
-// Middleware para verificar la autenticación del usuario (Mismo que en habits)
-const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    if (token == null) return res.sendStatus(401); 
-    
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) return res.sendStatus(403); 
-        req.user = user;
-        next();
-    });
-};
+
 
 // --- FUNCIÓN DE UTILIDAD PARA RECURRENCIA (RF-05) ---
 
