@@ -3,6 +3,8 @@
 const db = require('../database/db');
 const ExcelJS = require('exceljs');
 const pdf = require('html-pdf');
+const fs = require('fs'); // Módulo para leer archivos del sistema
+const path = require('path'); // Módulo para manejar rutas de archivos
 
 // Promisifica pdf.create().toStream para usar async/await
 const pdfCreateStream = (html, options) => {
@@ -205,17 +207,30 @@ exports.exportToPDF = async (req, res) => {
     try {
         const data = await fetchDataToExport(dataType, userId);
 
+        // --- Añadir Logo ---
+        const logoPath = path.join(__dirname, '../assets/logo.png');
+        let logoSrc = '';
+        if (fs.existsSync(logoPath)) {
+            const logoBase64 = fs.readFileSync(logoPath).toString('base64');
+            logoSrc = `data:image/png;base64,${logoBase64}`;
+        }
+        
         let headers = [];
         if (dataType === 'tareas') {
             headers = ['Título', 'Prioridad', 'Estado', 'Fecha Límite'];
         } else if (dataType === 'habitos') {
             headers = ['Hábito', 'Racha Actual', 'Racha Más Larga'];
-        } else { // 'ambos'
+        } else {
             headers = ['Categoría', 'Detalle', 'Estado/Racha', 'Fecha/Racha Máx.'];
         }
 
+        // ✅ INICIO DE LA MODIFICACIÓN
+        // --- Generar Contenido HTML con logo centrado ---
         let htmlContent = `
             <html><head><style>body{font-family:sans-serif;} table{width:100%; border-collapse:collapse;} th,td{border:1px solid #ddd; padding:8px; text-align:left;} th{background-color:#3f51b5; color:white;}</style></head><body>
+            <div style="text-align: center; margin-bottom: 20px;">
+                ${logoSrc ? `<img src="${logoSrc}" style="width: 300px; height: auto;" alt="Logo">` : '<h1>TigerTech.corp</h1>'}
+            </div>
             <h1>Reporte de ${dataType.toUpperCase()}</h1>
             <p>Generado el: ${new Date().toLocaleDateString()}</p>
             <table>
@@ -223,16 +238,12 @@ exports.exportToPDF = async (req, res) => {
                 <tbody>
                     ${data.length > 0 ?
                         data.map(row => {
-                            // ✅ INICIO DE LA MODIFICACIÓN
-                            const isSeparator = (row['Categoría'] || '').includes('---');
-                            if (dataType === 'ambos' && isSeparator) {
-                                // Si es una fila separadora, la pintamos de azul y la centramos
-                                return `<tr><td colspan="${headers.length}" style="background-color: #3f51b5; color: white; text-align: center; font-weight: bold;">${row['Categoría'].replace(/---/g, '')}</td></tr>`;
+                            const isSeparator = dataType === 'ambos' && (row['Categoría'] || '').includes('---');
+                            if (isSeparator) {
+                                return `<tr><td colspan="${headers.length}" style="background-color: #3f51b5; color: white; text-align: center; font-weight: bold;">${row['Categoría'].replace(/---/g, '').trim()}</td></tr>`;
                             } else {
-                                // Si es una fila de datos normal, la mostramos como siempre
                                 return `<tr>${headers.map(header => `<td>${row[header] || ''}</td>`).join('')}</tr>`;
                             }
-                            // ✅ FIN DE LA MODIFICACIÓN
                         }).join('') :
                         `<tr><td colspan="${headers.length}" style="text-align:center;">No se encontraron datos para exportar.</td></tr>`
                     }
@@ -240,6 +251,7 @@ exports.exportToPDF = async (req, res) => {
             </table>
             </body></html>
         `;
+        // ✅ FIN DE LA MODIFICACIÓN
 
         const options = { format: 'A4', border: '1cm' };
         const pdfStream = await pdfCreateStream(htmlContent, options);
