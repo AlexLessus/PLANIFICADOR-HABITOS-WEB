@@ -17,6 +17,7 @@
 require('dotenv').config(); // Carga las variables de entorno al inicio
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 
 // Importaciones de DB, Rutas y Middleware
 const db = require('./database/db'); 
@@ -24,15 +25,71 @@ const authRoutes = require('./routes/authRoutes');
 const habitsRoutes = require('./routes/habits'); 
 const tasksRouter = require('./routes/tasks');
 const exportRoutes = require('./routes/exportRoutes'); // Archivo de rutas de exportación
-
-const exportController = require('./controllers/exportController'); // No es necesario importarlo si solo se usa en exportRoutes
+const { apiLimiter } = require('./middleware/rateLimiter');
+const { errorHandler } = require('./utils/errorHandler');
 
 const app = express();
 const PORT = process.env.PORT || 5000; 
 
+// Configuración de seguridad con Helmet
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"], // Material-UI necesita inline styles
+      scriptSrc: [
+        "'self'",
+        "https://accounts.google.com", // Google OAuth
+        "https://apis.google.com", // Google APIs
+      ],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: [
+        "'self'",
+        "https://accounts.google.com", // Google OAuth
+        "https://oauth2.googleapis.com", // Google OAuth token exchange
+      ],
+      frameSrc: [
+        "'self'",
+        "https://accounts.google.com", // Google OAuth iframe
+      ],
+    },
+  },
+  crossOriginEmbedderPolicy: false, // Puede causar problemas con algunas librerías
+}));
+
+// Configuración de CORS mejorada
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Lista de orígenes permitidos
+    const allowedOrigins = [
+      process.env.FRONTEND_URL || 'http://localhost:3000',
+      'http://localhost:3000',
+      // Agregar otros orígenes según sea necesario
+    ];
+
+    // Permitir requests sin origen (Postman, mobile apps, etc.) solo en desarrollo
+    if (!origin && process.env.NODE_ENV === 'development') {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('No permitido por CORS'));
+    }
+  },
+  credentials: true, // Permitir cookies
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
+
 // Middleware Global
-app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // Limitar tamaño de JSON
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Rate limiting global (se aplica a todas las rutas)
+app.use('/api', apiLimiter);
 
 // --------------------------------------------------------------------------
 // Rutas de la API
@@ -73,17 +130,9 @@ app.use('/api/tasks', tasksRouter);
 app.use('/api/export', exportRoutes); 
 
 // --------------------------------------------------------------------------
-// MANEJO GLOBAL DE ERRORES (IMPORTANTE PARA DEPURACIÓN SILENCIOSA)
-app.use((err, req, res, next) => {
-    console.error('[GLOBAL ERROR HANDLER]', err.stack);
-    if (res.headersSent) {
-        return next(err);
-    }
-    res.status(500).send({
-        error: "Internal Server Error during file generation.",
-        message: err.message
-    });
-});
+// MANEJO GLOBAL DE ERRORES
+// Este debe ser el último middleware, después de todas las rutas
+app.use(errorHandler.handleError);
 // --------------------------------------------------------------------------
 
 

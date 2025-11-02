@@ -10,8 +10,10 @@
  * @module services/authService
  */
 
-// La URL base de tu backend.
-const API_URL = 'http://localhost:5000/api/auth';
+// Importar configuración centralizada de API
+import { API_ENDPOINTS } from '../config/api';
+
+const API_URL = API_ENDPOINTS.AUTH;
 
 /**
  * Función para registrar un nuevo usuario.
