@@ -18,6 +18,8 @@ import TableViewIcon from '@mui/icons-material/TableView';
 // --- NUEVAS IMPORTACIONES ---
 import CircularHabitTracker from './CircularHabitTracker';
 import './CircularHabitTracker.css'; // Importa los estilos
+import AnnualHabitHeatmap from './AnnualHabitHeatmap';
+import './AnnualHabitHeatmap.css';
 
 function Progress(props) {
     // --- ESTADOS PARA LA EXPORTACIÓN (SE MANTIENEN) ---
@@ -154,6 +156,26 @@ function Progress(props) {
                                     </CardContent>
                                 </Card>
                             </Grid>
+                            
+                            {/* SECCIÓN DEL NUEVO HEATMAP ANUAL */}
+                            <Grid item xs={12}>
+                                <Card>
+                                    <CardHeader title="Visualización Anual de Hábitos" />
+                                    <CardContent>
+                                        {loading ? (
+                                            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                                                <CircularProgress />
+                                            </Box>
+                                        ) : (
+                                            <>
+                                                <AnnualHabitHeatmap completions={completions} year={2024} />
+                                                <AnnualHabitHeatmap completions={completions} year={2025} />
+                                            </>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </Grid>
+
 
                             {/* SECCIÓN DE EXPORTACIÓN (INTACTA) */}
                             <Grid item xs={12}>
