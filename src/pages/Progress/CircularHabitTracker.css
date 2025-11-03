@@ -89,9 +89,7 @@
   }
 }
 
-/* ========================================================= */
-/* 🌙 MODO OSCURO PROFESIONAL                                */
-/* ========================================================= */
+/*  Modo oscuro */
 
 @media (prefers-color-scheme: dark) {
   .tracker-container {
