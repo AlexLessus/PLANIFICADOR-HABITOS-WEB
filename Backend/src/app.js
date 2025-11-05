@@ -31,6 +31,13 @@ const { errorHandler } = require('./utils/errorHandler');
 const app = express();
 const PORT = process.env.PORT || 5000; 
 
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Deshabilitar información del servidor
+app.disable('x-powered-by');
+
 // Configuración de seguridad con Helmet
 app.use(helmet({
   contentSecurityPolicy: {

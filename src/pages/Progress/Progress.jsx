@@ -11,7 +11,7 @@ import Header from '../../globalComponents/Header';
 import AppTheme from '../../shared-theme/AppTheme';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import TableViewIcon from '@mui/icons-material/TableView';
 
@@ -58,7 +58,7 @@ function Progress(props) {
     useEffect(() => {
         fetchData();
     }, []);
-    
+
     // --- NUEVA FUNCIÓN PARA MANEJAR CLICS ---
     const handleDayClick = async (habitId, dateString, isCompleted) => {
         if (isCompleted) {
@@ -156,7 +156,7 @@ function Progress(props) {
                                     </CardContent>
                                 </Card>
                             </Grid>
-                            
+
                             {/* SECCIÓN DEL NUEVO HEATMAP ANUAL */}
                             <Grid item xs={12}>
                                 <Card>
@@ -176,7 +176,6 @@ function Progress(props) {
                                 </Card>
                             </Grid>
 
-
                             {/* SECCIÓN DE EXPORTACIÓN (INTACTA) */}
                             <Grid item xs={12}>
                                 <Card>
@@ -195,11 +194,20 @@ function Progress(props) {
                                             </Grid>
                                             <Grid item xs={12} md={5}>
                                                 <LocalizationProvider dateAdapter={AdapterDateFns}>
-                                                    <DateRangePicker
-                                                        localeText={{ start: 'Fecha de inicio', end: 'Fecha de fin' }}
-                                                        value={dateRange}
-                                                        onChange={(newValue) => setDateRange(newValue)}
-                                                    />
+                                                    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                                                        <DatePicker
+                                                            label="Fecha de inicio"
+                                                            value={dateRange[0]}
+                                                            onChange={(newValue) => setDateRange([newValue, dateRange[1]])}
+                                                            slotProps={{ textField: { size: 'small' } }}
+                                                        />
+                                                        <DatePicker
+                                                            label="Fecha de fin"
+                                                            value={dateRange[1]}
+                                                            onChange={(newValue) => setDateRange([dateRange[0], newValue])}
+                                                            slotProps={{ textField: { size: 'small' } }}
+                                                        />
+                                                    </Box>
                                                 </LocalizationProvider>
                                             </Grid>
                                             <Grid item xs={12} md={3}>

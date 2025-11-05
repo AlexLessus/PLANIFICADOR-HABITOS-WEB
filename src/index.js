@@ -6,8 +6,11 @@ import reportWebVitals from './reportWebVitals';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 // Obtener el Client ID de Google desde variables de entorno
-const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || 
-  '219336713233-9d3huv3k9vl7h4nrncd1omedpqavv9bb.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+
+if (!GOOGLE_CLIENT_ID) {
+  console.error('ERROR: REACT_APP_GOOGLE_CLIENT_ID no está configurado en las variables de entorno');
+}
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
