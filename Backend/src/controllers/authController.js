@@ -195,8 +195,8 @@ const authController = {
             await userModel.savePasswordResetToken(user.id, resetTokenHash, resetTokenExpires);
 
             // El enlace debe apuntar a la ruta del frontend donde el usuario restablecerá su contraseña.
-            // Lo he cambiado a 'localhost:3000', pero ajústalo a la URL de tu frontend si es diferente.
-            const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
+            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+            const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
             const emailTemplateSource = fs.readFileSync(path.join(__dirname, '../templates/passwordReset.hbs'), 'utf8');
             const template = handlebars.compile(emailTemplateSource);
             const htmlToSend = template({
@@ -206,7 +206,7 @@ const authController = {
 
             const msg = {
                 to: user.email,
-                from: 'equipotigretech@gmail.com', 
+                from: process.env.SENDGRID_FROM_EMAIL || 'noreply@yourdomain.com', 
                 subject: 'Restablecimiento de contraseña',
                 html: htmlToSend,
             };
