@@ -18,10 +18,17 @@ import {
     IconButton,
     List,
     Card,
-    CardContent
+    CardContent,
+    Tooltip,
+    Divider,
+    ListItem,
+    ListItemIcon,
+    ListItemText
 } from '@mui/material';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import EditIcon from '@mui/icons-material/Edit';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 import CssBaseline from '@mui/material/CssBaseline';
 
 // --- Layout y Tema ---
@@ -38,12 +45,11 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction'; // para clics
 
-const xThemeComponents = { ...chartsCustomizations, ...dataGridCustomizations, ...datePickersCustomizations, ...treeViewCustomizations };
+// --- Helpers de API ---
+import { apiGet, apiPost, apiPut, apiDelete } from '../../utils/apiHelper';
+import { API_ENDPOINTS } from '../../config/api';
 
-// Helper para headers con token
-const getAuthHeaders = () => ({
-    'Authorization': `Bearer ${localStorage.getItem('token')}`
-});
+const xThemeComponents = { ...chartsCustomizations, ...dataGridCustomizations, ...datePickersCustomizations, ...treeViewCustomizations };
 
 // Colores para diferentes tipos de eventos
 const COLORS = {
@@ -94,6 +100,11 @@ function CalendarPage(props) {
     const [openDayViewModal, setOpenDayViewModal] = useState(false);
     const [selectedDayTasks, setSelectedDayTasks] = useState([]);
     const [selectedDayDate, setSelectedDayDate] = useState(null);
+    
+    // Estados para visualización de hábitos
+    const [habitStats, setHabitStats] = useState({}); // Estadísticas por día
+    const [allHabits, setAllHabits] = useState([]); // Lista de todos los hábitos activos
+    const [habitCompletionsByDay, setHabitCompletionsByDay] = useState({}); // Hábitos completados por día
 
     // --- Funciones de Transformación de Datos ---
     const getTaskColor = (priority, status) => {
@@ -135,6 +146,119 @@ function CalendarPage(props) {
         }));
     };
 
+    // Calcular estadísticas de hábitos por día
+    const calculateHabitStats = (habits, completions) => {
+        const stats = {};
+        const completionsByDay = {};
+        
+        // Agrupar completions por fecha
+        completions.forEach(completion => {
+            const date = completion.completion_date;
+            if (!completionsByDay[date]) {
+                completionsByDay[date] = [];
+            }
+            completionsByDay[date].push(completion.habit_id);
+        });
+        
+        // Calcular estadísticas para cada día
+        const totalHabits = habits.length;
+        
+        Object.keys(completionsByDay).forEach(date => {
+            const completed = completionsByDay[date].length;
+            const percentage = totalHabits > 0 ? (completed / totalHabits) * 100 : 0;
+            
+            stats[date] = {
+                completed,
+                total: totalHabits,
+                percentage: Math.round(percentage)
+            };
+        });
+        
+        setHabitCompletionsByDay(completionsByDay);
+        return stats;
+    };
+
+    // Calcular racha de días consecutivos
+    const calculateStreak = (habitStats) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        let streak = 0;
+        let currentDate = new Date(today);
+        
+        // Retroceder día por día hasta encontrar un día sin 100%
+        while (true) {
+            const dateStr = currentDate.toISOString().split('T')[0];
+            const stats = habitStats[dateStr];
+            
+            if (stats && stats.percentage === 100) {
+                streak++;
+                currentDate.setDate(currentDate.getDate() - 1);
+            } else {
+                break;
+            }
+        }
+        
+        return streak;
+    };
+
+    // Obtener color según porcentaje
+    const getHabitDayColor = (percentage) => {
+        if (percentage === 100) return 'rgba(76, 175, 80, 0.15)';  // Verde claro
+        if (percentage >= 50) return 'rgba(255, 193, 7, 0.15)';    // Amarillo claro
+        if (percentage > 0) return 'rgba(244, 67, 54, 0.15)';      // Rojo claro
+        return 'transparent';
+    };
+
+    // Generar contenido del tooltip con detalles de hábitos
+    const getHabitTooltipContent = (dateStr) => {
+        const stats = habitStats[dateStr];
+        if (!stats) return null;
+
+        const completedHabitIds = habitCompletionsByDay[dateStr] || [];
+        
+        return (
+            <Box sx={{ p: 1, minWidth: 200 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                    {new Date(dateStr + 'T00:00:00').toLocaleDateString('es-ES', { 
+                        weekday: 'long', 
+                        day: 'numeric',
+                        month: 'long'
+                    })}
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+                    {stats.completed}/{stats.total} hábitos ({stats.percentage}%)
+                </Typography>
+                <Divider sx={{ my: 1 }} />
+                <List dense sx={{ py: 0 }}>
+                    {allHabits.map(habit => {
+                        const isCompleted = completedHabitIds.includes(habit.id);
+                        return (
+                            <ListItem key={habit.id} sx={{ px: 0, py: 0.25 }}>
+                                <ListItemIcon sx={{ minWidth: 28 }}>
+                                    {isCompleted ? 
+                                        <CheckCircleIcon color="success" fontSize="small" /> : 
+                                        <CancelIcon color="error" fontSize="small" />
+                                    }
+                                </ListItemIcon>
+                                <ListItemText 
+                                    primary={habit.title}
+                                    primaryTypographyProps={{ 
+                                        variant: 'caption',
+                                        sx: { 
+                                            textDecoration: isCompleted ? 'none' : 'none',
+                                            color: isCompleted ? 'success.main' : 'text.secondary'
+                                        }
+                                    }}
+                                />
+                            </ListItem>
+                        );
+                    })}
+                </List>
+            </Box>
+        );
+    };
+
     // --- Carga de Datos del Backend ---
     const fetchCalendarData = async () => {
         setLoading(true);
@@ -149,43 +273,36 @@ function CalendarPage(props) {
 
         try {
             // 1. Obtener tareas
-            const tasksRes = await fetch('http://localhost:5000/api/tasks', {
-                headers: getAuthHeaders()
-            });
-            
-            if (tasksRes.status === 401 || tasksRes.status === 403) {
-                setError('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                setLoading(false);
-                return;
-            }
-            
-            if (!tasksRes.ok) {
-                throw new Error(`Error al cargar tareas: ${tasksRes.status}`);
-            }
-            const tasks = await tasksRes.json();
+            const tasks = await apiGet(API_ENDPOINTS.TASKS);
 
             // 2. Obtener hábitos completados
-            const habitsRes = await fetch('http://localhost:5000/api/habits/completions', {
-                headers: getAuthHeaders()
-            });
-            
-            if (habitsRes.status === 401 || habitsRes.status === 403) {
-                setError('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                setLoading(false);
-                return;
-            }
-            
-            if (!habitsRes.ok) {
-                console.warn('No se pudieron cargar los hábitos completados');
+            let habitCompletions = [];
+            try {
+                habitCompletions = await apiGet(`${API_ENDPOINTS.HABITS}/completions`);
+            } catch (err) {
+                console.warn('No se pudieron cargar los hábitos completados:', err);
                 // Continuar solo con tareas si los hábitos fallan
                 const taskEvents = transformTasksToEvents(tasks);
                 setEvents(taskEvents);
                 setLoading(false);
                 return;
             }
-            const habitCompletions = await habitsRes.json();
 
-            // 3. Transformar a formato FullCalendar
+            // 3. Obtener lista de todos los hábitos activos
+            let habits = [];
+            try {
+                habits = await apiGet(API_ENDPOINTS.HABITS);
+                habits = habits.filter(h => h.is_active !== false); // Solo hábitos activos
+                setAllHabits(habits);
+            } catch (err) {
+                console.warn('No se pudieron cargar los hábitos:', err);
+            }
+
+            // 4. Calcular estadísticas de hábitos
+            const stats = calculateHabitStats(habits, habitCompletions);
+            setHabitStats(stats);
+
+            // 5. Transformar a formato FullCalendar
             const taskEvents = transformTasksToEvents(tasks);
             const habitEvents = transformHabitsToEvents(habitCompletions);
             
@@ -271,22 +388,13 @@ function CalendarPage(props) {
     const handleAddTask = async () => {
         if (newTaskTitle.trim() && selectedDate) {
             try {
-                const response = await fetch('http://localhost:5000/api/tasks', {
-                    method: 'POST',
-                    headers: {
-                        ...getAuthHeaders(),
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        title: newTaskTitle,
-                        description: '',
-                        priority: 'Media',
-                        due_date: selectedDate,
-                        status: 'Pendiente'
-                    })
+                await apiPost(API_ENDPOINTS.TASKS, {
+                    title: newTaskTitle,
+                    description: '',
+                    priority: 'Media',
+                    due_date: selectedDate,
+                    status: 'Pendiente'
                 });
-
-                if (!response.ok) throw new Error('Error al crear la tarea');
                 
                 // Recargar eventos del calendario
                 await fetchCalendarData();
@@ -330,22 +438,13 @@ function CalendarPage(props) {
                 ? editingTask.due_date.toISOString().split('T')[0]
                 : null;
 
-            const response = await fetch(`http://localhost:5000/api/tasks/${editingTask.id}`, {
-                method: 'PUT',
-                headers: {
-                    ...getAuthHeaders(),
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    title: editingTask.title,
-                    description: editingTask.description,
-                    priority: editingTask.priority,
-                    due_date: dueDateString,
-                    status: editingTask.status
-                })
+            await apiPut(`${API_ENDPOINTS.TASKS}/${editingTask.id}`, {
+                title: editingTask.title,
+                description: editingTask.description,
+                priority: editingTask.priority,
+                due_date: dueDateString,
+                status: editingTask.status
             });
-
-            if (!response.ok) throw new Error('Error al actualizar la tarea');
             
             // Recargar eventos del calendario
             await fetchCalendarData();
@@ -362,12 +461,7 @@ function CalendarPage(props) {
         }
 
         try {
-            const response = await fetch(`http://localhost:5000/api/tasks/${editingTask.id}`, {
-                method: 'DELETE',
-                headers: getAuthHeaders()
-            });
-
-            if (!response.ok) throw new Error('Error al eliminar la tarea');
+            await apiDelete(`${API_ENDPOINTS.TASKS}/${editingTask.id}`);
             
             // Recargar eventos del calendario
             await fetchCalendarData();
@@ -498,6 +592,103 @@ function CalendarPage(props) {
                             // Mejorar visualización
                             eventDisplay="block"
                             displayEventTime={false}
+                            // Personalización de celdas de día
+                            dayCellDidMount={(arg) => {
+                                const dateStr = arg.date.toISOString().split('T')[0];
+                                const stats = habitStats[dateStr];
+                                
+                                if (stats) {
+                                    // Aplicar color de fondo según porcentaje
+                                    const bgColor = getHabitDayColor(stats.percentage);
+                                    arg.el.style.backgroundColor = bgColor;
+                                    
+                                    // Agregar borde según porcentaje
+                                    if (stats.percentage === 100) {
+                                        arg.el.style.border = '2px solid rgba(76, 175, 80, 0.5)';
+                                    } else if (stats.percentage >= 50) {
+                                        arg.el.style.border = '2px solid rgba(255, 193, 7, 0.5)';
+                                    } else if (stats.percentage > 0) {
+                                        arg.el.style.border = '2px solid rgba(244, 67, 54, 0.5)';
+                                    }
+                                }
+                            }}
+                            dayCellContent={(arg) => {
+                                const dateStr = arg.date.toISOString().split('T')[0];
+                                const stats = habitStats[dateStr];
+                                const streak = stats && stats.percentage === 100 ? calculateStreak(habitStats) : 0;
+                                const tooltipContent = getHabitTooltipContent(dateStr);
+                                
+                                const cellContent = (
+                                    <Box sx={{ position: 'relative', width: '100%', height: '100%', p: 0.5 }}>
+                                        {/* Número del día */}
+                                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                                            {arg.dayNumberText}
+                                        </Typography>
+                                        
+                                        {/* Badge con estadísticas de hábitos */}
+                                        {stats && (
+                                            <Box sx={{ 
+                                                position: 'absolute', 
+                                                top: 2, 
+                                                right: 2,
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'flex-end',
+                                                gap: 0.25
+                                            }}>
+                                                {/* Badge con número */}
+                                                <Typography 
+                                                    variant="caption" 
+                                                    sx={{ 
+                                                        bgcolor: stats.percentage === 100 ? 'success.main' : 
+                                                                stats.percentage >= 50 ? 'warning.main' : 'error.main',
+                                                        color: 'white',
+                                                        px: 0.5,
+                                                        py: 0.25,
+                                                        borderRadius: 0.5,
+                                                        fontSize: '0.65rem',
+                                                        fontWeight: 'bold',
+                                                        lineHeight: 1
+                                                    }}
+                                                >
+                                                    {stats.completed}/{stats.total}
+                                                </Typography>
+                                                
+                                                {/* Racha de fuego */}
+                                                {streak > 0 && dateStr === new Date().toISOString().split('T')[0] && (
+                                                    <Typography 
+                                                        variant="caption" 
+                                                        sx={{ 
+                                                            fontSize: '0.7rem',
+                                                            fontWeight: 'bold',
+                                                            color: 'error.main'
+                                                        }}
+                                                    >
+                                                        🔥{streak}
+                                                    </Typography>
+                                                )}
+                                            </Box>
+                                        )}
+                                    </Box>
+                                );
+
+                                // Si hay estadísticas, envolver en Tooltip
+                                if (tooltipContent) {
+                                    return (
+                                        <Tooltip 
+                                            title={tooltipContent}
+                                            arrow
+                                            placement="top"
+                                            enterDelay={300}
+                                            leaveDelay={200}
+                                        >
+                                            {cellContent}
+                                        </Tooltip>
+                                    );
+                                }
+
+                                return cellContent;
+                            }}
                         />
                     </Paper>
                     )}
