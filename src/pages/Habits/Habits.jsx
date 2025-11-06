@@ -23,6 +23,9 @@ import {
 } from '../DashboardPage/theme/customizations';
 import Header from '../../globalComponents/Header';
 
+const COLOR_HABIT_DEFAULT = '#FF9800';
+const COLOR_HABIT_IN_DANGER = '#FF5722';
+const COLOR_HABIT_SAFE = '#4CAF50';
 
 // --- Combinando las personalizaciones del tema ---
 export const xThemeComponents = {
@@ -217,7 +220,7 @@ function HabitsPage(props) {
         return todayString === lastCompletedDate.substring(0, 10);
     };
 
-const isStreakInDanger = (habit) => {
+    const isStreakInDanger = (habit) => {
         // 1. Si no hay fecha o si se completó hoy, no hay peligro.
         if (!habit.lastCompleted || isCompletedToday(habit.lastCompleted)) {
             return false;
@@ -226,20 +229,20 @@ const isStreakInDanger = (habit) => {
         // 2. Formatear la fecha de AYER a YYYY-MM-DD (de forma segura).
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
-        
+
         const yyyy = yesterday.getFullYear();
         const mm = String(yesterday.getMonth() + 1).padStart(2, '0');
         const dd = String(yesterday.getDate()).padStart(2, '0');
         const yesterdayString = `${yyyy}-${mm}-${dd}`;
-        
+
         // 3. Comparar la fecha de AYER con la última fecha completada.
         // El habit.lastCompleted viene del backend como 'YYYY-MM-DD' o similar.
         // Usamos substring(0, 10) para asegurar que solo comparamos la fecha.
         return yesterdayString === habit.lastCompleted.substring(0, 10);
     };
 
-    if (loading) {}
-    if (error) {}
+    if (loading) { }
+    if (error) { }
 
     return (
         <AppTheme {...props} themeComponents={xThemeComponents}>
@@ -269,13 +272,18 @@ const isStreakInDanger = (habit) => {
                                 return (
                                     <Box key={habit.id} sx={{ mb: 2 }}>
                                         {inDanger && (
-                                            <Typography variant="body2" fontWeight="bold" color="warning.main" sx={{ ml: 1, mb: 0.5 }}>
-                                                ! Racha en Peligro
+                                            <Typography variant="body2" fontWeight="bold" color={COLOR_HABIT_IN_DANGER} sx={{ ml: 1, mb: 0.5 }}>
+                                                {/* Hábito no completado */}
                                             </Typography>
                                         )}
                                         <Card sx={{
-                                            border: 2,
-                                            borderColor: inDanger ? 'warning.main' : 'transparent',
+                                            borderLeft: '6px solid',
+                                            borderLeftColor:
+                                                !habit.lastCompleted
+                                                    ? COLOR_HABIT_DEFAULT           // nuevo hábito → color por defecto
+                                                    : inDanger
+                                                        ? COLOR_HABIT_IN_DANGER      // en peligro → rojo
+                                                        : COLOR_HABIT_SAFE,          // seguro → verde
                                         }}>
                                             <CardContent sx={{ display: 'flex', alignItems: 'center', p: '12px !important' }}>
                                                 <IconButton
@@ -283,14 +291,13 @@ const isStreakInDanger = (habit) => {
                                                     color={completed ? 'success' : 'default'}
                                                     sx={{ mr: 1 }}
                                                 >
-                                                    {completed ? <CheckCircleIcon sx={{ fontSize: 48 }} /> : <RadioButtonUncheckedIcon sx={{ fontSize: 48 }} />}
+                                                    {completed ? <CheckCircleIcon sx={{ fontSize: 53 }} /> : <RadioButtonUncheckedIcon sx={{ fontSize: 53 }} />}
                                                 </IconButton>
                                                 <Typography variant="h6" component="div" sx={{ flexGrow: 1, pl: 3, fontSize: '1.45rem' }}>
                                                     {habit.title}
                                                 </Typography>
                                                 <Chip
-                                                    icon={<LocalFireDepartmentIcon sx={{ fontSize: 24 }} />}
-                                                    // Usamos habit.streak que ahora viene del backend
+                                                    icon={<LocalFireDepartmentIcon sx={{ fontSize: 24 }} />}                                          
                                                     label={`${habit.streak || 0} días`}
                                                     variant="outlined"
                                                     color={completed ? 'success' : 'default'}
