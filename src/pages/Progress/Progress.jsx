@@ -20,6 +20,7 @@ import CircularHabitTracker from './CircularHabitTracker';
 import './CircularHabitTracker.css'; // Importa los estilos
 import AnnualHabitHeatmap from './AnnualHabitHeatmap';
 import './AnnualHabitHeatmap.css';
+import HabitPet from './HabitPet'; 
 
 function Progress(props) {
     // --- ESTADOS PARA LA EXPORTACIÓN (SE MANTIENEN) ---
@@ -147,11 +148,14 @@ function Progress(props) {
                                                 <CircularProgress />
                                             </Box>
                                         ) : (
-                                            <CircularHabitTracker
-                                                habits={habits}
-                                                completions={completions}
-                                                onDayClick={handleDayClick}
-                                            />
+                                            <>   {/* SECCIÓN DE MASCOTA */}
+                                                <HabitPet completions={completions} />
+                                                <CircularHabitTracker
+                                                    habits={habits}
+                                                    completions={completions}
+                                                    onDayClick={handleDayClick}
+                                                />
+                                            </>
                                         )}
                                     </CardContent>
                                 </Card>
@@ -176,7 +180,8 @@ function Progress(props) {
                                 </Card>
                             </Grid>
 
-                            {/* SECCIÓN DE EXPORTACIÓN (INTACTA) */}
+
+                            {/* SECCIÓN DE EXPORTACIÓN */}
                             <Grid item xs={12}>
                                 <Card>
                                     <CardHeader title="Función de Exportación de Datos" />
