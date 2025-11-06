@@ -1,6 +1,6 @@
 // src/pages/Progress/CircularHabitTracker.jsx
-import React from 'react';
-import { Typography, Grid, Card, CardContent } from '@mui/material';
+import React, { useState } from 'react';
+import { Typography, Grid, Card, CardContent, Snackbar, Alert } from '@mui/material';
 import './CircularHabitTracker.css';
 
 const daysInMonth = (month, year) => new Date(year, month + 1, 0).getDate();
@@ -8,7 +8,7 @@ const daysInMonth = (month, year) => new Date(year, month + 1, 0).getDate();
 const SingleHabitCircle = ({ habit, completions, month, year, onDayClick }) => {
   const totalDays = daysInMonth(month, year);
   const dayElements = [];
-  const radius = 80; // tamaño del círculo individual
+  const radius = 80;
 
   for (let i = 1; i <= totalDays; i++) {
     const angle = (i / totalDays) * 2 * Math.PI - Math.PI / 2;
@@ -50,19 +50,57 @@ const SingleHabitCircle = ({ habit, completions, month, year, onDayClick }) => {
 };
 
 const CircularHabitTracker = ({ habits, completions, onDayClick }) => {
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
+
   const today = new Date();
   const currentMonth = today.getMonth();
   const currentYear = today.getFullYear();
   const monthName = today.toLocaleString('es-ES', { month: 'long' });
 
   const completionsByHabit = new Map();
-  habits.forEach(h => completionsByHabit.set(h.id, new Set()));
-  completions.forEach(c => {
+  habits.forEach((h) => completionsByHabit.set(h.id, new Set()));
+  completions.forEach((c) => {
     if (completionsByHabit.has(c.habit_id)) {
       const dateOnly = c.completion_date.split('T')[0];
       completionsByHabit.get(c.habit_id).add(dateOnly);
     }
   });
+
+  const handleDayClick = (habitId, dateString, isCompleted) => {
+    const selectedDate = new Date(dateString);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    //  Día futuro
+    if (selectedDate > now) {
+      setSnackbar({
+        open: true,
+        message: 'No puedes marcar días futuros ',
+        severity: 'error',
+      });
+      return;
+    }
+
+    //  Día ya completado
+    if (isCompleted) {
+      setSnackbar({
+        open: true,
+        message: 'Este hábito ya fue completado ',
+        severity: 'warning',
+      });
+      return;
+    }
+
+    //  Día válido
+    onDayClick(habitId, dateString, isCompleted);
+    setSnackbar({
+      open: true,
+      message: '¡Hábito completado con éxito! ',
+      severity: 'success',
+    });
+  };
+
+  const handleCloseSnackbar = () => setSnackbar({ ...snackbar, open: false });
 
   return (
     <div className="tracker-container">
@@ -81,12 +119,24 @@ const CircularHabitTracker = ({ habits, completions, onDayClick }) => {
                 completions={completionsByHabit.get(habit.id) || new Set()}
                 month={currentMonth}
                 year={currentYear}
-                onDayClick={onDayClick}
+                onDayClick={handleDayClick}
               />
             </Grid>
           ))}
         </Grid>
       )}
+
+      {/* Snackbar de retroalimentación */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={2500}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };
