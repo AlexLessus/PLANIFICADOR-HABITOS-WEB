@@ -32,7 +32,10 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const JWT_SECRET = process.env.JWT_SECRET; // Obtiene la clave secreta para JWT
 
-console.log("JWT_SECRET usado en authController:", JWT_SECRET);
+// Verificar que JWT_SECRET esté configurado (solo en desarrollo para diagnóstico)
+if (!JWT_SECRET && process.env.NODE_ENV === 'development') {
+    console.warn('[WARNING] JWT_SECRET no está configurado. La autenticación no funcionará correctamente.');
+}
 
 
 const authController = {
@@ -75,7 +78,15 @@ const authController = {
 
         } catch (error) {
             console.error('Error en el registro:', error);
-            res.status(500).json({ message: 'Error interno del servidor durante el registro.', details: error.message });
+            // No exponer detalles del error en producción
+            const errorMessage = process.env.NODE_ENV === 'development' 
+                ? 'Error interno del servidor durante el registro.' 
+                : 'Error interno del servidor durante el registro.';
+            res.status(500).json({ 
+                success: false,
+                message: errorMessage,
+                ...(process.env.NODE_ENV === 'development' && { details: error.message })
+            });
         }
     },
 
@@ -118,7 +129,15 @@ const authController = {
 
         } catch (error) {
             console.error('Error en el login:', error);
-            res.status(500).json({ message: 'Error interno del servidor durante el inicio de sesión.', details: error.message });
+            // No exponer detalles del error en producción
+            const errorMessage = process.env.NODE_ENV === 'development' 
+                ? 'Error interno del servidor durante el inicio de sesión.' 
+                : 'Error interno del servidor durante el inicio de sesión.';
+            res.status(500).json({ 
+                success: false,
+                message: errorMessage,
+                ...(process.env.NODE_ENV === 'development' && { details: error.message })
+            });
         }
     },
 
@@ -176,8 +195,8 @@ const authController = {
             await userModel.savePasswordResetToken(user.id, resetTokenHash, resetTokenExpires);
 
             // El enlace debe apuntar a la ruta del frontend donde el usuario restablecerá su contraseña.
-            // Lo he cambiado a 'localhost:3000', pero ajústalo a la URL de tu frontend si es diferente.
-            const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
+            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+            const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
             const emailTemplateSource = fs.readFileSync(path.join(__dirname, '../templates/passwordReset.hbs'), 'utf8');
             const template = handlebars.compile(emailTemplateSource);
             const htmlToSend = template({
@@ -187,7 +206,7 @@ const authController = {
 
             const msg = {
                 to: user.email,
-                from: 'equipotigretech@gmail.com', 
+                from: process.env.SENDGRID_FROM_EMAIL || 'noreply@yourdomain.com', 
                 subject: 'Restablecimiento de contraseña',
                 html: htmlToSend,
             };
