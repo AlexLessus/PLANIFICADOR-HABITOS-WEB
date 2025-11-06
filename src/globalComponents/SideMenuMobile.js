@@ -43,7 +43,7 @@ function SideMenuMobile({ open, toggleDrawer }) {
               sx={{ width: 24, height: 24 }}
             />
             <Typography component="p" variant="h6">
-              Riley Carter
+              Tiger Habit Planner
             </Typography>
           </Stack>
           <MenuButton showBadge>
