@@ -3,6 +3,13 @@ import Joyride, { STATUS, ACTIONS, EVENTS } from 'react-joyride';
 import { useTheme } from '@mui/material/styles';
 import { useLocation } from 'react-router-dom';
 import welcomeImage from '../../../assets/pets/tutorial.png';
+import taskImage from '../../../assets/pets/tutorial_tareas.png';
+import dashboardImage from '../../../assets/pets/tutorial_dashboard.png';
+import progressImage from '../../../assets/pets/tutorial_progreso.png';
+import calendarImage from '../../../assets/pets/tutorial_calendario.png';
+import habitImage from '../../../assets/pets/tutorial_habitos.png';
+import settingImage from '../../../assets/pets/tutorial_ajustes.png';
+import notifyImage from '../../../assets/pets/tutorial_notificaciones.png';
 
 const TutorialTour = () => {
     const [run, setRun] = useState(false);
@@ -45,9 +52,9 @@ const TutorialTour = () => {
             target: '.MuiDrawer-root .MuiList-root', // Menu lateral
             content: (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px', textAlign: 'center' }}>
-                    <p>Aquí encontrarás el menú principal con todas las secciones: Hábitos, Tareas, Calendario y Progreso.</p>
+                    <p>Aquí encontrarás un vistazo general de todas las opciones, ademas de algunas estadisticas.</p>
                     <img
-                        src={welcomeImage}
+                        src={dashboardImage}
                         style={{
                             width: '120px',
                             height: 'auto',
@@ -64,7 +71,7 @@ const TutorialTour = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px', textAlign: 'center' }}>
                     <p>En "Hábitos" puedes crear, editar o borrar tus hábitos diarios. Conforme vayas haciendolos, tu racha irá aumentando.</p>
                     <img
-                        src={welcomeImage}
+                        src={habitImage}
                         style={{
                             width: '120px',
                             height: 'auto',
@@ -81,7 +88,7 @@ const TutorialTour = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px', textAlign: 'center' }}>
                     <p>En "Tareas" puedes crear, editar o borar tus tareas, además podrás crear tareas recurrentes, genial para tareas repetitivas.</p>
                     <img
-                        src={welcomeImage}
+                        src={taskImage}
                         style={{
                             width: '120px',
                             height: 'auto',
@@ -98,7 +105,7 @@ const TutorialTour = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px', textAlign: 'center' }}>
                     <p>El "Calendario" te muestra una vista completa tareas organizadas por fecha.</p>
                     <img
-                        src={welcomeImage}
+                        src={calendarImage}
                         style={{
                             width: '120px',
                             height: 'auto',
@@ -113,9 +120,9 @@ const TutorialTour = () => {
             target: 'a[href="/progress"]', // Opción de Progreso
             content: (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px', textAlign: 'center' }}>
-                    <p>En "Progreso" encontrarás estadísticas detalladas y gráficas de tu desempeño. Además de una opción para exportar tus hábitos y tareas..</p>
+                    <p>En "Progreso" encontrarás estadísticas detalladas y gráficas de tu desempeño. Además de una opción para exportar tus hábitos y tareas.</p>
                     <img
-                        src={welcomeImage}
+                        src={progressImage}
                         style={{
                             width: '120px',
                             height: 'auto',
@@ -132,7 +139,7 @@ const TutorialTour = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px', textAlign: 'center' }}>
                     <p>Aquí verás notificaciones importantes como tareas próximas a vencer y recordatorios de hábitos.</p>
                     <img
-                        src={welcomeImage}
+                        src={notifyImage}
                         style={{
                             width: '120px',
                             height: 'auto',
@@ -145,12 +152,12 @@ const TutorialTour = () => {
         },
         {
 
-            target: '.profile', // Avatar y opciones
+            target: '.css-bywlky-MuiStack-root', // Avatar y opciones
             content: (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px', textAlign: 'center' }}>
                     <p>Desde aquí puedes acceder a tu perfil, configuración y cerrar sesión.</p>
                     <img
-                        src={welcomeImage}
+                        src={settingImage}
                         style={{
                             width: '120px',
                             height: 'auto',
@@ -225,7 +232,7 @@ const TutorialTour = () => {
                     zIndex: 10000,
                     backgroundColor: theme.palette.background.paper,
                     textColor: theme.palette.text.primary,
-                    overlayColor: 'rgba(0, 0, 0, 0.5)',
+                    overlayColor: 'rgba(0, 0, 0, 0.8)',
                     arrowColor: theme.palette.background.paper,
                     beaconSize: 36,
                 },
