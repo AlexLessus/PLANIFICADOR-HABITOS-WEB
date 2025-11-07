@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import Joyride, { STATUS, ACTIONS, EVENTS } from 'react-joyride';
 import { useTheme } from '@mui/material/styles';
 import { useLocation } from 'react-router-dom';
+import AuthContext from '../../../context/AuthContext';
 import welcomeImage from '../../../assets/pets/tutorial.png';
 import taskImage from '../../../assets/pets/tutorial_tareas.png';
 import dashboardImage from '../../../assets/pets/tutorial_dashboard.png';
@@ -16,16 +17,22 @@ const TutorialTour = () => {
     const theme = useTheme();
     const location = useLocation();
 
-    useEffect(() => {
-        // Verificar si el usuario ya vio el tutorial
-        const hasSeenTutorial = localStorage.getItem('hasSeenTutorial');
+    const { currentUser } = useContext(AuthContext);
 
-        // SOLO iniciar en el dashboard
-        if (!hasSeenTutorial && location.pathname === '/dashboard') {
+    useEffect(() => {
+        // Si no estamos en dashboard, no iniciamos
+        if (location.pathname !== '/dashboard') return;
+
+        // Construir una clave por usuario para que cada cuenta tenga su propio flag
+        const userKey = currentUser?.id ? `hasSeenTutorial_user_${currentUser.id}` : `hasSeenTutorial_device`;
+        const hasSeenTutorial = localStorage.getItem(userKey);
+
+        // Iniciar el tour si el usuario no lo ha visto
+        if (!hasSeenTutorial) {
             // Esperar 1 segundo antes de iniciar el tour (para que cargue todo)
             setTimeout(() => setRun(true), 1000);
         }
-    }, [location.pathname]);
+    }, [location.pathname, currentUser]);
 
     // Define los pasos del tutorial
     const steps = [
@@ -192,20 +199,24 @@ const TutorialTour = () => {
 
         // Cuando el usuario termina o salta el tutorial
         if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
-            localStorage.setItem('hasSeenTutorial', 'true');
+            const userKey = currentUser?.id ? `hasSeenTutorial_user_${currentUser.id}` : `hasSeenTutorial_device`;
+            localStorage.setItem(userKey, 'true');
             setRun(false);
         }
 
         // Si el usuario hace clic fuera (cierra el tooltip)
         if (action === ACTIONS.CLOSE && type === EVENTS.STEP_AFTER) {
-            localStorage.setItem('hasSeenTutorial', 'true');
+            const userKey = currentUser?.id ? `hasSeenTutorial_user_${currentUser.id}` : `hasSeenTutorial_device`;
+            localStorage.setItem(userKey, 'true');
             setRun(false);
         }
     };
 
     // Función para reiniciar el tutorial (puedes llamarla desde cualquier parte)
+    // Reiniciar tutorial (elimina la marca del usuario actual o del dispositivo)
     window.restartTutorial = () => {
-        localStorage.removeItem('hasSeenTutorial');
+        const userKey = currentUser?.id ? `hasSeenTutorial_user_${currentUser.id}` : `hasSeenTutorial_device`;
+        localStorage.removeItem(userKey);
         setRun(true);
     };
 
