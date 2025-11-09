@@ -67,9 +67,13 @@ const CircularHabitTracker = ({ habits, completions, onDayClick }) => {
   });
 
   const handleDayClick = (habitId, dateString, isCompleted) => {
-    const selectedDate = new Date(dateString);
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
+  // Parse selected date as local date (avoid timezone shifts when using ISO strings)
+  const parts = dateString.split('-').map((p) => parseInt(p, 10));
+  const selectedDate = new Date(parts[0], parts[1] - 1, parts[2]);
+  selectedDate.setHours(0, 0, 0, 0);
+
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
 
     //  Día futuro
     if (selectedDate > now) {
