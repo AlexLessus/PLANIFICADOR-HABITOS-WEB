@@ -67,7 +67,7 @@ export default function AppNavbar() {
           >
 
             <Typography variant="h4" component="h1" sx={{ color: 'text.primary' }}>
-              Tigre Habit Planner
+              Tiger Habit Planner
             </Typography>
           </Stack>
           <ColorModeIconDropdown />

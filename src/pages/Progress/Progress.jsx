@@ -20,6 +20,7 @@ import CircularHabitTracker from './CircularHabitTracker';
 import './CircularHabitTracker.css'; // Importa los estilos
 import AnnualHabitHeatmap from './AnnualHabitHeatmap';
 import './AnnualHabitHeatmap.css';
+import HabitPet from './HabitPet'; 
 
 function Progress(props) {
     // --- ESTADOS PARA LA EXPORTACIÓN (SE MANTIENEN) ---
@@ -147,11 +148,14 @@ function Progress(props) {
                                                 <CircularProgress />
                                             </Box>
                                         ) : (
-                                            <CircularHabitTracker
-                                                habits={habits}
-                                                completions={completions}
-                                                onDayClick={handleDayClick}
-                                            />
+                                            <>   {/* SECCIÓN DE MASCOTA */}
+                                                <HabitPet habits={habits} />
+                                                <CircularHabitTracker
+                                                    habits={habits}
+                                                    completions={completions}
+                                                    onDayClick={handleDayClick}
+                                                />
+                                            </>
                                         )}
                                     </CardContent>
                                 </Card>
@@ -176,7 +180,8 @@ function Progress(props) {
                                 </Card>
                             </Grid>
 
-                            {/* SECCIÓN DE EXPORTACIÓN (INTACTA) */}
+
+                            {/* SECCIÓN DE EXPORTACIÓN */}
                             <Grid item xs={12}>
                                 <Card>
                                     <CardHeader title="Función de Exportación de Datos" />
@@ -192,7 +197,7 @@ function Progress(props) {
                                                     </RadioGroup>
                                                 </FormControl>
                                             </Grid>
-                                            <Grid item xs={12} md={5}>
+                                            {/* <Grid item xs={12} md={5}>
                                                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                                                     <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                                                         <DatePicker
@@ -209,7 +214,7 @@ function Progress(props) {
                                                         />
                                                     </Box>
                                                 </LocalizationProvider>
-                                            </Grid>
+                                            </Grid> */}
                                             <Grid item xs={12} md={3}>
                                                 <Box sx={{ display: 'flex', gap: 1 }}>
                                                     <Button variant="outlined" startIcon={<PictureAsPdfIcon />} onClick={() => handleExport('PDF')}>

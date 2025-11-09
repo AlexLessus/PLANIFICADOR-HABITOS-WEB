@@ -54,7 +54,7 @@ function HabitItem({ habit, isCompleted, onToggleComplete }) {
               <Typography
                 variant="body2"
                 sx={{
-                  textDecoration: isCompleted ? 'line-through' : 'none',
+                  textDecoration: isCompleted ? 'none' : 'none',
                   color: isCompleted ? 'text.secondary' : 'text.primary',
                   fontWeight: isCompleted ? 400 : 500
                 }}

@@ -84,6 +84,16 @@ function HabitsProgressChart() {
   };
 
   /**
+   * Convierte una fecha a string local YYYY-MM-DD
+   */
+  const dateToLocalString = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  /**
    * Genera datos del gráfico para los últimos N días
    */
   const generateChartData = (totalHabits, completions, numDays) => {
@@ -93,12 +103,14 @@ function HabitsProgressChart() {
     for (let i = numDays - 1; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
-      const dateStr = date.toISOString().split('T')[0];
+      const dateStr = dateToLocalString(date);
 
-      // Contar hábitos completados ese día
-      const completedCount = completions.filter(c => 
-        c.completion_date.split('T')[0] === dateStr
-      ).length;
+      // Contar hábitos completados ese día (considerando zona horaria local)
+      const completedCount = completions.filter(c => {
+        const compDate = new Date(c.completion_date);
+        const compDateStr = dateToLocalString(compDate);
+        return compDateStr === dateStr;
+      }).length;
 
       // Calcular porcentaje
       const percentage = totalHabits > 0 
