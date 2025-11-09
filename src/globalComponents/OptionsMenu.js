@@ -75,11 +75,11 @@ export default function OptionsMenu() {
           },
         }}
       >
-        <MenuItem onClick={handleClose}>Perfil</MenuItem>
+        {/* <MenuItem onClick={handleClose}>Perfil</MenuItem>
         <MenuItem onClick={handleClose}>Mi cuenta</MenuItem>
         <Divider />
-        <MenuItem onClick={handleClose}>Ajustes</MenuItem>
-        <Divider />
+        <MenuItem onClick={handleClose}>Ajustes</MenuItem> */}
+        {/* <Divider /> */}
         <MenuItem
           onClick={handleClose}
           sx={{
@@ -89,7 +89,7 @@ export default function OptionsMenu() {
             },
           }}
         >
-          <ListItemText onClick={handleLogout}>Logout</ListItemText>
+          <ListItemText onClick={handleLogout}>Cerrar sesión</ListItemText>
           <ListItemIcon>
             <LogoutRoundedIcon fontSize="small" />
           </ListItemIcon>

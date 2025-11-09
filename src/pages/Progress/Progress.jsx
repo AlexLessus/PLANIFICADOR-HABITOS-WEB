@@ -197,7 +197,7 @@ function Progress(props) {
                                                     </RadioGroup>
                                                 </FormControl>
                                             </Grid>
-                                            <Grid item xs={12} md={5}>
+                                            {/* <Grid item xs={12} md={5}>
                                                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                                                     <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                                                         <DatePicker
@@ -214,7 +214,7 @@ function Progress(props) {
                                                         />
                                                     </Box>
                                                 </LocalizationProvider>
-                                            </Grid>
+                                            </Grid> */}
                                             <Grid item xs={12} md={3}>
                                                 <Box sx={{ display: 'flex', gap: 1 }}>
                                                     <Button variant="outlined" startIcon={<PictureAsPdfIcon />} onClick={() => handleExport('PDF')}>
