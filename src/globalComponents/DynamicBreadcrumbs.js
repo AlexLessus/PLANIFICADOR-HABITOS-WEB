@@ -13,7 +13,7 @@ const routeNames = {
   '/tasks': 'Tareas',
   '/calendar': 'Calendario',
   '/progress': 'Progreso',
-  '/settings': 'Ajustes',
+  // '/settings': 'Ajustes',
   '/profile': 'Perfil',
   '/account': 'Mi Cuenta'
 };
@@ -25,7 +25,7 @@ const routeIcons = {
   '/tasks': '✅',
   '/calendar': '📅',
   '/progress': '📈',
-  '/settings': '⚙️',
+  // '/settings': '⚙️',
   '/profile': '👤',
   '/account': '🔐'
 };
