@@ -61,7 +61,13 @@ const COLORS = {
     taskCompleted: '#31dd1eff', // Gris para tareas completadas
     habit: '#1de0e7ff'     // Verde para hábitos
 };
-
+const chipStyles = (bgColor, textColor) => ({
+    bgcolor: bgColor,
+    '& .MuiChip-label': {
+        color: textColor,
+        fontWeight: 500
+    }
+});
 // Estilo para el modal
 const modalStyle = {
     position: 'absolute',
@@ -528,29 +534,14 @@ function CalendarPage(props) {
                     </Typography>
 
                     {/* Leyenda de Colores */}
-                    <Box sx={{ mb: 2, display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
-                        <Typography variant="body2" sx={{ mr: 1, fontWeight: 'bold' }}>Leyenda:</Typography>
-                        <Chip label="Alta Prioridad" size="small" sx={{ bgcolor: COLORS.task.alta, color: 'white' }} />
-                        <Chip label="Media Prioridad" size="small" sx={{ bgcolor: COLORS.task.media, color: 'white' }} />
-                        <Chip label="Baja Prioridad" size="small" sx={{ bgcolor: COLORS.task.baja, color: 'white' }} />
-                        <Chip label="Completada" size="small" sx={{ bgcolor: COLORS.taskCompleted, color: 'white' }} />
-                        <Chip label="Hábito Completado" size="small" sx={{ bgcolor: COLORS.habit, color: 'white' }} />
-                    </Box>
 
-                    {/* Filtros */}
-                    <Box sx={{ mb: 2 }}>
-                        <ToggleButtonGroup
-                            color="primary"
-                            value={filter}
-                            exclusive
-                            onChange={(e, newFilter) => newFilter && setFilter(newFilter)}
-                            size="small"
-                        >
-                            <ToggleButton value="all">Todos</ToggleButton>
-                            <ToggleButton value="tasks">Tareas</ToggleButton>
-                            <ToggleButton value="habits">Hábitos</ToggleButton>
-                        </ToggleButtonGroup>
-                    </Box>
+                <Box sx={{ mb: 2, display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <Chip label="Alta Prioridad" size="small" sx={chipStyles(COLORS.task.alta, '#f44336')} />
+                    <Chip label="Media Prioridad" size="small" sx={chipStyles(COLORS.task.media, '#ff9800')} />
+                    <Chip label="Baja Prioridad" size="small" sx={chipStyles('#2196f3', '#2196f3')} />
+                    <Chip label="Completada" size="small" sx={chipStyles('#31dd1eff', '#31dd1eff')} />
+                </Box>
+
 
                     {/* Mensajes de Error */}
                     {error && (

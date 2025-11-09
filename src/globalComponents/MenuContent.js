@@ -84,9 +84,9 @@ export default function MenuContent() {
     { text: 'Progreso', icon: <DonutLargeIcon />, to: '/progress' },
   ];
 
-  const secondaryListItems = [
-    { text: 'Ajustes', icon: <SettingsRoundedIcon />, to: '/settings' },
-  ];
+  // const secondaryListItems = [
+  //   { text: 'Ajustes', icon: <SettingsRoundedIcon />, to: '/settings' },
+  // ];
 
   return (
     <Stack sx={{ flexGrow: 1, p: 1, justifyContent: 'space-between' }}>
@@ -116,7 +116,7 @@ export default function MenuContent() {
           </ListItem>
         ))}
       </List>
-      <List dense>
+      {/* <List dense>
         {secondaryListItems.map((item, index) => (
           <ListItem key={index} disablePadding sx={{ display: 'block' }}>
             <ListItemButton
@@ -128,7 +128,7 @@ export default function MenuContent() {
             </ListItemButton>
           </ListItem>
         ))}
-      </List>
+      </List> */}
     </Stack>
   );
 }
