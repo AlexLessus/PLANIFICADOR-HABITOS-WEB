@@ -11,10 +11,10 @@ const logger = require('../config/logger');
  */
 const logAppStart = (port) => {
     logger.info('='.repeat(50));
-    logger.info('🚀 PLANIFICADOR API - Servidor Iniciado');
-    logger.info(`📡 Puerto: ${port}`);
-    logger.info(`🌍 Entorno: ${process.env.NODE_ENV || 'development'}`);
-    logger.info(`⏰ Timestamp: ${new Date().toISOString()}`);
+    logger.info('PLANIFICADOR API - Servidor Iniciado');
+    logger.info(`Puerto: ${port}`);
+    logger.info(`Entorno: ${process.env.NODE_ENV || 'development'}`);
+    logger.info(`Timestamp: ${new Date().toISOString()}`);
     logger.info('='.repeat(50));
 };
 
@@ -23,9 +23,9 @@ const logAppStart = (port) => {
  */
 const logDatabaseConnection = (status, details = '') => {
     if (status === 'success') {
-        logger.info(`✅ Conexión a base de datos exitosa ${details}`);
+        logger.info(`Conexión a base de datos exitosa ${details}`);
     } else {
-        logger.error(`❌ Error en conexión a base de datos: ${details}`);
+        logger.error(`Error en conexión a base de datos: ${details}`);
     }
 };
 
@@ -87,7 +87,7 @@ const logSecurityEvent = (event, severity, details) => {
  * Log de rate limiting
  */
 const logRateLimit = (ip, endpoint) => {
-    logger.warn(`⚠️ Rate limit exceeded - IP: ${ip} - Endpoint: ${endpoint}`);
+    logger.warn(`Rate limit exceeded - IP: ${ip} - Endpoint: ${endpoint}`);
 };
 
 /**
@@ -103,9 +103,9 @@ const logDataExport = (userId, dataType, format, success) => {
  */
 const logEmailSent = (to, subject, success, error = null) => {
     if (success) {
-        logger.info(`📧 Email sent to ${to} - Subject: ${subject}`);
+        logger.info(`Email sent to ${to} - Subject: ${subject}`);
     } else {
-        logger.error(`📧 Email failed to ${to} - Subject: ${subject} - Error: ${error}`);
+        logger.error(`Email failed to ${to} - Subject: ${subject} - Error: ${error}`);
     }
 };
 
