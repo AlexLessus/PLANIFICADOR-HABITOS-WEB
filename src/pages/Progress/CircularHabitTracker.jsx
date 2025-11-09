@@ -75,8 +75,18 @@ const CircularHabitTracker = ({ habits, completions, onDayClick }) => {
     if (selectedDate > now) {
       setSnackbar({
         open: true,
-        message: 'No puedes marcar días futuros ',
+        message: 'No puedes marcar días futuros como completados ',
         severity: 'error',
+      });
+      return;
+    }
+
+    // Día pasado no completado: no permitir marcar retroactivamente
+    if (selectedDate < now && !isCompleted) {
+      setSnackbar({
+        open: true,
+        message: 'No puedes marcar tareas pasadas que no completaste en su momento.',
+        severity: 'warning',
       });
       return;
     }
@@ -85,7 +95,7 @@ const CircularHabitTracker = ({ habits, completions, onDayClick }) => {
     if (isCompleted) {
       setSnackbar({
         open: true,
-        message: 'Este hábito ya fue completado ',
+        message: 'Este hábito ya fue completado en este día',
         severity: 'warning',
       });
       return;
@@ -95,7 +105,7 @@ const CircularHabitTracker = ({ habits, completions, onDayClick }) => {
     onDayClick(habitId, dateString, isCompleted);
     setSnackbar({
       open: true,
-      message: '¡Hábito completado con éxito! ',
+      message: '¡Hábito completado con éxito!',
       severity: 'success',
     });
   };
