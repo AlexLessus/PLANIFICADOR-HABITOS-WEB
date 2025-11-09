@@ -27,6 +27,16 @@ function TodayHabitsPanel() {
     fetchTodayHabits();
   }, []);
 
+  /**
+   * Convierte una fecha a string local YYYY-MM-DD
+   */
+  const dateToLocalString = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const fetchTodayHabits = async () => {
     setLoading(true);
     setError(null);
@@ -53,8 +63,8 @@ function TodayHabitsPanel() {
       const allHabits = await habitsResponse.json();
       const activeHabits = allHabits.filter(h => h.is_active !== false);
 
-      // Obtener completaciones de hoy
-      const today = new Date().toISOString().split('T')[0];
+      // Obtener completaciones de hoy (usando hora local)
+      const today = dateToLocalString(new Date());
       const completionsResponse = await fetch('http://localhost:5000/api/habits/completions', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -67,7 +77,11 @@ function TodayHabitsPanel() {
       if (completionsResponse.ok) {
         allCompletions = await completionsResponse.json();
         completedHabitIds = allCompletions
-          .filter(c => c.completion_date.split('T')[0] === today)
+          .filter(c => {
+            const compDate = new Date(c.completion_date);
+            const compDateStr = dateToLocalString(compDate);
+            return compDateStr === today;
+          })
           .map(c => c.habit_id);
       }
 
@@ -99,13 +113,16 @@ function TodayHabitsPanel() {
     if (completions.length === 0) return 0;
 
     const uniqueDates = [...new Set(
-      completions.map(c => c.completion_date.split('T')[0])
+      completions.map(c => {
+        const compDate = new Date(c.completion_date);
+        return dateToLocalString(compDate);
+      })
     )].sort().reverse();
 
     if (uniqueDates.length === 0) return 0;
 
-    const today = new Date().toISOString().split('T')[0];
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    const today = dateToLocalString(new Date());
+    const yesterday = dateToLocalString(new Date(Date.now() - 86400000));
 
     if (uniqueDates[0] !== today && uniqueDates[0] !== yesterday) {
       return 0;
@@ -138,35 +155,34 @@ function TodayHabitsPanel() {
       const isCurrentlyCompleted = completedToday.includes(habit.id);
 
       if (isCurrentlyCompleted) {
-        // Desmarcar (eliminar completación de hoy)
-        // Por ahora, solo recargamos la lista
-        // TODO: Implementar DELETE en el backend
-        console.log('Desmarcar hábito:', habit.id);
-        alert('Funcionalidad de desmarcar en desarrollo');
-      } else {
-        // Marcar como completado
-        const response = await fetch(`http://localhost:5000/api/habits/${habit.id}/complete`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            completion_date: new Date().toISOString().split('T')[0]
-          })
-        });
-
-        if (!response.ok) {
-          throw new Error('Error al completar hábito');
-        }
-
-        // Recargar hábitos
-        await fetchTodayHabits();
+        // Si ya está completado, no hacer nada (o mostrar mensaje)
+        console.log('El hábito ya está completado hoy');
+        return;
       }
+
+      // Marcar como completado usando el endpoint correcto
+      const response = await fetch(`http://localhost:5000/api/habits/${habit.id}/checkin`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al completar hábito');
+      }
+
+      // Recargar hábitos para reflejar el cambio
+      await fetchTodayHabits();
 
     } catch (err) {
       console.error('Error al cambiar estado de hábito:', err);
-      alert('Error al actualizar el hábito. Inténtalo de nuevo.');
+      // No mostrar alert si el error es que ya está completado
+      if (!err.message.includes('ya fue completado')) {
+        alert(`Error: ${err.message}`);
+      }
     }
   };
 
