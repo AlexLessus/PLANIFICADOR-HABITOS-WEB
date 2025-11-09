@@ -172,8 +172,8 @@ function Progress(props) {
                                             </Box>
                                         ) : (
                                             <>
-                                                <AnnualHabitHeatmap completions={completions} year={2024} />
                                                 <AnnualHabitHeatmap completions={completions} year={2025} />
+                                                <AnnualHabitHeatmap completions={completions} year={2026} />
                                             </>
                                         )}
                                     </CardContent>
