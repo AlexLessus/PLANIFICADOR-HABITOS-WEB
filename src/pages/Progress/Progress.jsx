@@ -149,7 +149,7 @@ function Progress(props) {
                                             </Box>
                                         ) : (
                                             <>   {/* SECCIÓN DE MASCOTA */}
-                                                <HabitPet completions={completions} />
+                                                <HabitPet habits={habits} />
                                                 <CircularHabitTracker
                                                     habits={habits}
                                                     completions={completions}
