@@ -21,8 +21,8 @@ function MonthlyStats() {
   const [stats, setStats] = useState({
     tasksCompleted: 0,
     tasksTotal: 0,
-    habitsCompleted: 0,
-    habitsTotal: 0,
+    habitsCompletedToday: 0, // CAMBIO: Hábitos completados HOY
+    habitsTotal: 0, // CAMBIO: Total de hábitos activos del usuario
     longestStreak: 0,
     perfectDays: 0
   });
@@ -48,6 +48,10 @@ function MonthlyStats() {
       const now = new Date();
       const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
       const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      
+      // CAMBIO: Obtener fecha de hoy en formato YYYY-MM-DD (hora local)
+      const today = new Date();
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
       // Obtener tareas
       const tasksResponse = await fetch('http://localhost:5000/api/tasks', {
@@ -93,6 +97,7 @@ function MonthlyStats() {
       });
 
       let monthCompletions = [];
+      let todayCompletions = 0; // CAMBIO: Contador de hábitos completados hoy
       let longestStreak = 0;
       let perfectDays = 0;
 
@@ -105,6 +110,15 @@ function MonthlyStats() {
           return compDate >= firstDay && compDate <= lastDay;
         });
 
+        // CAMBIO: Contar hábitos completados HOY (considerando zona horaria local)
+        todayCompletions = allCompletions.filter(c => {
+          // Convertir la fecha de completion a objeto Date
+          const compDate = new Date(c.completion_date);
+          // Obtener la fecha en formato local YYYY-MM-DD
+          const compDateStr = `${compDate.getFullYear()}-${String(compDate.getMonth() + 1).padStart(2, '0')}-${String(compDate.getDate()).padStart(2, '0')}`;
+          return compDateStr === todayStr;
+        }).length;
+
         // Calcular racha más larga
         longestStreak = calculateLongestStreak(allCompletions);
 
@@ -112,15 +126,12 @@ function MonthlyStats() {
         perfectDays = calculatePerfectDays(monthCompletions, activeHabits.length, firstDay, lastDay);
       }
 
-      // Total de hábitos esperados en el mes
-      const daysInMonth = lastDay.getDate();
-      const totalHabitsExpected = activeHabits.length * daysInMonth;
-
+      // CAMBIO: El total es simplemente la cantidad de hábitos activos
       setStats({
         tasksCompleted: completedTasks,
         tasksTotal: monthTasks.length,
-        habitsCompleted: monthCompletions.length,
-        habitsTotal: totalHabitsExpected,
+        habitsCompletedToday: todayCompletions, // Hábitos completados hoy
+        habitsTotal: activeHabits.length, // Total de hábitos activos
         longestStreak: longestStreak,
         perfectDays: perfectDays
       });
@@ -170,8 +181,10 @@ function MonthlyStats() {
 
     let perfectDays = 0;
     const currentDate = new Date(firstDay);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    while (currentDate <= lastDay) {
+    while (currentDate <= lastDay && currentDate <= today) {
       const dateStr = currentDate.toISOString().split('T')[0];
       const completedThatDay = completions.filter(c => 
         c.completion_date.split('T')[0] === dateStr
@@ -212,8 +225,9 @@ function MonthlyStats() {
     ? Math.round((stats.tasksCompleted / stats.tasksTotal) * 100)
     : 0;
 
+  // CAMBIO: Porcentaje basado en hábitos completados hoy vs total de hábitos
   const habitsPercentage = stats.habitsTotal > 0
-    ? Math.round((stats.habitsCompleted / stats.habitsTotal) * 100)
+    ? Math.round((stats.habitsCompletedToday / stats.habitsTotal) * 100)
     : 0;
 
   return (
@@ -240,15 +254,15 @@ function MonthlyStats() {
           </Box>
         </Grid>
 
-        {/* Hábitos Cumplidos */}
+        {/* Hábitos Cumplidos HOY */}
         <Grid item xs={12} sm={6}>
           <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 1, textAlign: 'center' }}>
             <TrendingUpIcon sx={{ fontSize: 40, color: '#4caf50', mb: 1 }} />
             <Typography variant="h4" fontWeight="bold" color="#4caf50">
-              {stats.habitsCompleted}/{stats.habitsTotal}
+              {stats.habitsCompletedToday}/{stats.habitsTotal}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Hábitos Cumplidos
+              Hábitos Cumplidos Hoy
             </Typography>
             <Typography variant="h6" fontWeight="bold" color="#4caf50" sx={{ mt: 1 }}>
               {habitsPercentage}%
@@ -271,7 +285,7 @@ function MonthlyStats() {
               Racha Más Larga
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              días consecutivos
+              Días consecutivos
             </Typography>
           </Box>
         </Grid>
@@ -297,7 +311,15 @@ function MonthlyStats() {
       {habitsPercentage >= 80 && (
         <Box sx={{ mt: 2, p: 1.5, bgcolor: '#4caf5020', borderRadius: 1, textAlign: 'center' }}>
           <Typography variant="body2" color="#4caf50" fontWeight="bold">
-            🎉 ¡Excelente mes! Mantén el ritmo
+            🎉 ¡Excelente día! Mantén el ritmo
+          </Typography>
+        </Box>
+      )}
+      
+      {habitsPercentage === 100 && stats.habitsTotal > 0 && (
+        <Box sx={{ mt: 2, p: 1.5, bgcolor: '#ff980020', borderRadius: 1, textAlign: 'center' }}>
+          <Typography variant="body2" color="#ff9800" fontWeight="bold">
+            🔥 ¡Día perfecto! Todos los hábitos completados
           </Typography>
         </Box>
       )}
