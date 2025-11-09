@@ -3,6 +3,8 @@
  * Proporciona diferentes niveles de detalle según el entorno
  */
 
+const logger = require('../config/logger');
+
 class AppError extends Error {
   constructor(message, statusCode) {
     super(message);
@@ -51,23 +53,23 @@ const errorHandler = {
   handleError: (err, req, res, next) => {
     err.statusCode = err.statusCode || 500;
 
-    // Log del error (siempre en servidor, nunca en respuesta al cliente)
+    // Log del error usando Winston logger
+    const errorContext = {
+      message: err.message,
+      statusCode: err.statusCode,
+      path: req.path,
+      method: req.method,
+      ip: req.ip,
+      userAgent: req.get('user-agent'),
+      ...(req.user && { userId: req.user.id }),
+    };
+
     if (process.env.NODE_ENV === 'development') {
-      console.error('Error:', {
-        message: err.message,
-        stack: err.stack,
-        statusCode: err.statusCode,
-        path: req.path,
-        method: req.method,
-      });
+      errorContext.stack = err.stack;
+      logger.error('Error occurred:', errorContext);
     } else {
-      // En producción, solo log básico sin stack trace
-      console.error('Error:', {
-        message: err.message,
-        statusCode: err.statusCode,
-        path: req.path,
-        method: req.method,
-      });
+      // En producción, log sin stack trace
+      logger.error('Error occurred:', errorContext);
     }
 
     if (res.headersSent) {
