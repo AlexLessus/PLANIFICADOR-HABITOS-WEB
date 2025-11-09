@@ -4,7 +4,6 @@ import {
     Container, Typography, Box, IconButton, Card, CardContent,
     TextField, List, Checkbox, ListItemText, Chip, Modal,
     Select, MenuItem, FormControl, InputLabel, ToggleButtonGroup, ToggleButton, Paper, Button,
-    // Componentes nuevos para Recurrencia
     FormControlLabel, Switch
 } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -25,7 +24,19 @@ import { chartsCustomizations, dataGridCustomizations, datePickersCustomizations
 
 const xThemeComponents = { ...chartsCustomizations, ...dataGridCustomizations, ...datePickersCustomizations, ...treeViewCustomizations };
 
-// Helper para headers con token (Copiado de HabitsPage)
+// --- COLORES PARA LAS TAREAS (Para el borde de la tarjeta) ---
+const COLOR_TASK_COMPLETED = '#4CAF50';  // Verde para completadas
+const COLOR_TASK_OVERDUE = '#F44336';     // Rojo para vencidas
+const COLOR_TASK_PENDING = '#FF9800';     // Naranja para pendientes
+
+// Objeto para mapear prioridades a colores del Chip (MUI Theme)
+const priorityColors = {
+    alta: 'error',   // Rojo (del tema MUI)
+    media: 'warning', // Naranja/Amarillo (del tema MUI)
+    baja: 'primary', // Azul (usamos primary si no queremos success para no confundir con "completa")
+};
+
+// Helper para headers con token
 const getAuthHeaders = (withJson = false) => {
     const headers = {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -39,14 +50,7 @@ const modalStyle = {
     width: 450, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 24, p: 4,
 };
 
-// Objeto para mapear prioridades a colores del Chip
-const priorityColors = {
-    alta: 'error',
-    media: 'warning',
-    baja: 'success',
-};
-
-// **Nuevas constantes para RF-05**
+// Constantes para RF-05
 const RECURRENCE_FREQUENCIES = [
     'Diaria', 'Semanal', 'Mensual', 
 ];
@@ -57,29 +61,26 @@ function TasksPage(props) {
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [newTaskTitle, setNewTaskTitle] = useState(''); // Cambiado de newTaskText a newTaskTitle
-    const [filter, setFilter] = useState('all'); // 'all', 'Pendiente', 'Completada'
+    const [newTaskTitle, setNewTaskTitle] = useState('');
+    const [filter, setFilter] = useState('all');
     const [openModal, setOpenModal] = useState(false);
 
-    // Estado inicial de la tarea, basado en los campos de la BD
     const [currentTask, setCurrentTask] = useState({
         id: null,
         title: '',
         description: '',
         priority: 'Media',
-        due_date: null, // null para la fecha
+        due_date: null,
         status: 'Pendiente',
-        // --- Campos de Recurrencia (RF-05) ---
         is_recurring: false,
-        frequency: 'Semanal', // Valor por defecto
-        recurrence_end_date: null, // null para fecha de fin opcional
+        frequency: 'Semanal',
+        recurrence_end_date: null,
     });
 
     // --- Detectar si viene de búsqueda y abrir modal ---
     useEffect(() => {
         if (location.state?.openEditModal && location.state?.task) {
             handleOpenModal(location.state.task);
-            // Limpiar el state para que no se abra de nuevo al recargar
             window.history.replaceState({}, document.title);
         }
     }, [location]);
@@ -104,10 +105,9 @@ function TasksPage(props) {
                 }
                 const data = await response.json();
 
-                // Mapear datos, asegurando que los nuevos campos estén presentes para evitar errores
                 setTasks(data.map(t => ({
                     ...t,
-                    is_recurring: !!t.is_recurring, // Asegurar boolean
+                    is_recurring: !!t.is_recurring,
                     frequency: t.frequency || 'Semanal',
                     recurrence_end_date: t.recurrence_end_date ? new Date(t.recurrence_end_date) : null
                 }))); 
@@ -129,25 +129,23 @@ function TasksPage(props) {
             ...task,
             description: task.description || '',
             due_date: task.due_date ? new Date(task.due_date) : null,
-            // Mapeo de campos de recurrencia
             is_recurring: !!task.is_recurring, 
             frequency: task.frequency || 'Semanal',
             recurrence_end_date: task.recurrence_end_date ? new Date(task.recurrence_end_date) : null,
         } : {
             id: null,
-            title: newTaskTitle || '', // Usa el título del TextField si existe
+            title: newTaskTitle || '',
             description: '',
             priority: 'Media',
             due_date: null,
             status: 'Pendiente',
-            // Valores por defecto de recurrencia
             is_recurring: false,
             frequency: 'Semanal',
             recurrence_end_date: null,
         };
         
         setCurrentTask(initialTask);
-        setNewTaskTitle(''); // Limpiar el campo de entrada rápida
+        setNewTaskTitle('');
         setOpenModal(true);
     };
 
@@ -158,7 +156,6 @@ function TasksPage(props) {
 
     const handleModalChange = (e) => {
         const { name, value, type, checked } = e.target;
-        // Manejar Switch/Checkbox
         if (type === 'checkbox') {
             setCurrentTask(prev => ({ ...prev, [name]: checked }));
         } else {
@@ -170,7 +167,6 @@ function TasksPage(props) {
         setCurrentTask(prev => ({ ...prev, due_date: newDate }));
     };
 
-    // **Nuevo handler para la fecha de fin de recurrencia**
     const handleRecurrenceEndDateChange = (newDate) => {
         setCurrentTask(prev => ({ ...prev, recurrence_end_date: newDate }));
     };
@@ -178,25 +174,21 @@ function TasksPage(props) {
     // --- CRUD: POST y PUT (Guardar) ---
     const handleSaveTask = async () => {
         try {
-            // Helper para convertir Date a formato SQL AAAA-MM-DD
             const dateToSql = (date) => (
                 date instanceof Date && !isNaN(date)
                     ? date.toISOString().split('T')[0]
                     : null
             );
             
-            // 1. Convertir fechas
             const dueDateString = dateToSql(currentTask.due_date);
             const recurrenceEndDateString = dateToSql(currentTask.recurrence_end_date);
             
-            // 2. Crear Payload, incluyendo los campos de recurrencia
             const payload = {
                 title: currentTask.title,
                 description: currentTask.description,
                 priority: currentTask.priority,
                 due_date: dueDateString,
                 status: currentTask.status, 
-                // --- Campos de Recurrencia ---
                 is_recurring: currentTask.is_recurring,
                 frequency: currentTask.frequency,
                 recurrence_end_date: currentTask.is_recurring ? recurrenceEndDateString : null,
@@ -217,9 +209,7 @@ function TasksPage(props) {
 
             const savedTask = await response.json();
 
-            // Actualiza el estado de las tareas
             if (currentTask.id) {
-                // Asegurar que los datos de recurrencia se mantengan como booleans/Dates
                 const updatedTaskData = {
                     ...savedTask,
                     is_recurring: !!savedTask.is_recurring,
@@ -277,9 +267,18 @@ function TasksPage(props) {
             }
 
             const updatedTask = await response.json();
+            
+            // CORRECCIÓN: Asegurar que mantenemos todos los campos de la tarea
+            const fullUpdatedTask = {
+                ...task, // Mantener todos los campos originales
+                ...updatedTask, // Sobrescribir con los campos actualizados del backend
+                is_recurring: !!updatedTask.is_recurring || !!task.is_recurring,
+                recurrence_end_date: updatedTask.recurrence_end_date 
+                    ? new Date(updatedTask.recurrence_end_date) 
+                    : (task.recurrence_end_date ? new Date(task.recurrence_end_date) : null)
+            };
 
-            // Reemplaza la tarea antigua con la actualizada
-            setTasks(tasks.map(t => t.id === updatedTask.id ? updatedTask : t));
+            setTasks(tasks.map(t => t.id === fullUpdatedTask.id ? fullUpdatedTask : t));
 
         } catch (err) {
             console.error(err);
@@ -287,24 +286,46 @@ function TasksPage(props) {
         }
     };
 
+    // --- FUNCIÓN: Obtener color del borde según estado y fecha ---
+    const getTaskBorderColor = (task) => {
+        // Si está completada, siempre verde
+        if (task.status === 'Completada') {
+            return COLOR_TASK_COMPLETED;
+        }
+        
+        // Si está pendiente, verificar si está vencida
+        if (task.due_date) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const dueDate = new Date(task.due_date);
+            dueDate.setHours(0, 0, 0, 0);
+            
+            // Si la fecha de vencimiento ya pasó, rojo
+            if (dueDate < today) {
+                return COLOR_TASK_OVERDUE;
+            }
+        }
+        
+        // Si está pendiente y no ha vencido (o no tiene fecha), naranja
+        return COLOR_TASK_PENDING;
+    };
+
+
     // --- Filtrado Dinámico ---
     const filteredTasks = useMemo(() => {
         let list = tasks;
 
-        // 1. Filtrar por estado
         if (filter === 'Pendiente') {
             list = list.filter(task => task.status !== 'Completada');
         } else if (filter === 'Completada') {
             list = list.filter(task => task.status === 'Completada');
         }
 
-        // 2. Opcional: Ordenar por prioridad/fecha (para mejor UX)
         list.sort((a, b) => {
-            // Ordenar pendientes primero, luego por prioridad
             const statusOrder = a.status === 'Completada' ? 1 : -1;
             if (statusOrder !== 0) return statusOrder;
 
-            // Ordenar por prioridad (alta: 1, media: 2, baja: 3)
             const priorityMap = { 'alta': 1, 'media': 2, 'baja': 3 };
             return priorityMap[a.priority.toLowerCase()] - priorityMap[b.priority.toLowerCase()];
         });
@@ -317,6 +338,7 @@ function TasksPage(props) {
     if (error) {
         return <p>Error: {error}</p>;
     }
+
 
     return (
         <AppTheme {...props} themeComponents={xThemeComponents}>
@@ -338,13 +360,11 @@ function TasksPage(props) {
                                 label="Añadir una nueva tarea..."
                                 value={newTaskTitle}
                                 onChange={(e) => setNewTaskTitle(e.target.value)}
-                                // Usar el handler del modal con los valores iniciales
                                 onKeyPress={(e) => e.key === 'Enter' && handleOpenModal({ title: newTaskTitle, description: '', status: 'Pendiente', priority: 'Media', due_date: null })}
                             />
                             <IconButton
                                 color="primary"
                                 sx={{ ml: 1 }}
-                                // Usar el handler del modal con los valores iniciales
                                 onClick={() => handleOpenModal({ title: newTaskTitle, description: '', status: 'Pendiente', priority: 'Media', due_date: null })}
                                 aria-label="Añadir Tarea"
                             >
@@ -359,7 +379,6 @@ function TasksPage(props) {
                             color="primary"
                             value={filter}
                             exclusive
-                            // El filtro ahora usa los valores de STATUS de la BD
                             onChange={(e, newFilter) => newFilter && setFilter(newFilter)}
                         >
                             <ToggleButton value="all">Todas</ToggleButton>
@@ -370,7 +389,14 @@ function TasksPage(props) {
 
                     <List>
                         {filteredTasks.map(task => (
-                            <Card key={task.id} sx={{ mb: 2 }}>
+                            <Card 
+                                key={task.id} 
+                                sx={{ 
+                                    mb: 2,
+                                    borderLeft: '6px solid',
+                                    borderLeftColor: getTaskBorderColor(task), 
+                                }}
+                            >
                                 <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                     <Checkbox
                                         edge="start"
@@ -378,37 +404,29 @@ function TasksPage(props) {
                                         onChange={() => handleToggleTask(task)}
                                     />
 
-                                    {/* 1. Contenedor del Título y Descripción (Flex-Grow) */}
+                                    {/* Contenedor del Título y Descripción */}
                                     <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-
-                                        {/* A. Título y Subtítulo (Fecha) */}
                                         <ListItemText
                                             primary={task.title}
                                             secondary={task.due_date ? `Vence: ${new Date(task.due_date).toLocaleDateString()}` : 'Sin fecha límite'}
-                                            sx={{ textDecoration: task.status === 'Completada' ? 'line-through' : 'none', m: 0 }}
+                                            sx={{ m: 0 }}
                                             primaryTypographyProps={{
-                                                noWrap: true, // Para prevenir que el título también choque
+                                                noWrap: true,
                                                 variant: 'body1',
                                                 fontWeight: 'bold'
                                             }}
                                         />
 
-                                        {/* B. Descripción (Solo si existe) */}
                                         {task.description && (
                                             <Typography
                                                 variant="body2"
                                                 color="text.secondary"
-                                                sx={{
-                                                    mt: 0.5,
-                                                    ml: 0,
-                               
-                                                }}
+                                                sx={{ mt: 0.5, ml: 0 }}
                                             >
                                                 {task.description}
                                             </Typography>
                                         )}
 
-                                        {/* C. Indicador de Recurrencia (NUEVO) */}
                                         {task.is_recurring && (
                                             <Typography variant="caption" color="primary" sx={{ mt: 0.2 }}>
                                                 🔁 Repite {task.frequency} ({task.recurrence_end_date ? `Fin: ${new Date(task.recurrence_end_date).toLocaleDateString()}` : 'Siempre'})
@@ -416,15 +434,22 @@ function TasksPage(props) {
                                         )}
                                     </Box>
 
-                                    {/* 2. Prioridad */}
+                                    {/* Prioridad con colores de MUI Theme (AJUSTADO) */}
                                     <Chip
-                                        label={task.priority}
-                                        color={priorityColors[task.priority.toLowerCase()] || 'default'}
+                                        // 1. Mostrar "COMPLETA" si el status es 'Completada', sino mostrar la prioridad
+                                        label={task.status === 'Completada' ? 'COMPLETA' : task.priority}
+                                        
+                                        // 2. Usar 'success' si está completa, sino usar el mapeo de prioridad
+                                        color={
+                                            task.status === 'Completada' 
+                                                ? 'success' 
+                                                : priorityColors[task.priority.toLowerCase()] || 'default'
+                                        } 
                                         size="small"
-                                        sx={{ flexShrink: 0 }} // Para evitar que se comprima
+                                        sx={{ flexShrink: 0, minWidth: 70 }}
                                     />
 
-                                    {/* 3. Acciones */}
+                                    {/* Acciones */}
                                     <Box sx={{ flexShrink: 0 }}>
                                         <IconButton size="small" onClick={() => handleOpenModal(task)}><EditIcon /></IconButton>
                                         <IconButton size="small" onClick={() => handleDeleteTask(task.id)}><DeleteIcon /></IconButton>
@@ -472,7 +497,6 @@ function TasksPage(props) {
                                     </Select>
                                 </FormControl>
                                 
-                                {/* Selector de Estado (Solo si editas) */}
                                 {currentTask.id && ( 
                                     <FormControl fullWidth margin="normal">
                                         <InputLabel>Estado</InputLabel>
@@ -488,14 +512,14 @@ function TasksPage(props) {
                                     </FormControl>
                                 )}
                                 
-                                {/* --- CONTROLES DE RECURRENCIA (RF-05) --- */}
+                                {/* Controles de Recurrencia */}
                                 <Box sx={{ mt: 2, border: 1, borderColor: 'divider', p: 2, borderRadius: 1 }}>
                                     <FormControlLabel
                                         control={
                                             <Switch
                                                 checked={currentTask.is_recurring}
                                                 onChange={handleModalChange}
-                                                name="is_recurring" // Usar name en el Switch para handleModalChange
+                                                name="is_recurring"
                                             />
                                         }
                                         label="Tarea Recurrente"
@@ -529,7 +553,6 @@ function TasksPage(props) {
                                         </>
                                     )}
                                 </Box>
-                                {/* --- FIN CONTROLES DE RECURRENCIA --- */}
 
                                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                                     <DatePicker
