@@ -4,7 +4,9 @@
  * @module server
  */
 
-require('dotenv').config();
+// Cargar variables de entorno solo si el archivo .env existe (desarrollo)
+// En producción, las variables vienen de docker-compose
+require('dotenv').config({ path: '.env' });
 const http = require('http');
 const https = require('https');
 const app = require('./app');
