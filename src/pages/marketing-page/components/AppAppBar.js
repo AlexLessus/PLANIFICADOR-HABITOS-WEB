@@ -53,57 +53,57 @@ export default function AppAppBar() {
     >
       <Container maxWidth="lg">
         <StyledToolbar variant="dense" disableGutters>
-          
 
-          <Box 
-            sx={{ 
-              flexGrow: 1, 
-              display: 'flex', 
-              alignItems: 'center', 
+
+          <Box
+            sx={{
+              flexGrow: 1,
+              display: 'flex',
+              alignItems: 'center',
               px: 0,
-              display: { xs: 'none', md: 'flex' } 
+              display: { xs: 'none', md: 'flex' }
             }}
           >
             <SitemarkIcon />
-            <Button 
-              variant="text" 
-              color="info" 
-              size="large" 
+            <Button
+              variant="text"
+              color="info"
+              size="large"
               href="#features"
               sx={{ ml: 1, fontWeight: 'bold' }}>
               Características
             </Button>
-            <Button 
-              variant="text" 
-              color="info" 
+            <Button
+              variant="text"
+              color="info"
               href='#highlights'
               size="large">
               Destacados
             </Button>
-            <Button 
-              variant="text" 
-              color="info" 
-              size="medium" 
+            <Button
+              variant="text"
+              color="info"
+              size="medium"
               href="#faq"
               sx={{ minWidth: 0 }}>
               Preguntas
             </Button>
-            <Button 
-              variant="text" 
-              color="info" 
-              size="medium" 
+            <Button
+              variant="text"
+              color="info"
+              size="medium"
               href='#contact-us'
               sx={{ minWidth: 0 }}>
               Nosotros
             </Button>
-           
+
           </Box>
-          
-          <Box 
+
+          <Box
             sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' }, alignItems: 'center' }}>
             <SitemarkIcon />
           </Box>
-          
+
           <Box
             sx={{
               display: { xs: 'none', md: 'flex' },
@@ -119,7 +119,7 @@ export default function AppAppBar() {
             </Button>
             <ColorModeIconDropdown />
           </Box>
-          
+
           <Box sx={{ display: { xs: 'flex', md: 'none' }, gap: 1 }}>
             <ColorModeIconDropdown size="medium" />
             <IconButton aria-label="Menu button" onClick={toggleDrawer(true)}>
@@ -147,18 +147,18 @@ export default function AppAppBar() {
                   </IconButton>
                 </Box>
 
-                <MenuItem>Características</MenuItem>
-                <MenuItem>Destacados</MenuItem>
-                <MenuItem>Preguntas</MenuItem>
-                <MenuItem>Blog</MenuItem>
+                <MenuItem onClick={toggleDrawer(false)} sx={{ '& a': { textDecoration: 'none', color: 'inherit' } }} ><a href="#features">Características</a></MenuItem>
+                <MenuItem onClick={toggleDrawer(false)} sx={{ '& a': { textDecoration: 'none', color: 'inherit' } }} ><a href="#highlights">Destacados</a></MenuItem>
+                <MenuItem onClick={toggleDrawer(false)} sx={{ '& a': { textDecoration: 'none', color: 'inherit' } }} ><a href="#faq">Preguntas</a></MenuItem>
+                <MenuItem onClick={toggleDrawer(false)} sx={{ '& a': { textDecoration: 'none', color: 'inherit' } }} ><a href="#contact-us">Nosotros</a></MenuItem>
                 <Divider sx={{ my: 3 }} />
                 <MenuItem>
-                  <Button color="primary" variant="contained" fullWidth>
+                  <Button color="primary" variant="contained" fullWidth href='/signin'>
                     Crear cuenta
                   </Button>
                 </MenuItem>
                 <MenuItem>
-                  <Button color="primary" variant="outlined" fullWidth>
+                  <Button color="primary" variant="outlined" fullWidth href='/signup'>
                     Iniciar sesión
                   </Button>
                 </MenuItem>
