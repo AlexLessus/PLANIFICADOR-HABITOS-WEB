@@ -28,6 +28,12 @@ const exportRoutes = require('./routes/exportRoutes'); // Archivo de rutas de ex
 const { apiLimiter } = require('./middleware/rateLimiter');
 const { errorHandler } = require('./utils/errorHandler');
 
+// Importar logger y utilidades
+const logger = require('./config/logger');
+const { logAppStart, logDatabaseConnection } = require('./utils/logger');
+const requestLogger = require('./middleware/requestLogger');
+const { httpsRedirect, sslSecurityHeaders } = require('./middleware/httpsRedirect');
+
 const app = express();
 const PORT = process.env.PORT || 5000; 
 
@@ -91,9 +97,16 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
+// Middleware de seguridad SSL/HTTPS
+app.use(httpsRedirect);
+app.use(sslSecurityHeaders);
+
 // Middleware Global
 app.use(express.json({ limit: '10mb' })); // Limitar tamaño de JSON
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Logging de requests HTTP
+app.use(requestLogger);
 
 // Rate limiting global (se aplica a todas las rutas)
 app.use('/api', apiLimiter);
@@ -106,13 +119,13 @@ app.use('/api', apiLimiter);
 app.get('/api/test-db', async (req, res) => {
     try {
         const [rows] = await db.query('SELECT 1 + 1 AS solution');
-        console.log('[API DB Test] Resultado de la prueba de DB:', rows[0].solution);
+        logger.info('[API DB Test] Resultado de la prueba de DB:', rows[0].solution);
         res.status(200).json({
             message: 'Conexión a la base de datos exitosa',
             solution: rows[0].solution
         });
     } catch (err) {
-        console.error('[API DB Test] CRITICAL ERROR: Error al conectar/consultar la base de datos:', err.message);
+        logger.error('[API DB Test] CRITICAL ERROR: Error al conectar/consultar la base de datos:', err.message);
         res.status(500).json({
             error: 'Error al conectar/consultar la base de datos. Verifique credenciales.',
             details: err.message
@@ -142,20 +155,5 @@ app.use('/api/export', exportRoutes);
 app.use(errorHandler.handleError);
 // --------------------------------------------------------------------------
 
-
-// --------------------------------------------------------------------------
-// Iniciar el Servidor
-// --------------------------------------------------------------------------
-app.listen(PORT, () => {
-    console.log(`Servidor backend corriendo en http://localhost:${PORT}`);
-    // Prueba de conexión inicial del pool para diagnóstico
-    db.getConnection()
-        .then(connection => {
-            console.log('Pool de conexiones de la base de datos listo.');
-            connection.release();
-        })
-        .catch(err => {
-            console.error('No se pudo establecer conexión inicial con la base de datos:', err.message);
-        });
-});
-
+// Exportar la aplicación (el servidor se inicia en server.js)
+module.exports = app;

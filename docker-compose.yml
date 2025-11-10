@@ -1,0 +1,112 @@
+# ============================================
+# Docker Compose - Entorno de DESARROLLO
+# ============================================
+
+services:
+  # ============================================
+  # Base de Datos MySQL
+  # ============================================
+  db:
+    image: mysql:8.0
+    container_name: planificador-db-dev
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${DB_NAME:-planner_db}
+      MYSQL_USER: ${DB_USER:-planner_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-planner_password}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data_dev:/var/lib/mysql
+      - ./Backend/database/migrations:/docker-entrypoint-initdb.d:ro
+    networks:
+      - planificador-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-rootpassword}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ============================================
+  # Backend API
+  # ============================================
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+      target: development
+    container_name: planificador-backend-dev
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 5000
+      DB_HOST: db
+      DB_USER: ${DB_USER:-planner_user}
+      DB_PASSWORD: ${DB_PASSWORD:-planner_password}
+      DB_NAME: ${DB_NAME:-planner_db}
+      JWT_SECRET: ${JWT_SECRET:-your_super_secret_jwt_key_min_32_chars_dev}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+      SENDGRID_FROM_EMAIL: ${SENDGRID_FROM_EMAIL}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      FRONTEND_URL: http://localhost:3000
+      SSL_ENABLED: false
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./Backend:/app
+      - /app/node_modules
+      - ./Backend/logs:/app/logs
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - planificador-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ============================================
+  # Frontend React
+  # ============================================
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: planificador-frontend-dev
+    restart: unless-stopped
+    environment:
+      REACT_APP_API_URL: http://localhost:5000
+      REACT_APP_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      CHOKIDAR_USEPOLLING: true
+      WATCHPACK_POLLING: true
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - planificador-network
+    stdin_open: true
+    tty: true
+
+# ============================================
+# Volúmenes
+# ============================================
+volumes:
+  mysql_data_dev:
+    driver: local
+
+# ============================================
+# Redes
+# ============================================
+networks:
+  planificador-network:
+    driver: bridge

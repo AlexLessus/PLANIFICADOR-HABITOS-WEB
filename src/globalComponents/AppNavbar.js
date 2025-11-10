@@ -6,10 +6,9 @@ import Stack from '@mui/material/Stack';
 import MuiToolbar from '@mui/material/Toolbar';
 import { tabsClasses } from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
-import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import SideMenuMobile from './SideMenuMobile';
-import MenuButton from './MenuButton';
+import HamburgerButton from './HamburgerButton';
 import ColorModeIconDropdown from '../shared-theme/ColorModeIconDropdown';
 
 import { SitemarkIcon } from '../shared-theme/CustomIcons';
@@ -63,17 +62,27 @@ export default function AppNavbar() {
           <Stack
             direction="row"
             spacing={1}
-            sx={{ justifyContent: 'center', mr: 'auto' }}
+            sx={{ justifyContent: 'center', mr: 'auto', alignItems: 'center' }}
           >
-
-            <Typography variant="h4" component="h1" sx={{ color: 'text.primary' }}>
+            <SitemarkIcon />
+            <Typography
+              variant="h6"
+              component="h1"
+              sx={{
+                color: 'text.primary',
+                fontWeight: 'bold',
+                fontSize: { xs: '1rem', sm: '1.25rem' },
+              }}
+            >
               Tiger Habit Planner
             </Typography>
           </Stack>
           <ColorModeIconDropdown />
-          <MenuButton aria-label="menu" onClick={toggleDrawer(true)}>
-            <MenuRoundedIcon />
-          </MenuButton>
+          <HamburgerButton
+            open={open}
+            onClick={toggleDrawer(!open)}
+            ariaLabel="Abrir menú de navegación"
+          />
           <SideMenuMobile open={open} toggleDrawer={toggleDrawer} />
         </Stack>
       </Toolbar>

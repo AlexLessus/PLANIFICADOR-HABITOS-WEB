@@ -2,13 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-    Container, Typography, Box, Button, Grid, Card, CardContent, CardHeader,
+    Typography, Box, Button, Grid, Card, CardContent, CardHeader,
     RadioGroup, FormControlLabel, Radio, FormControl, FormLabel, CircularProgress
 } from '@mui/material';
-import CssBaseline from '@mui/material/CssBaseline';
-import MainLayout from '../../globalComponents/MainLayout';
-import Header from '../../globalComponents/Header';
-import AppTheme from '../../shared-theme/AppTheme';
+import { PageLayout } from '../../components';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -126,114 +123,222 @@ function Progress(props) {
     };
 
     return (
-        <AppTheme {...props}>
-            <CssBaseline enableColorScheme />
-            <Box sx={{ display: 'flex' }}>
-                <MainLayout />
-                <Box component="main" sx={{ flexGrow: 1, backgroundColor: 'background.default', overflow: 'auto' }}>
-                    <Header />
-                    <Container maxWidth="lg" sx={{ pt: 2, pb: 3 }}>
-                        <Typography variant="h4" component="h1" gutterBottom>
-                            Estadísticas y Reportes
-                        </Typography>
+        <PageLayout {...props}>
+            <Typography
+                variant="h4"
+                component="h1"
+                gutterBottom
+                sx={{
+                    fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' },
+                    fontWeight: 600,
+                    mb: { xs: 2, md: 3 },
+                }}
+            >
+                Estadísticas y Reportes
+            </Typography>
 
-                        <Grid container spacing={3}>
-                            {/* SECCIÓN DEL NUEVO HABIT TRACKER */}
-                            <Grid item xs={12}>
-                                <Card>
-                                    <CardHeader title="Tracker Mensual de Hábitos" />
-                                    <CardContent>
-                                        {loading ? (
-                                            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-                                                <CircularProgress />
-                                            </Box>
-                                        ) : (
-                                            <>   {/* SECCIÓN DE MASCOTA */}
-                                                <HabitPet habits={habits} />
-                                                <CircularHabitTracker
-                                                    habits={habits}
-                                                    completions={completions}
-                                                    onDayClick={handleDayClick}
-                                                />
-                                            </>
-                                        )}
-                                    </CardContent>
-                                </Card>
-                            </Grid>
+            <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
+                {/* SECCIÓN DEL NUEVO HABIT TRACKER */}
+                <Grid item xs={12}>
+                    <Card
+                        sx={{
+                            borderRadius: { xs: 2, md: 3 },
+                            boxShadow: { xs: 1, sm: 2 },
+                        }}
+                    >
+                        <CardHeader
+                            title="Tracker Mensual de Hábitos"
+                            sx={{
+                                '& .MuiCardHeader-title': {
+                                    fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem' },
+                                },
+                                px: { xs: 2, sm: 3 },
+                                py: { xs: 1.5, sm: 2 },
+                            }}
+                        />
+                        <CardContent
+                            sx={{
+                                px: { xs: 2, sm: 3 },
+                                py: { xs: 2, sm: 2.5 },
+                            }}
+                        >
+                            {loading ? (
+                                <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                                    <CircularProgress />
+                                </Box>
+                            ) : (
+                                <>
+                                    <HabitPet habits={habits} />
+                                    <CircularHabitTracker
+                                        habits={habits}
+                                        completions={completions}
+                                        onDayClick={handleDayClick}
+                                    />
+                                </>
+                            )}
+                        </CardContent>
+                    </Card>
+                </Grid>
 
-                            {/* SECCIÓN DEL NUEVO HEATMAP ANUAL */}
-                            <Grid item xs={12}>
-                                <Card>
-                                    <CardHeader title="Visualización Anual de Hábitos" />
-                                    <CardContent>
-                                        {loading ? (
-                                            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-                                                <CircularProgress />
-                                            </Box>
-                                        ) : (
-                                            <>
-                                                <AnnualHabitHeatmap completions={completions} year={2025} />
-                                                <AnnualHabitHeatmap completions={completions} year={2026} />
-                                            </>
-                                        )}
-                                    </CardContent>
-                                </Card>
-                            </Grid>
+                {/* SECCIÓN DEL NUEVO HEATMAP ANUAL */}
+                <Grid item xs={12}>
+                    <Card
+                        sx={{
+                            borderRadius: { xs: 2, md: 3 },
+                            boxShadow: { xs: 1, sm: 2 },
+                        }}
+                    >
+                        <CardHeader
+                            title="Visualización Anual de Hábitos"
+                            sx={{
+                                '& .MuiCardHeader-title': {
+                                    fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem' },
+                                },
+                                px: { xs: 2, sm: 3 },
+                                py: { xs: 1.5, sm: 2 },
+                            }}
+                        />
+                        <CardContent
+                            sx={{
+                                px: { xs: 1, sm: 3 },
+                                py: { xs: 2, sm: 2.5 },
+                            }}
+                        >
+                            {loading ? (
+                                <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                                    <CircularProgress />
+                                </Box>
+                            ) : (
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: { xs: 3, md: 4 },
+                                        overflowX: 'auto',
+                                        overflowY: 'visible',
+                                        // Scroll horizontal en móvil
+                                        '&::-webkit-scrollbar': {
+                                            height: 8,
+                                        },
+                                        '&::-webkit-scrollbar-track': {
+                                            backgroundColor: 'rgba(0,0,0,0.1)',
+                                            borderRadius: 4,
+                                        },
+                                        '&::-webkit-scrollbar-thumb': {
+                                            backgroundColor: 'rgba(0,0,0,0.3)',
+                                            borderRadius: 4,
+                                            '&:hover': {
+                                                backgroundColor: 'rgba(0,0,0,0.5)',
+                                            },
+                                        },
+                                    }}
+                                >
+                                    <Box sx={{ minWidth: { xs: '700px', md: 'auto' } }}>
+                                        <AnnualHabitHeatmap completions={completions} year={2025} />
+                                    </Box>
+                                    <Box sx={{ minWidth: { xs: '700px', md: 'auto' } }}>
+                                        <AnnualHabitHeatmap completions={completions} year={2026} />
+                                    </Box>
+                                </Box>
+                            )}
+                        </CardContent>
+                    </Card>
+                </Grid>
 
+                {/* SECCIÓN DE EXPORTACIÓN */}
+                <Grid item xs={12}>
+                    <Card
+                        sx={{
+                            borderRadius: { xs: 2, md: 3 },
+                            boxShadow: { xs: 1, sm: 2 },
+                        }}
+                    >
+                        <CardHeader
+                            title="Función de Exportación de Datos"
+                            sx={{
+                                '& .MuiCardHeader-title': {
+                                    fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem' },
+                                },
+                                px: { xs: 2, sm: 3 },
+                                py: { xs: 1.5, sm: 2 },
+                            }}
+                        />
+                        <CardContent
+                            sx={{
+                                px: { xs: 2, sm: 3 },
+                                py: { xs: 2, sm: 2.5 },
+                            }}
+                        >
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    flexDirection: { xs: 'column', md: 'row' },
+                                    gap: { xs: 3, md: 4 },
+                                    alignItems: { xs: 'stretch', md: 'center' },
+                                }}
+                            >
+                                {/* Selector de Datos */}
+                                <FormControl sx={{ minWidth: { xs: '100%', md: 200 } }}>
+                                    <FormLabel
+                                        sx={{
+                                            fontSize: { xs: '0.875rem', sm: '1rem' },
+                                            mb: 1,
+                                        }}
+                                    >
+                                        Selector de Datos
+                                    </FormLabel>
+                                    <RadioGroup
+                                        row={false}
+                                        value={exportData}
+                                        onChange={(e) => setExportData(e.target.value)}
+                                    >
+                                        <FormControlLabel value="tareas" control={<Radio />} label="Tareas" />
+                                        <FormControlLabel value="habitos" control={<Radio />} label="Hábitos" />
+                                        <FormControlLabel value="ambos" control={<Radio />} label="Ambos" />
+                                    </RadioGroup>
+                                </FormControl>
 
-                            {/* SECCIÓN DE EXPORTACIÓN */}
-                            <Grid item xs={12}>
-                                <Card>
-                                    <CardHeader title="Función de Exportación de Datos" />
-                                    <CardContent>
-                                        <Grid container spacing={3} alignItems="center">
-                                            <Grid item xs={12} md={4}>
-                                                <FormControl>
-                                                    <FormLabel>Selector de Datos</FormLabel>
-                                                    <RadioGroup row value={exportData} onChange={(e) => setExportData(e.target.value)}>
-                                                        <FormControlLabel value="tareas" control={<Radio />} label="Tareas" />
-                                                        <FormControlLabel value="habitos" control={<Radio />} label="Hábitos" />
-                                                        <FormControlLabel value="ambos" control={<Radio />} label="Ambos" />
-                                                    </RadioGroup>
-                                                </FormControl>
-                                            </Grid>
-                                            {/* <Grid item xs={12} md={5}>
-                                                <LocalizationProvider dateAdapter={AdapterDateFns}>
-                                                    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                                                        <DatePicker
-                                                            label="Fecha de inicio"
-                                                            value={dateRange[0]}
-                                                            onChange={(newValue) => setDateRange([newValue, dateRange[1]])}
-                                                            slotProps={{ textField: { size: 'small' } }}
-                                                        />
-                                                        <DatePicker
-                                                            label="Fecha de fin"
-                                                            value={dateRange[1]}
-                                                            onChange={(newValue) => setDateRange([dateRange[0], newValue])}
-                                                            slotProps={{ textField: { size: 'small' } }}
-                                                        />
-                                                    </Box>
-                                                </LocalizationProvider>
-                                            </Grid> */}
-                                            <Grid item xs={12} md={3}>
-                                                <Box sx={{ display: 'flex', gap: 1 }}>
-                                                    <Button variant="outlined" startIcon={<PictureAsPdfIcon />} onClick={() => handleExport('PDF')}>
-                                                        PDF
-                                                    </Button>
-                                                    <Button variant="outlined" startIcon={<TableViewIcon />} onClick={() => handleExport('Excel')}>
-                                                        Excel
-                                                    </Button>
-                                                </Box>
-                                            </Grid>
-                                        </Grid>
-                                    </CardContent>
-                                </Card>
-                            </Grid>
-                        </Grid>
-                    </Container>
-                </Box>
-            </Box>
-        </AppTheme>
+                                {/* Botones de Exportación */}
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: { xs: 'column', sm: 'row' },
+                                        gap: { xs: 1.5, sm: 2 },
+                                        flexGrow: 1,
+                                        justifyContent: { xs: 'stretch', md: 'flex-end' },
+                                    }}
+                                >
+                                    <Button
+                                        variant="contained"
+                                        startIcon={<PictureAsPdfIcon />}
+                                        onClick={() => handleExport('PDF')}
+                                        fullWidth={{ xs: true, sm: false }}
+                                        sx={{
+                                            minHeight: 44,
+                                            px: { xs: 2, md: 3 },
+                                        }}
+                                    >
+                                        Exportar PDF
+                                    </Button>
+                                    <Button
+                                        variant="outlined"
+                                        startIcon={<TableViewIcon />}
+                                        onClick={() => handleExport('Excel')}
+                                        fullWidth={{ xs: true, sm: false }}
+                                        sx={{
+                                            minHeight: 44,
+                                            px: { xs: 2, md: 3 },
+                                        }}
+                                    >
+                                        Exportar Excel
+                                    </Button>
+                                </Box>
+                            </Box>
+                        </CardContent>
+                    </Card>
+                </Grid>
+            </Grid>
+        </PageLayout>
     );
 }
 

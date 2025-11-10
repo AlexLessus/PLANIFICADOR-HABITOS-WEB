@@ -30,13 +30,18 @@ const Card = styled(MuiCard)(({ theme }) => ({
   flexDirection: 'column',
   alignSelf: 'center',
   width: '100%',
-  padding: theme.spacing(4),
+  padding: theme.spacing(3),
   gap: theme.spacing(2),
   margin: 'auto',
+  maxHeight: '90vh',
+  overflowY: 'auto',
   boxShadow:
     'hsla(220, 30%, 5%, 0.05) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px',
   [theme.breakpoints.up('sm')]: {
     width: '450px',
+    padding: theme.spacing(4),
+    maxHeight: 'none',
+    overflowY: 'visible',
   },
   ...theme.applyStyles('dark', {
     boxShadow:
@@ -45,16 +50,20 @@ const Card = styled(MuiCard)(({ theme }) => ({
 }));
 
 const SignUpContainer = styled(Stack)(({ theme }) => ({
-  height: 'calc((1 - var(--template-frame-height, 0)) * 100dvh)',
-  minHeight: '100%',
+  minHeight: '100vh',
+  height: 'auto',
   padding: theme.spacing(2),
+  paddingTop: theme.spacing(8),
+  paddingBottom: theme.spacing(4),
   [theme.breakpoints.up('sm')]: {
     padding: theme.spacing(4),
+    paddingTop: theme.spacing(8),
   },
+  position: 'relative',
   '&::before': {
     content: '""',
     display: 'block',
-    position: 'absolute',
+    position: 'fixed',
     zIndex: -1,
     inset: 0,
     backgroundImage:
@@ -175,12 +184,36 @@ export default function SignUp(props) {
     <AppTheme {...props}>
       <CssBaseline enableColorScheme />
       <ColorModeSelect sx={{ position: 'fixed', top: '1.5rem', right: '1.5rem' }} />
-      <Button variant="outlined" color="secondary" href='/' sx={{ width: '8%', boxShadow: 2, fontSize: '1rem', top: '1.5rem', left: '1.5rem', position: 'fixed' }}>Regresar</Button>
+      <Button 
+        variant="outlined" 
+        color="secondary" 
+        href='/' 
+        sx={{ 
+          width: { xs: 'auto', sm: '8%' },
+          minWidth: { xs: 100, sm: 'auto' },
+          boxShadow: 2, 
+          fontSize: { xs: '0.875rem', sm: '1rem' },
+          top: '1rem', 
+          left: '1rem', 
+          position: 'fixed',
+          zIndex: 1000,
+        }}
+      >
+        Regresar
+      </Button>
 
-      <SignUpContainer direction="column" justifyContent="space-between" sx={{ mt: -4 }}>
+      <SignUpContainer direction="column" justifyContent="space-between">
         <Card variant='outlined'>
           <SitemarkIcon sx={{ fontSize: '2rem', color: 'primary.main', centered: 'true' }} />
-          <Typography component="h1" variant="h4" sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}>
+          <Typography 
+            component="h1" 
+            variant="h4" 
+            sx={{ 
+              width: '100%', 
+              fontSize: { xs: '1.75rem', sm: '2rem', md: '2.15rem' },
+              textAlign: 'center',
+            }}
+          >
             Regístrate
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: -3 }}>

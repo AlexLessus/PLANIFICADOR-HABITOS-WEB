@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
-    Container, Typography, Box, IconButton, Card, CardContent,
+    Typography, Box, IconButton, Card, CardContent,
     TextField, List, Checkbox, ListItemText, Chip, Modal,
     Select, MenuItem, FormControl, InputLabel, ToggleButtonGroup, ToggleButton, Paper, Button,
-    FormControlLabel, Switch
+    FormControlLabel, Switch, Stack
 } from '@mui/material';
-import CssBaseline from '@mui/material/CssBaseline';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -16,10 +15,8 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-// --- Layout y Tema ---
-import MainLayout from '../../globalComponents/MainLayout';
-import Header from '../../globalComponents/Header';
-import AppTheme from '../../shared-theme/AppTheme';
+// --- Layout y Componentes ---
+import { PageLayout } from '../../components';
 import { chartsCustomizations, dataGridCustomizations, datePickersCustomizations, treeViewCustomizations } from '../DashboardPage/theme/customizations';
 
 const xThemeComponents = { ...chartsCustomizations, ...dataGridCustomizations, ...datePickersCustomizations, ...treeViewCustomizations };
@@ -33,7 +30,7 @@ const COLOR_TASK_PENDING = '#FF9800';     // Naranja para pendientes
 const priorityColors = {
     alta: 'error',   // Rojo (del tema MUI)
     media: 'warning', // Naranja/Amarillo (del tema MUI)
-    baja: 'primary', // Azul (usamos primary si no queremos success para no confundir con "completa")
+    baja: 'primary', // Azul (usamos primary si no queremos success para no confundir con "completa"),
 };
 
 // Helper para headers con token
@@ -46,8 +43,18 @@ const getAuthHeaders = (withJson = false) => {
 };
 
 const modalStyle = {
-    position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-    width: 450, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 24, p: 4,
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: { xs: '90%', sm: 500, md: 600 },
+    maxWidth: '90vw',
+    maxHeight: '90vh',
+    overflow: 'auto',
+    bgcolor: 'background.paper',
+    borderRadius: { xs: 2, md: 3 },
+    boxShadow: 24,
+    p: { xs: 3, sm: 4 },
 };
 
 // Constantes para RF-05
@@ -341,15 +348,19 @@ function TasksPage(props) {
 
 
     return (
-        <AppTheme {...props} themeComponents={xThemeComponents}>
-            <CssBaseline enableColorScheme />
-            <Header />
-            <Box sx={{ display: 'flex' }}>
-                <MainLayout />
-                <Container maxWidth="lg" sx={{ marginTop: 0, flexGrow: 1, padding: 3 }}>
-                    <Typography variant="h4" component="h1" gutterBottom>
-                        Gestor de Tareas
-                    </Typography>
+        <PageLayout themeComponents={xThemeComponents} {...props}>
+            <Typography
+                variant="h4"
+                component="h1"
+                gutterBottom
+                sx={{
+                    fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' },
+                    fontWeight: 600,
+                    mb: { xs: 2, md: 3 },
+                }}
+            >
+                Gestor de Tareas
+            </Typography>
 
                     {/* Formulario para añadir nuevas tareas */}
                     <Paper sx={{ p: 2, mb: 3 }}>
@@ -570,9 +581,7 @@ function TasksPage(props) {
                             </Box>
                         </Modal>
                     )}
-                </Container>
-            </Box>
-        </AppTheme>
+        </PageLayout>
     );
 }
 

@@ -1,0 +1,10 @@
+# Ignorar todos los certificados SSL
+*.pem
+*.key
+*.crt
+*.csr
+
+# Pero mantener este directorio en git
+!.gitignore
+
+/docs
