@@ -48,28 +48,10 @@ app.disable('x-powered-by');
 
 // Configuración de seguridad con Helmet
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"], // Material-UI necesita inline styles
-      scriptSrc: [
-        "'self'",
-        "https://accounts.google.com", // Google OAuth
-        "https://apis.google.com", // Google APIs
-      ],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: [
-        "'self'",
-        "https://accounts.google.com", // Google OAuth
-        "https://oauth2.googleapis.com", // Google OAuth token exchange
-      ],
-      frameSrc: [
-        "'self'",
-        "https://accounts.google.com", // Google OAuth iframe
-      ],
-    },
-  },
-  crossOriginEmbedderPolicy: false, // Puede causar problemas con algunas librerías
+  contentSecurityPolicy: false, // Deshabilitado para evitar conflictos con Google OAuth
+  crossOriginEmbedderPolicy: false,
+  crossOriginOpenerPolicy: false, // Importante para Google OAuth
+  crossOriginResourcePolicy: { policy: "cross-origin" },
 }));
 
 // Configuración de CORS mejorada
@@ -78,7 +60,10 @@ const corsOptions = {
     // Lista de orígenes permitidos
     const allowedOrigins = [
       process.env.FRONTEND_URL || 'http://localhost:3000',
+      'https://tigertech.com.mx',
+      'https://www.tigertech.com.mx',
       'http://localhost:3000',
+      'http://localhost',
       // Agregar otros orígenes según sea necesario
     ];
 
@@ -90,11 +75,14 @@ const corsOptions = {
     if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
       callback(null, true);
     } else {
+      logger.warn(`[CORS] Origen bloqueado: ${origin}`);
       callback(new Error('No permitido por CORS'));
     }
   },
   credentials: true, // Permitir cookies
   optionsSuccessStatus: 200,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 };
 
 app.use(cors(corsOptions));
