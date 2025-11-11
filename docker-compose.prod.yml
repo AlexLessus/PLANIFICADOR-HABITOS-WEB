@@ -88,10 +88,7 @@ services:
     container_name: planificador-frontend-prod
     restart: always
     ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./ssl:/etc/nginx/ssl:ro
+      - "127.0.0.1:8080:80"  # Solo accesible desde localhost, Nginx del servidor hará proxy
     depends_on:
       - backend
     networks:
