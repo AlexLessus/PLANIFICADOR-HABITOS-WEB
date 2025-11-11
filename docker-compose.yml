@@ -11,6 +11,7 @@ services:
     container_name: planificador-db-dev
     restart: unless-stopped
     environment:
+      TZ: America/Mexico_City
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
       MYSQL_DATABASE: ${DB_NAME:-planner_db}
       MYSQL_USER: ${DB_USER:-planner_user}
@@ -40,6 +41,7 @@ services:
     container_name: planificador-backend-dev
     restart: unless-stopped
     environment:
+      TZ: America/Mexico_City
       NODE_ENV: development
       PORT: 5000
       DB_HOST: db
@@ -81,6 +83,7 @@ services:
     container_name: planificador-frontend-dev
     restart: unless-stopped
     environment:
+      TZ: America/Mexico_City
       REACT_APP_API_URL: http://localhost:5000
       REACT_APP_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       CHOKIDAR_USEPOLLING: true

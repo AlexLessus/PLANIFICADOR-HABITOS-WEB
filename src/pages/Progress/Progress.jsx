@@ -191,79 +191,13 @@ function Progress(props) {
                                             </Box>
                                         ) : (
                                             <>
-                                                <AnnualHabitHeatmap completions={completions} year={2024} />
                                                 <AnnualHabitHeatmap completions={completions} year={2025} />
+                                                <AnnualHabitHeatmap completions={completions} year={2026} />
                                             </>
                                         )}
                                     </CardContent>
                                 </Card>
                             </Grid>
-
-                {/* SECCIÓN DEL NUEVO HEATMAP ANUAL */}
-                <Grid item xs={12}>
-                    <Card
-                        sx={{
-                            borderRadius: { xs: 2, md: 3 },
-                            boxShadow: { xs: 1, sm: 2 },
-                        }}
-                    >
-                        <CardHeader
-                            title="Visualización Anual de Hábitos"
-                            sx={{
-                                '& .MuiCardHeader-title': {
-                                    fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem' },
-                                },
-                                px: { xs: 2, sm: 3 },
-                                py: { xs: 1.5, sm: 2 },
-                            }}
-                        />
-                        <CardContent
-                            sx={{
-                                px: { xs: 1, sm: 3 },
-                                py: { xs: 2, sm: 2.5 },
-                            }}
-                        >
-                            {loading ? (
-                                <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-                                    <CircularProgress />
-                                </Box>
-                            ) : (
-                                <Box
-                                    sx={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: { xs: 3, md: 4 },
-                                        overflowX: 'auto',
-                                        overflowY: 'visible',
-                                        // Scroll horizontal en móvil
-                                        '&::-webkit-scrollbar': {
-                                            height: 8,
-                                        },
-                                        '&::-webkit-scrollbar-track': {
-                                            backgroundColor: 'rgba(0,0,0,0.1)',
-                                            borderRadius: 4,
-                                        },
-                                        '&::-webkit-scrollbar-thumb': {
-                                            backgroundColor: 'rgba(0,0,0,0.3)',
-                                            borderRadius: 4,
-                                            '&:hover': {
-                                                backgroundColor: 'rgba(0,0,0,0.5)',
-                                            },
-                                        },
-                                    }}
-                                >
-                                    <Box sx={{ minWidth: { xs: '700px', md: 'auto' } }}>
-                                        <AnnualHabitHeatmap completions={completions} year={2025} />
-                                    </Box>
-                                    <Box sx={{ minWidth: { xs: '700px', md: 'auto' } }}>
-                                        <AnnualHabitHeatmap completions={completions} year={2026} />
-                                    </Box>
-                                </Box>
-                            )}
-                        </CardContent>
-                    </Card>
-                </Grid>
-
                 {/* SECCIÓN DE EXPORTACIÓN */}
                 <Grid item xs={12}>
                     <Card

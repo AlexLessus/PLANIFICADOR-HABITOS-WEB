@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
+    Container,
     Typography,
     Box,
     Button,
@@ -28,9 +29,12 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import EditIcon from '@mui/icons-material/Edit';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
+import CssBaseline from '@mui/material/CssBaseline';
 
-// --- Layout y Componentes ---
-import { PageLayout } from '../../components';
+// --- Layout y Tema ---
+import MainLayout from '../../globalComponents/MainLayout';
+import Header from '../../globalComponents/Header';
+import AppTheme from '../../shared-theme/AppTheme';
 import { chartsCustomizations, dataGridCustomizations, datePickersCustomizations, treeViewCustomizations } from '../DashboardPage/theme/customizations';
 
 // --- Componentes del Calendario ---
@@ -64,20 +68,17 @@ const chipStyles = (bgColor, textColor) => ({
         fontWeight: 500
     }
 });
-// Estilo para el modal responsive
+// Estilo para el modal
 const modalStyle = {
     position: 'absolute',
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    width: { xs: '90%', sm: 450, md: 500 },
-    maxWidth: '90vw',
-    maxHeight: '90vh',
-    overflow: 'auto',
+    width: 400,
     bgcolor: '#5c5a5a72',
-    borderRadius: { xs: 2, md: 3 },
+    borderRadius: 2,
     boxShadow: 24,
-    p: { xs: 3, sm: 4 },
+    p: 4,
 };
 
 
@@ -514,19 +515,23 @@ function CalendarPage(props) {
     });
 
     return (
-        <PageLayout themeComponents={xThemeComponents} {...props}>
-            <Typography
-                variant="h4"
-                component="h1"
-                gutterBottom
-                sx={{
-                    fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' },
-                    fontWeight: 600,
-                    mb: { xs: 2, md: 3 },
-                }}
-            >
-                Calendario
-            </Typography>
+        <AppTheme {...props} themeComponents={xThemeComponents}>
+            <CssBaseline enableColorScheme />
+            <Box sx={{ display: 'flex' }}>
+                <MainLayout />
+                <Box
+                    component="main"
+                    sx={{
+                        flexGrow: 1,
+                        backgroundColor: 'background.default',
+                        overflow: 'auto',
+                    }}
+                >
+                    <Header />
+                    <Container maxWidth="xl" sx={{ pt: 2, pb: 3 }}>
+                    <Typography variant="h4" component="h1" gutterBottom>
+                        Calendario
+                    </Typography>
 
                     {/* Leyenda de Colores */}
 
@@ -846,7 +851,10 @@ function CalendarPage(props) {
                             <Button onClick={handleCloseDayViewModal}>Cerrar</Button>
                         </DialogActions>
                     </Dialog>
-        </PageLayout>
+                </Container>
+                </Box>
+            </Box>
+        </AppTheme>
     );
 }
 
