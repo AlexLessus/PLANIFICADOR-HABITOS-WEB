@@ -34,7 +34,8 @@ router.post('/login', authLimiter, validateLogin, handleValidationErrors, authCo
 
 // Ruta para el inicio de sesión con Google
 // POST /api/auth/google-login
-router.post('/google-login', authLimiter, authController.googleLogin);
+// NOTA: Sin rate limiter temporalmente para debugging
+router.post('/google-login', authController.googleLogin);
 
 // Ruta para solicitar el restablecimiento de contraseña
 // POST /api/auth/forgot-password

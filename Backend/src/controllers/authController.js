@@ -98,24 +98,34 @@ const authController = {
     login: async (req, res) => {
         const { email, password } = req.body;
 
+        console.log('[LOGIN] Intento de login para:', email);
+
         if (!email || !password) {
+            console.log('[LOGIN] Error: Faltan credenciales');
             return res.status(400).json({ message: 'El correo electrónico y la contraseña son obligatorios.' });
         }
 
         try {
+            console.log('[LOGIN] Buscando usuario en DB...');
             const userRows = await userModel.findByEmail(email);
+            
             if (userRows.length === 0) {
+                console.log('[LOGIN] Usuario no encontrado:', email);
                 return res.status(401).json({ message: 'Credenciales inválidas.' });
             }
             const user = userRows[0];
+            console.log('[LOGIN] Usuario encontrado, verificando contraseña...');
 
             const isMatch = await userModel.comparePassword(password, user.password_hash);
             if (!isMatch) {
+                console.log('[LOGIN] Contraseña incorrecta para:', email);
                 return res.status(401).json({ message: 'Credenciales inválidas.' });
             }
 
+            console.log('[LOGIN] Contraseña correcta, generando token...');
             const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
 
+            console.log('[LOGIN] Login exitoso para:', email);
             res.status(200).json({
                 message: 'Inicio de sesión exitoso',
                 user: {
@@ -128,7 +138,8 @@ const authController = {
             });
 
         } catch (error) {
-            console.error('Error en el login:', error);
+            console.error('[LOGIN] ERROR CRÍTICO:', error);
+            console.error('[LOGIN] Stack trace:', error.stack);
             // No exponer detalles del error en producción
             const errorMessage = process.env.NODE_ENV === 'development' 
                 ? 'Error interno del servidor durante el inicio de sesión.' 
@@ -143,25 +154,46 @@ const authController = {
 
     googleLogin: async (req, res) => {
         const { token } = req.body;
+        
+        console.log('[GOOGLE LOGIN] Intento de login con Google');
+        console.log('[GOOGLE LOGIN] Token recibido:', token ? 'Sí (longitud: ' + token.length + ')' : 'No');
+        console.log('[GOOGLE LOGIN] GOOGLE_CLIENT_ID configurado:', process.env.GOOGLE_CLIENT_ID ? 'Sí' : 'No');
+        
+        if (!token) {
+            console.log('[GOOGLE LOGIN] Error: No se recibió token');
+            return res.status(400).json({ message: 'Token de Google requerido.' });
+        }
+        
         try {
+            console.log('[GOOGLE LOGIN] Verificando token con Google...');
             const ticket = await client.verifyIdToken({
                 idToken: token,
                 audience: process.env.GOOGLE_CLIENT_ID,
             });
-            const { name, email, picture } = ticket.getPayload();
+            
+            const payload = ticket.getPayload();
+            console.log('[GOOGLE LOGIN] Token verificado. Email:', payload.email);
+            
+            const { name, email, picture } = payload;
 
+            console.log('[GOOGLE LOGIN] Buscando usuario en DB...');
             let userRows = await userModel.findByEmail(email);
             let user;
 
             if (userRows.length > 0) {
+                console.log('[GOOGLE LOGIN] Usuario existente encontrado');
                 user = userRows[0];
             } else {
+                console.log('[GOOGLE LOGIN] Creando nuevo usuario...');
                 const result = await userModel.create(name, '', email, 'google-provided');
                 user = { id: result.insertId, email, first_name: name, last_name: '' };
+                console.log('[GOOGLE LOGIN] Usuario creado con ID:', user.id);
             }
 
+            console.log('[GOOGLE LOGIN] Generando JWT token...');
             const jwtToken = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
 
+            console.log('[GOOGLE LOGIN] Login exitoso para:', email);
             res.status(200).json({
                 message: 'Inicio de sesión con Google exitoso',
                 user: {
@@ -174,8 +206,13 @@ const authController = {
             });
 
         } catch (error) {
-            console.error('Error en el inicio de sesión con Google:', error);
-            res.status(401).json({ message: 'Token de Google inválido.' });
+            console.error('[GOOGLE LOGIN] ERROR:', error.message);
+            console.error('[GOOGLE LOGIN] Stack trace:', error.stack);
+            console.error('[GOOGLE LOGIN] Error completo:', error);
+            res.status(401).json({ 
+                message: 'Token de Google inválido.',
+                ...(process.env.NODE_ENV === 'development' && { details: error.message })
+            });
         }
     },
 
