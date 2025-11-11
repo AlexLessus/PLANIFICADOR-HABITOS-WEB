@@ -14,7 +14,9 @@
  * @module app
  */
 
-require('dotenv').config(); // Carga las variables de entorno al inicio
+// Cargar variables de entorno solo si el archivo .env existe (desarrollo)
+// En producción, las variables vienen de docker-compose
+require('dotenv').config({ path: '.env' });
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
