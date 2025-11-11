@@ -180,6 +180,25 @@ function Progress(props) {
                     </Card>
                 </Grid>
 
+                            {/* SECCIÓN DEL NUEVO HEATMAP ANUAL */}
+                            <Grid item xs={12}>
+                                <Card>
+                                    <CardHeader title="Visualización Anual de Hábitos" />
+                                    <CardContent>
+                                        {loading ? (
+                                            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                                                <CircularProgress />
+                                            </Box>
+                                        ) : (
+                                            <>
+                                                <AnnualHabitHeatmap completions={completions} year={2024} />
+                                                <AnnualHabitHeatmap completions={completions} year={2025} />
+                                            </>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </Grid>
+
                 {/* SECCIÓN DEL NUEVO HEATMAP ANUAL */}
                 <Grid item xs={12}>
                     <Card
