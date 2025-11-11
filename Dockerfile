@@ -27,13 +27,21 @@ RUN npm ci && \
 FROM base AS build
 WORKDIR /app
 
+# Declarar argumentos de build (variables de entorno para React)
+ARG REACT_APP_API_URL
+ARG REACT_APP_GOOGLE_CLIENT_ID
+
+# Convertir ARG a ENV para que estén disponibles durante el build
+ENV REACT_APP_API_URL=$REACT_APP_API_URL
+ENV REACT_APP_GOOGLE_CLIENT_ID=$REACT_APP_GOOGLE_CLIENT_ID
+
 # Copiar node_modules
 COPY --from=dependencies /app/node_modules ./node_modules
 
 # Copiar código fuente
 COPY . .
 
-# Build de la aplicación React
+# Build de la aplicación React (las variables ENV estarán disponibles)
 RUN npm run build
 
 # ============================================
