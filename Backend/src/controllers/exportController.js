@@ -44,7 +44,7 @@ const fetchDataToExport = async (dataType, userId) => {
                 completion_date DESC
         ) AS T1
         ORDER BY current_streak DESC
-        LIMIT 1;
+        LIMIT 1
     `;
 
     try {
@@ -72,16 +72,26 @@ const fetchDataToExport = async (dataType, userId) => {
 
             // Ahora, para cada hábito, calculamos su racha
             for (const habit of habitList) {
-                const [streakResult] = await db.query(STREAK_QUERY, [habit.id]);
-                const currentStreak = streakResult[0]?.current_streak || 0;
+                try {
+                    const [streakResult] = await db.query(STREAK_QUERY, [habit.id]);
+                    const currentStreak = (streakResult && streakResult.length > 0 && streakResult[0]?.current_streak) || 0;
 
-                // Nota: La columna 'longest_streak' no parece existir en tu base de datos.
-                // La omitimos para evitar más errores.
-                habits.push({
-                    'Hábito': habit.title,
-                    'Racha Actual': currentStreak,
-                    'Racha Más Larga': 'N/A' // O un valor por defecto
-                });
+                    // Nota: La columna 'longest_streak' no parece existir en tu base de datos.
+                    // La omitimos para evitar más errores.
+                    habits.push({
+                        'Hábito': habit.title,
+                        'Racha Actual': currentStreak,
+                        'Racha Más Larga': 'N/A' // O un valor por defecto
+                    });
+                } catch (habitError) {
+                    console.error(`[EXPORT ERROR] Error al calcular racha para hábito ${habit.id}:`, habitError);
+                    // Si falla, añade el hábito con racha 0
+                    habits.push({
+                        'Hábito': habit.title,
+                        'Racha Actual': 0,
+                        'Racha Más Larga': 'N/A'
+                    });
+                }
             }
             console.log(`[EXPORT DEBUG] Calculados los datos para ${habits.length} hábitos.`);
         }
@@ -194,8 +204,9 @@ exports.exportToExcel = async (req, res) => {
         res.end();
 
     } catch (error) {
-        console.error('Error durante la exportación a Excel:', error);
-        res.status(500).send('Error interno del servidor al generar el Excel.');
+        console.error('[EXCEL EXPORT ERROR] Error durante la exportación a Excel:', error);
+        console.error('[EXCEL EXPORT ERROR] Stack:', error.stack);
+        res.status(500).send(`Error interno del servidor al generar el Excel: ${error.message}`);
     }
 };
 
@@ -261,7 +272,8 @@ exports.exportToPDF = async (req, res) => {
         pdfStream.pipe(res);
 
     } catch (error) {
-        console.error('Error durante la exportación a PDF:', error);
-        res.status(500).send('Error interno del servidor al generar el PDF.');
+        console.error('[PDF EXPORT ERROR] Error durante la exportación a PDF:', error);
+        console.error('[PDF EXPORT ERROR] Stack:', error.stack);
+        res.status(500).send(`Error interno del servidor al generar el PDF: ${error.message}`);
     }
 };
