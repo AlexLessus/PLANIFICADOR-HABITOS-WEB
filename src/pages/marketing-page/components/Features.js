@@ -107,27 +107,19 @@ function MobileLayout({ selectedItemIndex, handleItemClick, selectedFeature }) {
       </Box>
       <Card variant="outlined">
         <Box
+          component="img"
+          src={imageSrc}
+          alt={items[selectedItemIndex].title}
           sx={{
+            width: '100%',
+            height: 'auto',
+            objectFit: 'contain',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center',
+            display: 'block',
             mb: 2,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            overflow: 'hidden',
           }}
-        >
-          <Box
-            component="img"
-            src={imageSrc}
-            alt={items[selectedItemIndex].title}
-            sx={{
-              width: '100%',
-              height: 'auto',
-              maxHeight: 500,
-              objectFit: 'contain',
-              display: 'block',
-            }}
-          />
-        </Box>
+        />
         <Box sx={{ px: 2, pb: 2 }}>
           <Typography
             gutterBottom
