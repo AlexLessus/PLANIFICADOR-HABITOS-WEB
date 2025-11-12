@@ -6,7 +6,7 @@ import Card from '@mui/material/Card';
 import MuiChip from '@mui/material/Chip';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
-import { styled } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 //imagenes de caracteristicas
 import habitPageImg from '../../../assets/screenshots/habitPage.png';
 import Dashboard from '../../../assets/screenshots/dashboard.png';
@@ -29,6 +29,8 @@ const items = [
       'Muestra los avances de los habitos y tareas que has completado',
     imageLight: `url(${DashboardLight})`,
     imageDark: `url(${Dashboard})`,
+    imageLightSrc: DashboardLight,
+    imageDarkSrc: Dashboard,
   },
   {
     icon: <InsightsIcon />,
@@ -37,6 +39,8 @@ const items = [
       'Realiza un seguimiento de tus hábitos diarios y observa tu progreso a lo largo del tiempo.',
     imageLight: `url(${habitPageLight})`,
     imageDark: `url(${habitPageImg})`,
+    imageLightSrc: habitPageLight,
+    imageDarkSrc: habitPageImg,
   },
   {
     icon: <TaskIcon />,
@@ -45,6 +49,8 @@ const items = [
       'Organiza y prioriza tus tareas diarias con facilidad.',
     imageLight: `url(${TaskmanagerLight})`,
     imageDark: `url(${Taskmanager})`,
+    imageLightSrc: TaskmanagerLight,
+    imageDarkSrc: Taskmanager,
   },
 ];
 
@@ -69,9 +75,16 @@ const Chip = styled(MuiChip)(({ theme }) => ({
 }));
 
 function MobileLayout({ selectedItemIndex, handleItemClick, selectedFeature }) {
+  const theme = useTheme();
+  
   if (!items[selectedItemIndex]) {
     return null;
   }
+
+  const isDarkMode = theme.palette.mode === 'dark';
+  const imageSrc = isDarkMode 
+    ? items[selectedItemIndex].imageDarkSrc 
+    : items[selectedItemIndex].imageLightSrc;
 
   return (
     <Box
@@ -94,29 +107,27 @@ function MobileLayout({ selectedItemIndex, handleItemClick, selectedFeature }) {
       </Box>
       <Card variant="outlined">
         <Box
-          sx={(theme) => ({
+          sx={{
             mb: 2,
-            backgroundSize: 'contain',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-            height: 'auto',
-            minHeight: 300,
-            paddingTop: '75%', // Aspect ratio 4:3, ajusta según tus imágenes
-            backgroundImage: 'var(--items-imageLight)',
-            ...theme.applyStyles('dark', {
-              backgroundImage: 'var(--items-imageDark)',
-            }),
-
-          })}
-          style={
-            items[selectedItemIndex]
-              ? {
-                '--items-imageLight': items[selectedItemIndex].imageLight,
-                '--items-imageDark': items[selectedItemIndex].imageDark,
-              }
-              : {}
-          }
-        />
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            overflow: 'hidden',
+          }}
+        >
+          <Box
+            component="img"
+            src={imageSrc}
+            alt={items[selectedItemIndex].title}
+            sx={{
+              width: '100%',
+              height: 'auto',
+              maxHeight: 500,
+              objectFit: 'contain',
+              display: 'block',
+            }}
+          />
+        </Box>
         <Box sx={{ px: 2, pb: 2 }}>
           <Typography
             gutterBottom
