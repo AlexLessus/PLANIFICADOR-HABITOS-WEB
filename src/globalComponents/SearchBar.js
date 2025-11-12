@@ -15,6 +15,7 @@ import {
   CircularProgress
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import API_URL from '../config/api';
 import TaskIcon from '@mui/icons-material/Task';
 import TrackChangesIcon from '@mui/icons-material/TrackChanges';
 import CloseIcon from '@mui/icons-material/Close';
@@ -77,7 +78,7 @@ export default function SearchBar() {
       }
 
       // Buscar tareas
-      const tasksRes = await fetch('http://localhost:5000/api/tasks', {
+      const tasksRes = await fetch(`${API_URL}/api/tasks`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -91,7 +92,7 @@ export default function SearchBar() {
       }
 
       // Buscar hábitos
-      const habitsRes = await fetch('http://localhost:5000/api/habits', {
+      const habitsRes = await fetch(`${API_URL}/api/habits`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 

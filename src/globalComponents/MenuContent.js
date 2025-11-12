@@ -13,6 +13,7 @@ import TaskIcon from '@mui/icons-material/Task';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import DonutLargeIcon from '@mui/icons-material/DonutLarge';
+import API_URL from '../config/api';
 
 import { useLocation, Link } from 'react-router-dom';
 
@@ -36,7 +37,7 @@ export default function MenuContent() {
       if (!token) return;
 
       // Obtener tareas pendientes
-      const tasksRes = await fetch('http://localhost:5000/api/tasks', {
+      const tasksRes = await fetch(`${API_URL}/api/tasks`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
@@ -45,7 +46,7 @@ export default function MenuContent() {
         const pendingTasks = tasks.filter(t => t.status === 'Pendiente').length;
         
         // Obtener hábitos activos
-        const habitsRes = await fetch('http://localhost:5000/api/habits', {
+        const habitsRes = await fetch(`${API_URL}/api/habits`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         

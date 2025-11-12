@@ -19,6 +19,7 @@ import TaskIcon from '@mui/icons-material/Task';
 import TrackChangesIcon from '@mui/icons-material/TrackChanges';
 import WarningIcon from '@mui/icons-material/Warning';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import API_URL from '../config/api';
 
 /**
  * Panel de notificaciones funcional
@@ -47,7 +48,7 @@ export default function NotificationsPanel() {
       today.setHours(0, 0, 0, 0);
 
       // 1. Obtener tareas próximas a vencer (próximos 3 días)
-      const tasksRes = await fetch('http://localhost:5000/api/tasks', {
+      const tasksRes = await fetch(`${API_URL}/api/tasks`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -109,7 +110,7 @@ export default function NotificationsPanel() {
       }
 
       // 2. Obtener hábitos en peligro (no completados ayer)
-      const habitsRes = await fetch('http://localhost:5000/api/habits', {
+      const habitsRes = await fetch(`${API_URL}/api/habits`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
