@@ -18,6 +18,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 // --- Layout y Componentes ---
 import { PageLayout } from '../../components';
 import { chartsCustomizations, dataGridCustomizations, datePickersCustomizations, treeViewCustomizations } from '../DashboardPage/theme/customizations';
+import API_URL from '../../config/api';
 
 const xThemeComponents = { ...chartsCustomizations, ...dataGridCustomizations, ...datePickersCustomizations, ...treeViewCustomizations };
 
@@ -103,7 +104,7 @@ function TasksPage(props) {
             }
 
             try {
-                const response = await fetch('http://localhost:5000/api/tasks', {
+                const response = await fetch(`${API_URL}/api/tasks`, {
                     headers: getAuthHeaders(),
                 });
 
@@ -204,7 +205,7 @@ function TasksPage(props) {
             const url = currentTask.id ? `/api/tasks/${currentTask.id}` : '/api/tasks';
             const method = currentTask.id ? 'PUT' : 'POST';
 
-            const response = await fetch(`http://localhost:5000${url}`, {
+            const response = await fetch(`${API_URL}${url}`, {
                 method: method,
                 headers: getAuthHeaders(true),
                 body: JSON.stringify(payload),
@@ -242,7 +243,7 @@ function TasksPage(props) {
     // --- CRUD: DELETE (Eliminar) ---
     const handleDeleteTask = async (taskId) => {
         try {
-            const response = await fetch(`http://localhost:5000/api/tasks/${taskId}`, {
+            const response = await fetch(`${API_URL}/api/tasks/${taskId}`, {
                 method: 'DELETE',
                 headers: getAuthHeaders(),
             });
@@ -263,7 +264,7 @@ function TasksPage(props) {
         const newStatus = task.status === 'Completada' ? 'Pendiente' : 'Completada';
 
         try {
-            const response = await fetch(`http://localhost:5000/api/tasks/${task.id}/status`, {
+            const response = await fetch(`${API_URL}/api/tasks/${task.id}/status`, {
                 method: 'PUT',
                 headers: getAuthHeaders(true),
                 body: JSON.stringify({ status: newStatus }),

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import SimpleStatCard from './SimpleStatCard';
+import API_URL from '../../../../config/api';
 
 /**
  * Tarjeta que muestra la próxima tarea pendiente
@@ -27,7 +28,7 @@ function NextTaskCard() {
       }
 
       // Obtener todas las tareas
-      const response = await fetch('http://localhost:5000/api/tasks', {
+      const response = await fetch(`${API_URL}/api/tasks`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

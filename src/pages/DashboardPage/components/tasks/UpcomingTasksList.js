@@ -10,6 +10,7 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import TaskItem from './TaskItem';
+import API_URL from '../../../../config/api';
 
 /**
  * Lista de tareas próximas en el Dashboard
@@ -35,7 +36,7 @@ function UpcomingTasksList() {
         return;
       }
 
-      const response = await fetch('http://localhost:5000/api/tasks', {
+      const response = await fetch(`${API_URL}/api/tasks`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -78,7 +79,7 @@ function UpcomingTasksList() {
       const token = localStorage.getItem('token');
       const newStatus = task.status === 'Completada' ? 'Pendiente' : 'Completada';
 
-      const response = await fetch(`http://localhost:5000/api/tasks/${task.id}`, {
+      const response = await fetch(`${API_URL}/api/tasks/${task.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -13,6 +13,7 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HabitItem from './HabitItem';
+import API_URL from '../../../../config/api';
 
 /**
  * Panel de hábitos de hoy en el Dashboard
@@ -50,7 +51,7 @@ function TodayHabitsPanel() {
       }
 
       // Obtener todos los hábitos
-      const habitsResponse = await fetch('http://localhost:5000/api/habits', {
+      const habitsResponse = await fetch(`${API_URL}/api/habits`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -65,7 +66,7 @@ function TodayHabitsPanel() {
 
       // Obtener completaciones de hoy (usando hora local)
       const today = dateToLocalString(new Date());
-      const completionsResponse = await fetch('http://localhost:5000/api/habits/completions', {
+      const completionsResponse = await fetch(`${API_URL}/api/habits/completions`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -161,7 +162,7 @@ function TodayHabitsPanel() {
       }
 
       // Marcar como completado usando el endpoint correcto
-      const response = await fetch(`http://localhost:5000/api/habits/${habit.id}/checkin`, {
+      const response = await fetch(`${API_URL}/api/habits/${habit.id}/checkin`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

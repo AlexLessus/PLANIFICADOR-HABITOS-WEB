@@ -12,6 +12,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import API_URL from '../../../../config/api';
 
 /**
  * Estadísticas mensuales del usuario
@@ -54,7 +55,7 @@ function MonthlyStats() {
       const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
       // Obtener tareas
-      const tasksResponse = await fetch('http://localhost:5000/api/tasks', {
+      const tasksResponse = await fetch(`${API_URL}/api/tasks`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -76,7 +77,7 @@ function MonthlyStats() {
       const completedTasks = monthTasks.filter(t => t.status === 'Completada').length;
 
       // Obtener hábitos
-      const habitsResponse = await fetch('http://localhost:5000/api/habits', {
+      const habitsResponse = await fetch(`${API_URL}/api/habits`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -90,7 +91,7 @@ function MonthlyStats() {
       const activeHabits = habits.filter(h => h.is_active !== false);
 
       // Obtener completaciones
-      const completionsResponse = await fetch('http://localhost:5000/api/habits/completions', {
+      const completionsResponse = await fetch(`${API_URL}/api/habits/completions`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import SimpleStatCard from './SimpleStatCard';
+import API_URL from '../../../../config/api';
 
 /**
  * Tarjeta que muestra los hábitos activos del usuario
@@ -27,7 +28,7 @@ function ActiveHabitsCard() {
       }
 
       // Obtener todos los hábitos
-      const habitsResponse = await fetch('http://localhost:5000/api/habits', {
+      const habitsResponse = await fetch(`${API_URL}/api/habits`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -42,7 +43,7 @@ function ActiveHabitsCard() {
 
       // Obtener completados de hoy
       const today = new Date().toISOString().split('T')[0];
-      const completionsResponse = await fetch('http://localhost:5000/api/habits/completions', {
+      const completionsResponse = await fetch(`${API_URL}/api/habits/completions`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

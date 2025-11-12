@@ -11,6 +11,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import TableViewIcon from '@mui/icons-material/TableView';
+import API_URL from '../../config/api';
 
 // --- NUEVAS IMPORTACIONES ---
 import CircularHabitTracker from './CircularHabitTracker';
@@ -37,8 +38,8 @@ function Progress(props) {
             const headers = { 'Authorization': `Bearer ${token}` };
 
             const [habitsRes, completionsRes] = await Promise.all([
-                fetch('http://localhost:5000/api/habits', { headers }),
-                fetch('http://localhost:5000/api/habits/completions', { headers })
+                fetch(`${API_URL}/api/habits`, { headers }),
+                fetch(`${API_URL}/api/habits/completions`, { headers })
             ]);
 
             const habitsData = await habitsRes.json();
@@ -65,7 +66,7 @@ function Progress(props) {
         }
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`http://localhost:5000/api/habits/${habitId}/checkin`, {
+            const res = await fetch(`${API_URL}/api/habits/${habitId}/checkin`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -89,7 +90,7 @@ function Progress(props) {
         const formattedStartDate = startDate ? new Date(startDate).toISOString().split('T')[0] : '';
         const formattedEndDate = endDate ? new Date(endDate).toISOString().split('T')[0] : '';
         const formatLower = format.toLowerCase();
-        const exportURL = `http://localhost:5000/api/export/${dataScope}/${formatLower}?start=${formattedStartDate}&end=${formattedEndDate}`;
+        const exportURL = `${API_URL}/api/export/${dataScope}/${formatLower}?start=${formattedStartDate}&end=${formattedEndDate}`;
         try {
             const response = await fetch(exportURL, {
                 method: 'GET',

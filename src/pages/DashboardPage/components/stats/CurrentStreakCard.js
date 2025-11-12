@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import SimpleStatCard from './SimpleStatCard';
+import API_URL from '../../../../config/api';
 
 /**
  * Tarjeta que muestra la racha actual del usuario
@@ -28,7 +29,7 @@ function CurrentStreakCard() {
       }
 
       // Obtener todas las completaciones de hábitos
-      const response = await fetch('http://localhost:5000/api/habits/completions', {
+      const response = await fetch(`${API_URL}/api/habits/completions`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

@@ -12,6 +12,7 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import Box from '@mui/material/Box';
 import { PageLayout } from '../../components';
+import API_URL from '../../config/api';
 import {
     chartsCustomizations,
     dataGridCustomizations,
@@ -89,7 +90,7 @@ function HabitsPage(props) {
 
             try {
                 // El backend ahora devuelve 'streak' y 'lastCompleted'
-                const response = await fetch('http://localhost:5000/api/habits', {
+                const response = await fetch(`${API_URL}/api/habits`, {
                     headers: getAuthHeaders(),
                 });
 
@@ -137,7 +138,7 @@ function HabitsPage(props) {
                 : '/api/habits';
             const method = currentHabit.id ? 'PUT' : 'POST';
 
-            const response = await fetch(`http://localhost:5000${url}`, {
+            const response = await fetch(`${API_URL}${url}`, {
                 method: method,
                 headers: getAuthHeaders(true),
                 body: JSON.stringify(currentHabit),
@@ -170,7 +171,7 @@ function HabitsPage(props) {
 
     const handleDeleteHabit = async (habitId) => {
         try {
-            const response = await fetch(`http://localhost:5000/api/habits/${habitId}`, {
+            const response = await fetch(`${API_URL}/api/habits/${habitId}`, {
                 method: 'DELETE',
                 headers: getAuthHeaders(),
             });
@@ -190,7 +191,7 @@ function HabitsPage(props) {
     // --- FUNCIÓN MODIFICADA PARA LA RACHA ---
     const handleCheckIn = async (habitId) => {
         try {
-            const response = await fetch(`http://localhost:5000/api/habits/${habitId}/checkin`, {
+            const response = await fetch(`${API_URL}/api/habits/${habitId}/checkin`, {
                 method: 'POST',
                 headers: getAuthHeaders(),
             });

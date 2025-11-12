@@ -15,6 +15,7 @@ services:
       MYSQL_DATABASE: ${DB_NAME:-planner_db}
       MYSQL_USER: ${DB_USER:-planner_user}
       MYSQL_PASSWORD: ${DB_PASSWORD:-planner_password}
+      TZ: America/Mexico_City
     ports:
       - "3306:3306"
     volumes:
@@ -52,6 +53,7 @@ services:
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       FRONTEND_URL: http://localhost:3000
       SSL_ENABLED: false
+      TZ: America/Mexico_City
     ports:
       - "5000:5000"
     volumes:
@@ -85,6 +87,7 @@ services:
       REACT_APP_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       CHOKIDAR_USEPOLLING: true
       WATCHPACK_POLLING: true
+      TZ: America/Mexico_City
     ports:
       - "3000:3000"
     volumes:

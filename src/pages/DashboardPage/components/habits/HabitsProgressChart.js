@@ -18,6 +18,7 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts';
+import API_URL from '../../../../config/api';
 
 /**
  * Gráfico de progreso de hábitos de los últimos días
@@ -45,7 +46,7 @@ function HabitsProgressChart() {
       }
 
       // Obtener hábitos
-      const habitsResponse = await fetch('http://localhost:5000/api/habits', {
+      const habitsResponse = await fetch(`${API_URL}/api/habits`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -59,7 +60,7 @@ function HabitsProgressChart() {
       const activeHabits = habits.filter(h => h.is_active !== false);
 
       // Obtener completaciones
-      const completionsResponse = await fetch('http://localhost:5000/api/habits/completions', {
+      const completionsResponse = await fetch(`${API_URL}/api/habits/completions`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

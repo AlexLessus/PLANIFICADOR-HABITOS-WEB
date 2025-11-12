@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import SimpleStatCard from './SimpleStatCard';
+import API_URL from '../../../../config/api';
 
 /**
  * Tarjeta que muestra las tareas del día actual
@@ -31,7 +32,7 @@ function TasksTodayCard() {
       const today = new Date().toISOString().split('T')[0];
 
       // Obtener todas las tareas
-      const response = await fetch('http://localhost:5000/api/tasks', {
+      const response = await fetch(`${API_URL}/api/tasks`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
