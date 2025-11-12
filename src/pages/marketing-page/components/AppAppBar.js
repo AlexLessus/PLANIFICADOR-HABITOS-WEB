@@ -153,12 +153,12 @@ export default function AppAppBar() {
                 <MenuItem onClick={toggleDrawer(false)} sx={{ '& a': { textDecoration: 'none', color: 'inherit' } }} ><a href="#contact-us">Nosotros</a></MenuItem>
                 <Divider sx={{ my: 3 }} />
                 <MenuItem>
-                  <Button color="primary" variant="contained" fullWidth href='/signin'>
+                  <Button color="primary" variant="contained" fullWidth href='/signup'>
                     Crear cuenta
                   </Button>
                 </MenuItem>
                 <MenuItem>
-                  <Button color="primary" variant="outlined" fullWidth href='/signup'>
+                  <Button color="primary" variant="outlined" fullWidth href='/signin'>
                     Iniciar sesión
                   </Button>
                 </MenuItem>

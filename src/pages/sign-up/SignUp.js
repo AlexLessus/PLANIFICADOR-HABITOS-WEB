@@ -143,15 +143,19 @@ export default function SignUp(props) {
     }
 
     try {
+      // Primero registramos al usuario
       const response = await authService.register(formData);
 
       setMessage(response.message);
       setIsSuccess(true);
 
-      // Redirige al usuario a la página de login después de un registro exitoso
+      // Después de un registro exitoso, iniciamos sesión automáticamente
+      await login({ email: formData.email, password: formData.password });
+
+      // Redirigimos al dashboard con la sesión iniciada
       setTimeout(() => {
-        navigate('/signin');
-      }, 2000);
+        navigate('/dashboard');
+      }, 1000);
 
     } catch (error) {
       setMessage(error.message || 'Ocurrió un error inesperado. Intenta de nuevo.');
