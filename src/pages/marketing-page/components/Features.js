@@ -6,7 +6,7 @@ import Card from '@mui/material/Card';
 import MuiChip from '@mui/material/Chip';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
-import { styled, useTheme } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 //imagenes de caracteristicas
 import habitPageImg from '../../../assets/screenshots/habitPage.png';
 import Dashboard from '../../../assets/screenshots/dashboard.png';
@@ -27,30 +27,24 @@ const items = [
     title: 'Dashboard',
     description:
       'Muestra los avances de los habitos y tareas que has completado',
-    imageLight: `url(${DashboardLight})`,
-    imageDark: `url(${Dashboard})`,
-    imageLightSrc: DashboardLight,
-    imageDarkSrc: Dashboard,
+    imageLight: url("${DashboardLight}"),
+    imageDark: url("${Dashboard}"),
   },
   {
     icon: <InsightsIcon />,
     title: 'Habit Tracker',
     description:
       'Realiza un seguimiento de tus hábitos diarios y observa tu progreso a lo largo del tiempo.',
-    imageLight: `url(${habitPageLight})`,
-    imageDark: `url(${habitPageImg})`,
-    imageLightSrc: habitPageLight,
-    imageDarkSrc: habitPageImg,
+    imageLight: url("${habitPageLight}"),
+    imageDark: url("${habitPageImg}"),
   },
   {
     icon: <TaskIcon />,
     title: 'Task Manager',
     description:
       'Organiza y prioriza tus tareas diarias con facilidad.',
-    imageLight: `url(${TaskmanagerLight})`,
-    imageDark: `url(${Taskmanager})`,
-    imageLightSrc: TaskmanagerLight,
-    imageDarkSrc: Taskmanager,
+    imageLight: url("${TaskmanagerLight}"),
+    imageDark: url("${Taskmanager}"),
   },
 ];
 
@@ -75,16 +69,9 @@ const Chip = styled(MuiChip)(({ theme }) => ({
 }));
 
 function MobileLayout({ selectedItemIndex, handleItemClick, selectedFeature }) {
-  const theme = useTheme();
-  
   if (!items[selectedItemIndex]) {
     return null;
   }
-
-  const isDarkMode = theme.palette.mode === 'dark';
-  const imageSrc = isDarkMode 
-    ? items[selectedItemIndex].imageDarkSrc 
-    : items[selectedItemIndex].imageLightSrc;
 
   return (
     <Box
@@ -107,18 +94,26 @@ function MobileLayout({ selectedItemIndex, handleItemClick, selectedFeature }) {
       </Box>
       <Card variant="outlined">
         <Box
-          component="img"
-          src={imageSrc}
-          alt={items[selectedItemIndex].title}
-          sx={{
-            width: '100%',
-            height: 'auto',
-            objectFit: 'contain',
+          sx={(theme) => ({
+            mb: 2,
+            backgroundSize: 'contain',
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'center',
-            display: 'block',
-            mb: 2,
-          }}
+            minHeight: 500,
+            backgroundImage: 'var(--items-imageLight)',
+            ...theme.applyStyles('dark', {
+              backgroundImage: 'var(--items-imageDark)',
+            }),
+
+          })}
+          style={
+            items[selectedItemIndex]
+              ? {
+                '--items-imageLight': items[selectedItemIndex].imageLight,
+                '--items-imageDark': items[selectedItemIndex].imageDark,
+              }
+              : {}
+          }
         />
         <Box sx={{ px: 2, pb: 2 }}>
           <Typography
@@ -299,4 +294,4 @@ export default function Features() {
       </Box>
     </Container>
   );
-}
+}4
