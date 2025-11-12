@@ -8,6 +8,16 @@ const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
 
 /**
+ * Función para extraer la IP del request (compatible con Express 5)
+ */
+const getClientIp = (req) => {
+  return req.ip || 
+         req.socket?.remoteAddress || 
+         req.connection?.remoteAddress ||
+         'unknown';
+};
+
+/**
  * Función para extraer la clave del rate limiter
  * - Para usuarios autenticados: usa el userId del token JWT
  * - Para usuarios no autenticados: usa la IP
@@ -23,7 +33,8 @@ const getUserKeyForRateLimit = (req) => {
   } catch (error) {
     // Si el token es inválido o no existe, usar IP como fallback
   }
-  return `ip_${req.ip}`; // Fallback a IP para rutas públicas
+  const clientIp = getClientIp(req);
+  return `ip_${clientIp}`; // Fallback a IP para rutas públicas
 };
 
 // Rate limiter general para todas las rutas (por usuario autenticado)
@@ -39,7 +50,14 @@ const apiLimiter = rateLimit({
   keyGenerator: getUserKeyForRateLimit, // Usa userId o IP
   skip: (req) => {
     // En desarrollo, saltar rate limiting para localhost
-    return process.env.NODE_ENV === 'development' && req.ip === '::1';
+    const clientIp = getClientIp(req);
+    return process.env.NODE_ENV === 'development' && (clientIp === '::1' || clientIp === '127.0.0.1');
+  },
+  handler: (req, res) => {
+    res.status(429).json({
+      success: false,
+      error: 'Has excedido el límite de solicitudes. Intenta de nuevo más tarde.',
+    });
   },
 });
 
@@ -56,7 +74,14 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
   skip: (req) => {
     // En desarrollo, saltar rate limiting para localhost
-    return process.env.NODE_ENV === 'development' && req.ip === '::1';
+    const clientIp = getClientIp(req);
+    return process.env.NODE_ENV === 'development' && (clientIp === '::1' || clientIp === '127.0.0.1');
+  },
+  handler: (req, res) => {
+    res.status(429).json({
+      success: false,
+      error: 'Demasiados intentos de inicio de sesión. Por favor intenta de nuevo en 15 minutos.',
+    });
   },
 });
 
@@ -70,6 +95,12 @@ const passwordResetLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  handler: (req, res) => {
+    res.status(429).json({
+      success: false,
+      error: 'Demasiados intentos de restablecimiento de contraseña. Intenta de nuevo más tarde.',
+    });
+  },
 });
 
 module.exports = {

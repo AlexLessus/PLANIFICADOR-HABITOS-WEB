@@ -39,6 +39,10 @@ const { httpsRedirect, sslSecurityHeaders } = require('./middleware/httpsRedirec
 const app = express();
 const PORT = process.env.PORT || 5000; 
 
+// Configurar trust proxy para obtener la IP real del cliente
+// Importante cuando se usa detrás de nginx, docker, o cualquier proxy
+app.set('trust proxy', 1);
+
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });

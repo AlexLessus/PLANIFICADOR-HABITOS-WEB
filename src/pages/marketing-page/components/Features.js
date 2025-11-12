@@ -27,24 +27,24 @@ const items = [
     title: 'Dashboard',
     description:
       'Muestra los avances de los habitos y tareas que has completado',
-    imageLight: url("${DashboardLight}"),
-    imageDark: url("${Dashboard}"),
+    imageLight: `url(${DashboardLight})`,
+    imageDark: `url(${Dashboard})`,
   },
   {
     icon: <InsightsIcon />,
     title: 'Habit Tracker',
     description:
       'Realiza un seguimiento de tus hábitos diarios y observa tu progreso a lo largo del tiempo.',
-    imageLight: url("${habitPageLight}"),
-    imageDark: url("${habitPageImg}"),
+    imageLight: `url(${habitPageLight})`,
+    imageDark: `url(${habitPageImg})`,
   },
   {
     icon: <TaskIcon />,
     title: 'Task Manager',
     description:
       'Organiza y prioriza tus tareas diarias con facilidad.',
-    imageLight: url("${TaskmanagerLight}"),
-    imageDark: url("${Taskmanager}"),
+    imageLight: `url(${TaskmanagerLight})`,
+    imageDark: `url(${Taskmanager})`,
   },
 ];
 
