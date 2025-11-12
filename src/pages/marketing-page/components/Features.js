@@ -96,9 +96,12 @@ function MobileLayout({ selectedItemIndex, handleItemClick, selectedFeature }) {
         <Box
           sx={(theme) => ({
             mb: 2,
-            backgroundSize: '100%',
+            backgroundSize: 'contain',
             backgroundPosition: 'center',
-            minHeight: 500,
+            backgroundRepeat: 'no-repeat',
+            height: 'auto',
+            minHeight: 300,
+            paddingTop: '75%', // Aspect ratio 4:3, ajusta según tus imágenes
             backgroundImage: 'var(--items-imageLight)',
             ...theme.applyStyles('dark', {
               backgroundImage: 'var(--items-imageDark)',
