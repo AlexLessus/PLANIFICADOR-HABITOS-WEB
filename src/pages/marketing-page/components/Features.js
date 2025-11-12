@@ -7,11 +7,16 @@ import MuiChip from '@mui/material/Chip';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
+//imagenes de caracteristicas
 import habitPageImg from '../../../assets/screenshots/habitPage.png';
-import Dashboard from '../../../assets/screenshots/dashboard.jpg';
+import Dashboard from '../../../assets/screenshots/dashboard.png';
+import Taskmanager from '../../../assets/screenshots/task.png';
+//modo claro
+import habitPageLight from '../../../assets/screenshots/habitPageLight.png';
+import DashboardLight from '../../../assets/screenshots/dashboardLight.png';
+import TaskmanagerLight from '../../../assets/screenshots/taskLight.png';
 //animacion de componente
 import GlowCard from './GlowCard'; 
-
 import TaskIcon from '@mui/icons-material/Task';
 import InsightsIcon from '@mui/icons-material/Insights';
 import ViewQuiltRoundedIcon from '@mui/icons-material/ViewQuiltRounded';
@@ -22,24 +27,24 @@ const items = [
     title: 'Dashboard',
     description:
       'Muestra los avances de los habitos y tareas que has completado',
-    imageLight: `url("${Dashboard}")`,
-    imageDark: `url("${Dashboard}")`,
+    imageLight: url("${DashboardLight}"),
+    imageDark: url("${Dashboard}"),
   },
   {
     icon: <InsightsIcon />,
     title: 'Habit Tracker',
     description:
       'Realiza un seguimiento de tus hábitos diarios y observa tu progreso a lo largo del tiempo.',
-    imageLight: `url("${process.env.TEMPLATE_IMAGE_URL || 'https://mui.com'}/static/images/templates/templates-images/mobile-light.png")`,
-    imageDark: `url("${process.env.TEMPLATE_IMAGE_URL || 'https://mui.com'}/static/images/templates/templates-images/mobile-dark.png")`,
+    imageLight: url("${habitPageLight}"),
+    imageDark: url("${habitPageImg}"),
   },
   {
     icon: <TaskIcon />,
     title: 'Task Manager',
     description:
       'Organiza y prioriza tus tareas diarias con facilidad.',
-    imageLight: `url("${process.env.TEMPLATE_IMAGE_URL || 'https://mui.com'}/static/images/templates/templates-images/devices-light.png")`,
-    imageDark: `url("${process.env.TEMPLATE_IMAGE_URL || 'https://mui.com'}/static/images/templates/templates-images/devices-dark.png")`,
+    imageLight: url("${TaskmanagerLight}"),
+    imageDark: url("${Taskmanager}"),
   },
 ];
 
@@ -264,8 +269,8 @@ export default function Features() {
             <Box
               sx={(theme) => ({
                 m: 'auto',
-                width: 420,
-                height: 500,
+                width: 630,
+                height: 750,
                 backgroundSize: 'contain',
                 backgroundRepeat: 'no-repeat', 
                 backgroundPosition: 'center', 
