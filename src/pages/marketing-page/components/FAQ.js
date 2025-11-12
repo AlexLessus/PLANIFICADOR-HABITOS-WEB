@@ -66,8 +66,8 @@ export default function FAQ() {
               sx={{ maxWidth: { sm: '100%', md: '90%' } }} // Aumentado el ancho de la respuesta
             >
               Puedes contactar a nuestro equipo de soporte al correo electrónico&nbsp;
-              <Link href="mailto:support@email.com">supportTigertech@email.com</Link>
-              &nbsp;o llamar totalmente gratis al número 341. Asistiremos tu duda lo antes posible.
+              <Link href="mailto:equipotigertech@gmail.com">equipotigertech@gmail.com</Link>
+              &nbsp; Asistiremos tu duda lo antes posible.
             </Typography>
           </AccordionDetails>
         </Accordion>
@@ -83,7 +83,7 @@ export default function FAQ() {
             id="panel2d-header"
           >
             <Typography component="span" variant="h6"> {/* Aumentado de subtitle2 a h6 */}
-              ¿Puedo devolver el producto si no cumple mis expectativas?
+              ¿La web tiene una version de paga?
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
@@ -92,7 +92,7 @@ export default function FAQ() {
               gutterBottom
               sx={{ maxWidth: { sm: '100%', md: '90%' } }}
             >
-              ¡Absolutamente! Ofrecemos una política de devolución sin complicaciones. Si no
+              ¡Absolutamente! Ofrecemos una version mejorada de nuestros servcicio de gestor de habitos. Si no
               estás completamente satisfecho(a), puedes devolver el producto dentro de [30]
               días para un reembolso completo o un cambio.
             </Typography>
@@ -119,8 +119,8 @@ export default function FAQ() {
               gutterBottom
               sx={{ maxWidth: { sm: '100%', md: '90%' } }}
             >
-              Nuestro producto se distingue por su **adaptabilidad**, **durabilidad**
-              y **características innovadoras** enfocadas en el comportamiento. Priorizamos la satisfacción del usuario y
+              Nuestro producto se distingue por su adaptabilidad, dinamismo
+              y características innovadoras enfocadas en el comportamiento que te ayudaran a alcanzar tus metas. Priorizamos la satisfacción del usuario y
               nos esforzamos continuamente por superar las expectativas en todos los aspectos.
             </Typography>
           </AccordionDetails>
@@ -137,7 +137,7 @@ export default function FAQ() {
             id="panel4d-header"
           >
             <Typography component="span" variant="h6"> {/* Aumentado de subtitle2 a h6 */}
-              ¿El producto tiene garantía y qué cubre?
+              ¿Cómo puedo restablecer mi contraseña?
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
@@ -146,9 +146,16 @@ export default function FAQ() {
               gutterBottom
               sx={{ maxWidth: { sm: '100%', md: '90%' } }}
             >
-              Sí, nuestro producto viene con una garantía de [30].
-              Cubre defectos en los materiales y la mano de obra. Si encuentras algún problema
-              cubierto por la garantía, contacta a nuestro soporte para asistencia.
+              ¡No te preocupes! Puedes restablecer tu contraseña fácilmente siguiendo estos pasos:
+              Dirígete a la página de "Iniciar Sesión".
+              Justo debajo del formulario de inicio de sesión, haz clic en el enlace que dice "¿Olvidaste tu contraseña?" o "Restablecer contraseña".
+              Introduce la dirección de correo electrónico con la que te registraste en tu cuenta.
+              Haz clic en el botón "Enviar".
+              Revisa tu bandeja de entrada. Te enviaremos un correo electrónico con un enlace e instrucciones para crear tu nueva contraseña.
+              Nota importante: Si no ves el correo en tu bandeja de entrada principal después de unos minutos, por favor revisa tu carpeta de Spam o Correo no deseado.
+              Si sigues teniendo problemas, no dudes en contactar con nuestro equipo de soporte en&nbsp;
+              <Link href="mailto:equipotigertech@gmail.com">equipotigertech@gmail.com</Link>
+              &nbsp;.
             </Typography>
           </AccordionDetails>
         </Accordion>
