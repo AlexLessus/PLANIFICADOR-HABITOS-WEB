@@ -15,6 +15,7 @@ services:
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
+      TZ: America/Mexico_City
     volumes:
       - mysql_data_prod:/var/lib/mysql
       - ./Backend/database/migrations:/docker-entrypoint-initdb.d:ro
@@ -56,6 +57,7 @@ services:
       SSL_KEY_PATH: ${SSL_KEY_PATH}
       SSL_CERT_PATH: ${SSL_CERT_PATH}
       HTTP_REDIRECT: ${HTTP_REDIRECT:-false}
+      TZ: America/Mexico_City
     volumes:
       - ./Backend/logs:/app/logs
       - ./Backend/ssl:/app/ssl:ro
@@ -87,6 +89,8 @@ services:
         REACT_APP_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
     container_name: planificador-frontend-prod
     restart: always
+    environment:
+      TZ: America/Mexico_City
     ports:
       - "127.0.0.1:8080:80"  # Solo accesible desde localhost, Nginx del servidor hará proxy
     depends_on:
