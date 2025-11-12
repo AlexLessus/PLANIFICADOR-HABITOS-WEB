@@ -65,9 +65,7 @@ export default function Hero() {
           <Typography
             variant="h1"
             sx={{
-              display: 'flex',
-              flexDirection: { xs: 'column', sm: 'row' },
-              alignItems: 'center',
+              textAlign: 'center',
               fontSize: 'clamp(3rem, 10vw, 3.5rem)',
               color: 'white', 
               textShadow: '0 0 10px rgba(0,0,0,0.8), 0 0 5px rgba(0,0,0,0.5)', 
