@@ -2,19 +2,9 @@
 
 const db = require('../database/db');
 const ExcelJS = require('exceljs');
-const pdf = require('html-pdf');
+const puppeteer = require('puppeteer');
 const fs = require('fs'); // Módulo para leer archivos del sistema
 const path = require('path'); // Módulo para manejar rutas de archivos
-
-// Promisifica pdf.create().toStream para usar async/await
-const pdfCreateStream = (html, options) => {
-    return new Promise((resolve, reject) => {
-        pdf.create(html, options).toStream((err, stream) => {
-            if (err) return reject(err);
-            resolve(stream);
-        });
-    });
-};
 
 // --- FUNCIÓN BASE PARA CONSULTAR DATOS (VERSIÓN FINAL) ---
 const fetchDataToExport = async (dataType, userId) => {
@@ -264,12 +254,36 @@ exports.exportToPDF = async (req, res) => {
         `;
         // ✅ FIN DE LA MODIFICACIÓN
 
-        const options = { format: 'A4', border: '1cm' };
-        const pdfStream = await pdfCreateStream(htmlContent, options);
+        // Generar PDF con Puppeteer
+        const browser = await puppeteer.launch({
+            headless: true,
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-gpu'
+            ]
+        });
+        
+        const page = await browser.newPage();
+        await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+        
+        const pdfBuffer = await page.pdf({
+            format: 'A4',
+            margin: {
+                top: '1cm',
+                right: '1cm',
+                bottom: '1cm',
+                left: '1cm'
+            },
+            printBackground: true
+        });
+        
+        await browser.close();
 
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename=Reporte_${dataType}_${new Date().toISOString().split('T')[0]}.pdf`);
-        pdfStream.pipe(res);
+        res.send(pdfBuffer);
 
     } catch (error) {
         console.error('[PDF EXPORT ERROR] Error durante la exportación a PDF:', error);
