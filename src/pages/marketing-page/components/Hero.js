@@ -64,7 +64,8 @@ export default function Hero() {
             variant="h1"
             sx={{
               textAlign: 'center',
-              fontSize: 'clamp(3rem, 10vw, 3.5rem)',
+              fontSize: { xs: '2.2rem', sm: '3rem', md: '3.5rem' },
+              lineHeight: { xs: 1.1, sm: 1.2 },
               color: 'white', 
               textShadow: '0 0 10px rgba(0,0,0,0.8), 0 0 5px rgba(0,0,0,0.5)', 
             }}
@@ -87,10 +88,9 @@ export default function Hero() {
           <Typography
             variant="h1"
             sx={{
-              display: 'flex',
-              flexDirection: { xs: 'column', sm: 'row' },
-              alignItems: 'center',
-              fontSize: 'clamp(3rem, 10vw, 3.5rem)',
+              textAlign: 'center',
+              fontSize: { xs: '2.2rem', sm: '3rem', md: '3.5rem' },
+              lineHeight: { xs: 1.1, sm: 1.2 },
               color: 'white', 
               textShadow: '0 0 10px rgba(0,0,0,0.8), 0 0 5px rgba(0,0,0,0.5)',
             }}
