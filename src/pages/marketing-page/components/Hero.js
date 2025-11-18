@@ -18,7 +18,7 @@ export default function Hero() {
       sx={(theme) => ({
         position: 'relative', 
         width: '100%',
-        minHeight: '100vh',
+        minHeight: { xs: 'auto', md: '100vh' },
         backgroundColor: 'transparent',
         backgroundImage: 'none',
         ...theme.applyStyles('dark', {
@@ -51,8 +51,8 @@ export default function Hero() {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          pt: { xs: 18, sm: 30 },
-          pb: { xs: 8, sm: 15 },
+          pt: { xs: 10, sm: 24 },
+          pb: { xs: 6, sm: 12 },
         }}
       >
         <Stack
