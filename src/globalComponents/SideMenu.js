@@ -9,9 +9,9 @@ import Typography from '@mui/material/Typography';
 import MenuContent from './MenuContent';
 import OptionsMenu from './OptionsMenu';
 
-import { useContext } from 'react'; // Importamos useContext
-import { useNavigate } from 'react-router-dom'; // Importamos useNavigate
-import AuthContext from '../context/AuthContext'; // Importamos el contexto
+import { useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import AuthContext from '../context/AuthContext';
 import Tooltip from '@mui/material/Tooltip';
 import { SitemarkIcon } from '../shared-theme/CustomIcons';
 
@@ -29,17 +29,41 @@ const Drawer = styled(MuiDrawer)({
   },
 });
 
+// Función para obtener iniciales del nombre
+const getInitials = (firstName, lastName) => {
+  const first = firstName ? firstName.charAt(0).toUpperCase() : '';
+  const last = lastName ? lastName.charAt(0).toUpperCase() : '';
+  return `${first}${last}` || '?';
+};
+
+// Función para generar color basado en el nombre
+const getAvatarColor = (name) => {
+  const colors = [
+    '#f44336', '#e91e63', '#9c27b0', '#673ab7',
+    '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4',
+    '#009688', '#4caf50', '#8bc34a', '#cddc39',
+    '#ff9800', '#ff5722', '#795548', '#607d8b'
+  ];
+  
+  if (!name) return colors[0];
+  
+  const charCode = name.charCodeAt(0);
+  const index = charCode % colors.length;
+  return colors[index];
+};
+
 export default function SideMenu() {
-  // 1. Usa el hook useContext para acceder al estado global de autenticación
   const { currentUser, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // Si por alguna razón el usuario no está en el contexto, se redirige.
-  // Esto es una capa extra de seguridad.
   if (!currentUser) {
     navigate('/signin');
     return null;
   }
+
+  // Construir el nombre completo para el tooltip
+  const fullName = `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim();
+
   return (
     <Drawer
       variant="permanent"
@@ -58,11 +82,19 @@ export default function SideMenu() {
           p: 1.5,
         }}
       >
-
         <SitemarkIcon />
-        {/* <SelectContent /> */}
-        <Typography variant="h4" component="h1" sx={{ color: 'text.primary', position: 'relative', left: 10, fontSize: 20, fontWeight: 'bold' }}>
-          Tigre Habit Planner
+        <Typography 
+          variant="h4" 
+          component="h1" 
+          sx={{ 
+            color: 'text.primary', 
+            position: 'relative', 
+            left: 10, 
+            fontSize: 20, 
+            fontWeight: 'bold' 
+          }}
+        >
+          Tiger Habit Planner
         </Typography>
       </Box>
       <Divider />
@@ -88,18 +120,30 @@ export default function SideMenu() {
       >
         <Avatar
           sizes="big"
-          alt="Tigre Valerio"
-          src="/static/images/avatar/1.jpg"
-          sx={{ width: 36, height: 36 }}
-        />
-        <Box sx={{ mr: 'auto' }}>
-          <Tooltip title={currentUser.email}>
+          alt={fullName}
+          sx={{ 
+            width: 36, 
+            height: 36,
+            bgcolor: getAvatarColor(currentUser.first_name),
+            fontWeight: 'bold',
+            flexShrink: 0, // Evita que el avatar se encoja
+          }}
+        >
+          {getInitials(currentUser.first_name, currentUser.last_name)}
+        </Avatar>
+        <Box 
+          sx={{ 
+            mr: 'auto',
+            minWidth: 0, // Permite que el contenido se encoja
+            flex: 1, // Toma el espacio disponible
+          }}
+        >
+          <Tooltip title={`${fullName}\n${currentUser.email}`} arrow>
             <Typography
-              variant="caption"
+              variant="body2"
               sx={{
                 color: 'text.primary',
-                maxWidth: 150,
-                fontSize: 16,
+                fontWeight: 500,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
@@ -107,6 +151,20 @@ export default function SideMenu() {
               }}
             >
               {currentUser.first_name}
+            </Typography>
+          </Tooltip>
+          <Tooltip title={currentUser.email} arrow>
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'text.secondary',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                display: 'block',
+              }}
+            >
+              {currentUser.email}
             </Typography>
           </Tooltip>
         </Box>

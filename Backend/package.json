@@ -4,7 +4,14 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/app.js"
+    "start": "node src/server.js",
+    "dev": "node src/server.js",
+    "db:setup": "node database/migrate.js setup",
+    "db:seed": "node database/migrate.js seed",
+    "db:rollback": "node database/migrate.js rollback",
+    "db:reset": "node database/migrate.js reset",
+    "db:status": "node database/migrate.js status",
+    "ssl:generate": "node scripts/generate-ssl-cert.js"
   },
   "keywords": [],
   "author": "",
@@ -15,11 +22,17 @@
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
+    "exceljs": "^4.4.0",
     "express": "^5.1.0",
+    "express-rate-limit": "^7.1.5",
+    "express-validator": "^7.0.1",
     "google-auth-library": "^10.4.0",
     "handlebars": "^4.7.8",
+    "helmet": "^7.1.0",
+    "puppeteer": "^24.35.0",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.15.0",
-    "nodemailer": "^7.0.9"
+    "nodemailer": "^7.0.9",
+    "winston": "^3.11.0"
   }
 }

@@ -17,10 +17,8 @@ export default function Hero() {
       id="hero"
       sx={(theme) => ({
         position: 'relative', 
-        overflow: 'hidden',
         width: '100%',
-        height: '80vh', 
-        minHeight: 500,
+        minHeight: { xs: 'auto', md: '100vh' },
         backgroundColor: 'transparent',
         backgroundImage: 'none',
         ...theme.applyStyles('dark', {
@@ -53,8 +51,8 @@ export default function Hero() {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          pt: { xs: 18, sm: 30 },
-          pb: { xs: 8, sm: 15 },
+          pt: { xs: 15, sm: 24 },
+          pb: { xs: 6, sm: 12 },
         }}
       >
         <Stack
@@ -65,10 +63,9 @@ export default function Hero() {
           <Typography
             variant="h1"
             sx={{
-              display: 'flex',
-              flexDirection: { xs: 'column', sm: 'row' },
-              alignItems: 'center',
-              fontSize: 'clamp(3rem, 10vw, 3.5rem)',
+              textAlign: 'center',
+              fontSize: { xs: '2.2rem', sm: '3rem', md: '3.5rem' },
+              lineHeight: { xs: 1.1, sm: 1.2 },
               color: 'white', 
               textShadow: '0 0 10px rgba(0,0,0,0.8), 0 0 5px rgba(0,0,0,0.5)', 
             }}
@@ -91,10 +88,9 @@ export default function Hero() {
           <Typography
             variant="h1"
             sx={{
-              display: 'flex',
-              flexDirection: { xs: 'column', sm: 'row' },
-              alignItems: 'center',
-              fontSize: 'clamp(3rem, 10vw, 3.5rem)',
+              textAlign: 'center',
+              fontSize: { xs: '2.2rem', sm: '3rem', md: '3.5rem' },
+              lineHeight: { xs: 1.1, sm: 1.2 },
               color: 'white', 
               textShadow: '0 0 10px rgba(0,0,0,0.8), 0 0 5px rgba(0,0,0,0.5)',
             }}
@@ -126,6 +122,59 @@ export default function Hero() {
             Conviértete en el arquitecto de tus hábitos, no en una víctima de tus caprichos.
           </Typography>
           
+
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={2.5}
+            sx={{
+              mt: 3,
+              width: '100%',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <Button
+              variant="contained"
+              color="primary"
+              size="large"
+              href="/signup"
+              sx={{
+                px: { xs: 4, sm: 5 },
+                py: { xs: 1.4, sm: 1.6 },
+                fontSize: { xs: '1rem', sm: '1.05rem' },
+                fontWeight: 600,
+                borderRadius: 999,
+                boxShadow: '0 12px 25px rgba(0,0,0,0.35)',
+                textTransform: 'none',
+              }}
+            >
+              Comienza ahora gratis
+            </Button>
+
+            <Button
+              variant="outlined"
+              color="inherit"
+              size="large"
+              href="/signin"
+              sx={{
+                px: { xs: 4, sm: 5 },
+                py: { xs: 1.3, sm: 1.5 },
+                fontSize: { xs: '0.95rem', sm: '1rem' },
+                borderRadius: 999,
+                borderWidth: 2,
+                textTransform: 'none',
+                color: 'grey.100',
+                borderColor: 'grey.400',
+                '&:hover': {
+                  borderWidth: 2,
+                  borderColor: 'grey.100',
+                  backgroundColor: 'rgba(255,255,255,0.04)',
+                },
+              }}
+            >
+              Ya tengo una cuenta
+            </Button>
+          </Stack>
 
         </Stack>
       </Container>

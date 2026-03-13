@@ -32,7 +32,10 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const JWT_SECRET = process.env.JWT_SECRET; // Obtiene la clave secreta para JWT
 
-console.log("JWT_SECRET usado en authController:", JWT_SECRET);
+// Verificar que JWT_SECRET esté configurado (solo en desarrollo para diagnóstico)
+if (!JWT_SECRET && process.env.NODE_ENV === 'development') {
+    console.warn('[WARNING] JWT_SECRET no está configurado. La autenticación no funcionará correctamente.');
+}
 
 
 const authController = {
@@ -75,7 +78,15 @@ const authController = {
 
         } catch (error) {
             console.error('Error en el registro:', error);
-            res.status(500).json({ message: 'Error interno del servidor durante el registro.', details: error.message });
+            // No exponer detalles del error en producción
+            const errorMessage = process.env.NODE_ENV === 'development' 
+                ? 'Error interno del servidor durante el registro.' 
+                : 'Error interno del servidor durante el registro.';
+            res.status(500).json({ 
+                success: false,
+                message: errorMessage,
+                ...(process.env.NODE_ENV === 'development' && { details: error.message })
+            });
         }
     },
 
@@ -87,24 +98,34 @@ const authController = {
     login: async (req, res) => {
         const { email, password } = req.body;
 
+        console.log('[LOGIN] Intento de login para:', email);
+
         if (!email || !password) {
+            console.log('[LOGIN] Error: Faltan credenciales');
             return res.status(400).json({ message: 'El correo electrónico y la contraseña son obligatorios.' });
         }
 
         try {
+            console.log('[LOGIN] Buscando usuario en DB...');
             const userRows = await userModel.findByEmail(email);
+            
             if (userRows.length === 0) {
+                console.log('[LOGIN] Usuario no encontrado:', email);
                 return res.status(401).json({ message: 'Credenciales inválidas.' });
             }
             const user = userRows[0];
+            console.log('[LOGIN] Usuario encontrado, verificando contraseña...');
 
             const isMatch = await userModel.comparePassword(password, user.password_hash);
             if (!isMatch) {
+                console.log('[LOGIN] Contraseña incorrecta para:', email);
                 return res.status(401).json({ message: 'Credenciales inválidas.' });
             }
 
+            console.log('[LOGIN] Contraseña correcta, generando token...');
             const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
 
+            console.log('[LOGIN] Login exitoso para:', email);
             res.status(200).json({
                 message: 'Inicio de sesión exitoso',
                 user: {
@@ -117,32 +138,62 @@ const authController = {
             });
 
         } catch (error) {
-            console.error('Error en el login:', error);
-            res.status(500).json({ message: 'Error interno del servidor durante el inicio de sesión.', details: error.message });
+            console.error('[LOGIN] ERROR CRÍTICO:', error);
+            console.error('[LOGIN] Stack trace:', error.stack);
+            // No exponer detalles del error en producción
+            const errorMessage = process.env.NODE_ENV === 'development' 
+                ? 'Error interno del servidor durante el inicio de sesión.' 
+                : 'Error interno del servidor durante el inicio de sesión.';
+            res.status(500).json({ 
+                success: false,
+                message: errorMessage,
+                ...(process.env.NODE_ENV === 'development' && { details: error.message })
+            });
         }
     },
 
     googleLogin: async (req, res) => {
         const { token } = req.body;
+        
+        console.log('[GOOGLE LOGIN] Intento de login con Google');
+        console.log('[GOOGLE LOGIN] Token recibido:', token ? 'Sí (longitud: ' + token.length + ')' : 'No');
+        console.log('[GOOGLE LOGIN] GOOGLE_CLIENT_ID configurado:', process.env.GOOGLE_CLIENT_ID ? 'Sí' : 'No');
+        
+        if (!token) {
+            console.log('[GOOGLE LOGIN] Error: No se recibió token');
+            return res.status(400).json({ message: 'Token de Google requerido.' });
+        }
+        
         try {
+            console.log('[GOOGLE LOGIN] Verificando token con Google...');
             const ticket = await client.verifyIdToken({
                 idToken: token,
                 audience: process.env.GOOGLE_CLIENT_ID,
             });
-            const { name, email, picture } = ticket.getPayload();
+            
+            const payload = ticket.getPayload();
+            console.log('[GOOGLE LOGIN] Token verificado. Email:', payload.email);
+            
+            const { name, email, picture } = payload;
 
+            console.log('[GOOGLE LOGIN] Buscando usuario en DB...');
             let userRows = await userModel.findByEmail(email);
             let user;
 
             if (userRows.length > 0) {
+                console.log('[GOOGLE LOGIN] Usuario existente encontrado');
                 user = userRows[0];
             } else {
+                console.log('[GOOGLE LOGIN] Creando nuevo usuario...');
                 const result = await userModel.create(name, '', email, 'google-provided');
                 user = { id: result.insertId, email, first_name: name, last_name: '' };
+                console.log('[GOOGLE LOGIN] Usuario creado con ID:', user.id);
             }
 
+            console.log('[GOOGLE LOGIN] Generando JWT token...');
             const jwtToken = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
 
+            console.log('[GOOGLE LOGIN] Login exitoso para:', email);
             res.status(200).json({
                 message: 'Inicio de sesión con Google exitoso',
                 user: {
@@ -155,8 +206,13 @@ const authController = {
             });
 
         } catch (error) {
-            console.error('Error en el inicio de sesión con Google:', error);
-            res.status(401).json({ message: 'Token de Google inválido.' });
+            console.error('[GOOGLE LOGIN] ERROR:', error.message);
+            console.error('[GOOGLE LOGIN] Stack trace:', error.stack);
+            console.error('[GOOGLE LOGIN] Error completo:', error);
+            res.status(401).json({ 
+                message: 'Token de Google inválido.',
+                ...(process.env.NODE_ENV === 'development' && { details: error.message })
+            });
         }
     },
 
@@ -176,8 +232,8 @@ const authController = {
             await userModel.savePasswordResetToken(user.id, resetTokenHash, resetTokenExpires);
 
             // El enlace debe apuntar a la ruta del frontend donde el usuario restablecerá su contraseña.
-            // Lo he cambiado a 'localhost:3000', pero ajústalo a la URL de tu frontend si es diferente.
-            const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
+            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+            const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
             const emailTemplateSource = fs.readFileSync(path.join(__dirname, '../templates/passwordReset.hbs'), 'utf8');
             const template = handlebars.compile(emailTemplateSource);
             const htmlToSend = template({
@@ -187,7 +243,7 @@ const authController = {
 
             const msg = {
                 to: user.email,
-                from: 'equipotigretech@gmail.com', 
+                from: process.env.SENDGRID_FROM_EMAIL || 'noreply@yourdomain.com', 
                 subject: 'Restablecimiento de contraseña',
                 html: htmlToSend,
             };

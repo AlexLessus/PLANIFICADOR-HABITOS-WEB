@@ -1,205 +1,345 @@
-import React, { useState } from 'react';
+// src/pages/Progress/Progress.jsx
+
+import React, { useState, useEffect } from 'react';
 import {
-    Container,
-    Typography,
-    Box,
-    Button,
-    Grid,
-    Card,
-    CardContent,
-    CardHeader,
-    ToggleButtonGroup,
-    ToggleButton,
-    RadioGroup,
-    FormControlLabel,
-    Radio,
-    FormControl,
-    FormLabel,
-    List,
-    ListItem,
-    ListItemText,
-    Divider
+    Typography, Box, Button, Grid, Card, CardContent, CardHeader,
+    RadioGroup, FormControlLabel, Radio, FormControl, FormLabel, CircularProgress
 } from '@mui/material';
-import CssBaseline from '@mui/material/CssBaseline';
-import MainLayout from '../../globalComponents/MainLayout'; // Layout principal
-import Header from '../../globalComponents/Header'; // Header
-import AppTheme from '../../shared-theme/AppTheme'; // Tema personalizado
-
-// --- Librerías para Gráficos y Selectores de Fecha ---
-import { BarChart } from '@mui/x-charts/BarChart';
+import { PageLayout } from '../../components';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'; // O AdapterDayjs
-import { DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker';
-
-// --- Iconos ---
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import TableViewIcon from '@mui/icons-material/TableView'; // Para representar Excel/CSV
+import TableViewIcon from '@mui/icons-material/TableView';
+import API_URL from '../../config/api';
 
-import {
-    chartsCustomizations,
-    dataGridCustomizations,
-    datePickersCustomizations,
-    treeViewCustomizations,
-} from '../DashboardPage/theme/customizations';
-
-const xThemeComponents = {
-    ...chartsCustomizations,
-    ...dataGridCustomizations,
-    ...datePickersCustomizations,
-    ...treeViewCustomizations,
-};
-
-// --- Datos de ejemplo ---
-const weeklyTaskData = [
-    { day: 'Lun', completed: 80 }, { day: 'Mar', completed: 60 },
-    { day: 'Mié', completed: 75 }, { day: 'Jue', completed: 90 },
-    { day: 'Vie', completed: 85 }, { day: 'Sáb', completed: 40 },
-    { day: 'Dom', completed: 50 },
-];
-
-const monthlyTaskData = [
-    { week: 'Sem 1', completed: 70 }, { week: 'Sem 2', completed: 85 },
-    { week: 'Sem 3', completed: 75 }, { week: 'Sem 4', completed: 90 },
-];
-
-const habitsStreakData = [
-    { id: 1, name: 'Leer 30 minutos', currentStreak: 5, longestStreak: 25 },
-    { id: 2, name: 'Hacer ejercicio', currentStreak: 15, longestStreak: 15 },
-    { id: 3, name: 'Meditar 10 minutos', currentStreak: 0, longestStreak: 8 },
-];
+// --- NUEVAS IMPORTACIONES ---
+import CircularHabitTracker from './CircularHabitTracker';
+import './CircularHabitTracker.css'; // Importa los estilos
+import AnnualHabitHeatmap from './AnnualHabitHeatmap';
+import './AnnualHabitHeatmap.css';
+import HabitPet from './HabitPet'; 
 
 function Progress(props) {
-    const [timeRange, setTimeRange] = useState('semanal');
+    // --- ESTADOS PARA LA EXPORTACIÓN (SE MANTIENEN) ---
     const [exportData, setExportData] = useState('ambos');
     const [dateRange, setDateRange] = useState([null, null]);
 
-    const handleTimeRangeChange = (event, newRange) => {
-        if (newRange !== null) {
-            setTimeRange(newRange);
+    // --- NUEVOS ESTADOS PARA EL TRACKER ---
+    const [habits, setHabits] = useState([]);
+    const [completions, setCompletions] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    // --- NUEVA LÓGICA PARA BUSCAR DATOS ---
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            const headers = { 'Authorization': `Bearer ${token}` };
+
+            const [habitsRes, completionsRes] = await Promise.all([
+                fetch(`${API_URL}/api/habits`, { headers }),
+                fetch(`${API_URL}/api/habits/completions`, { headers })
+            ]);
+
+            const habitsData = await habitsRes.json();
+            const completionsData = await completionsRes.json();
+
+            setHabits(habitsData);
+            setCompletions(completionsData);
+        } catch (error) {
+            console.error("Error al buscar datos de hábitos:", error);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const handleExport = (format) => {
-        // En un caso real, aquí iría la lógica para generar y descargar el archivo.
-        console.log(`Exportando a ${format}:`);
-        console.log('Datos:', exportData);
-        console.log('Rango de fechas:', dateRange);
-        alert(`Se iniciarìa la exportación a ${format}. Revisa la consola para ver los datos.`);
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    // --- NUEVA FUNCIÓN PARA MANEJAR CLICS ---
+    const handleDayClick = async (habitId, dateString, isCompleted) => {
+        if (isCompleted) {
+            console.log("El hábito ya fue completado este día. Para desmarcar, se necesitaría un nuevo endpoint.");
+            return;
+        }
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API_URL}/api/habits/${habitId}/checkin`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                fetchData(); // Recargar datos para reflejar el cambio
+            }
+        } catch (error) {
+            console.error("Error al registrar el check-in:", error);
+        }
     };
 
+    // --- FUNCIÓN DE EXPORTACIÓN (SIN CAMBIOS) ---
+    const handleExport = async (format) => {
+        const dataScope = exportData;
+        const [startDate, endDate] = dateRange;
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert("Debes iniciar sesión para exportar datos.");
+            return;
+        }
+        const formattedStartDate = startDate ? new Date(startDate).toISOString().split('T')[0] : '';
+        const formattedEndDate = endDate ? new Date(endDate).toISOString().split('T')[0] : '';
+        const formatLower = format.toLowerCase();
+        const exportURL = `${API_URL}/api/export/${dataScope}/${formatLower}?start=${formattedStartDate}&end=${formattedEndDate}`;
+        try {
+            const response = await fetch(exportURL, {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` },
+            });
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Error del servidor: ${errorText}`);
+            }
+            const blob = await response.blob();
+            let filename = `reporte_${dataScope}.${formatLower === 'excel' ? 'xlsx' : 'pdf'}`;
+            const contentDisposition = response.headers.get('Content-Disposition');
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="?([^"]*)"?/i);
+                if (filenameMatch && filenameMatch.length > 1) {
+                    filename = filenameMatch[1];
+                }
+            }
+            const urlBlob = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = urlBlob;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(urlBlob);
+        } catch (error) {
+            console.error('Error de red al intentar exportar:', error);
+            alert(`Ocurrió un error de conexión: ${error.message}`);
+        }
+    };
 
     return (
-        <AppTheme {...props} themeComponents={xThemeComponents}>
-            <CssBaseline enableColorScheme />
-            <Header />
-            <Box sx={{ display: 'flex' }}>
-                <MainLayout />
-                <Container maxWidth="lg" sx={{ marginTop: 0, flexGrow: 1, padding: 3 }}>
-                    <Typography variant="h4" component="h1" gutterBottom>
-                        Estadísticas y Reportes
-                    </Typography>
+        <PageLayout {...props}>
+            <Typography
+                variant="h4"
+                component="h1"
+                gutterBottom
+                sx={{
+                    fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' },
+                    fontWeight: 600,
+                    mb: { xs: 2, md: 3 },
+                }}
+            >
+                Estadísticas y Reportes
+            </Typography>
 
-                    {/* Filtros de Rango de Tiempo */}
-                    <Box sx={{ marginBottom: 3 }}>
-                        <ToggleButtonGroup
-                            color="primary"
-                            value={timeRange}
-                            exclusive
-                            onChange={handleTimeRangeChange}
-                            aria-label="Rango de tiempo"
+            <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
+                {/* SECCIÓN DEL NUEVO HABIT TRACKER */}
+                <Grid item xs={12}>
+                    <Card
+                        sx={{
+                            borderRadius: { xs: 2, md: 3 },
+                            boxShadow: { xs: 1, sm: 2 },
+                        }}
+                    >
+                        <CardHeader
+                            title="Tracker Mensual de Hábitos"
+                            sx={{
+                                '& .MuiCardHeader-title': {
+                                    fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem' },
+                                },
+                                px: { xs: 2, sm: 3 },
+                                py: { xs: 1.5, sm: 2 },
+                            }}
+                        />
+                        <CardContent
+                            sx={{
+                                px: { xs: 2, sm: 3 },
+                                py: { xs: 2, sm: 2.5 },
+                            }}
                         >
-                            <ToggleButton value="semanal">Semanal</ToggleButton>
-                            <ToggleButton value="mensual">Mensual</ToggleButton>
-                        </ToggleButtonGroup>
-                    </Box>
+                            {loading ? (
+                                <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                                    <CircularProgress />
+                                </Box>
+                            ) : (
+                                <>
+                                    <HabitPet habits={habits} />
+                                    <CircularHabitTracker
+                                        habits={habits}
+                                        completions={completions}
+                                        onDayClick={handleDayClick}
+                                    />
+                                </>
+                            )}
+                        </CardContent>
+                    </Card>
+                </Grid>
 
-                    <Grid container spacing={3}>
-                        {/* Sección de Estadísticas de Tareas */}
-                        <Grid item xs={12} md={6}>
-                            <Card>
-                                <CardHeader title="Estadísticas de Tareas" subheader={timeRange === 'semanal' ? 'Últimos 7 días' : 'Últimas 4 semanas'} />
-                                <CardContent>
-                                    <Typography variant="h6">Tasa de Completado</Typography>
-                                    <Box sx={{ height: 300 }}>
-                                        <BarChart
-                                            dataset={timeRange === 'semanal' ? weeklyTaskData : monthlyTaskData}
-                                            xAxis={[{ scaleType: 'band', dataKey: timeRange === 'semanal' ? 'day' : 'week' }]}
-                                            series={[{ dataKey: 'completed', label: '% Completado', valueFormatter: (value) => `${value}%` }]}
-                                            layout="vertical"
-                                        />
+                {/* SECCIÓN DEL NUEVO HEATMAP ANUAL */}
+                <Grid item xs={12}>
+                    <Card
+                        sx={{
+                            borderRadius: { xs: 2, md: 3 },
+                            boxShadow: { xs: 1, sm: 2 },
+                        }}
+                    >
+                        <CardHeader
+                            title="Visualización Anual de Hábitos"
+                            sx={{
+                                '& .MuiCardHeader-title': {
+                                    fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem' },
+                                },
+                                px: { xs: 2, sm: 3 },
+                                py: { xs: 1.5, sm: 2 },
+                            }}
+                        />
+                        <CardContent
+                            sx={{
+                                px: { xs: 1, sm: 3 },
+                                py: { xs: 2, sm: 2.5 },
+                            }}
+                        >
+                            {loading ? (
+                                <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                                    <CircularProgress />
+                                </Box>
+                            ) : (
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: { xs: 3, md: 4 },
+                                        overflowX: 'auto',
+                                        overflowY: 'visible',
+                                        // Scroll horizontal en móvil
+                                        '&::-webkit-scrollbar': {
+                                            height: 8,
+                                        },
+                                        '&::-webkit-scrollbar-track': {
+                                            backgroundColor: 'rgba(0,0,0,0.1)',
+                                            borderRadius: 4,
+                                        },
+                                        '&::-webkit-scrollbar-thumb': {
+                                            backgroundColor: 'rgba(0,0,0,0.3)',
+                                            borderRadius: 4,
+                                            '&:hover': {
+                                                backgroundColor: 'rgba(0,0,0,0.5)',
+                                            },
+                                        },
+                                    }}
+                                >
+                                    <Box sx={{ minWidth: { xs: '700px', md: 'auto' } }}>
+                                        <AnnualHabitHeatmap completions={completions} year={2025} />
                                     </Box>
-                                    <Divider sx={{ my: 2 }} />
-                                    <Typography variant="h6" gutterBottom>Contadores Totales</Typography>
-                                    <Typography variant="body1">Tareas Completadas: <strong>45</strong></Typography>
-                                    <Typography variant="body1">Tareas Pendientes: <strong>12</strong></Typography>
-                                </CardContent>
-                            </Card>
-                        </Grid>
-
-                        {/* Sección de Estadísticas de Hábitos */}
-                        <Grid item xs={12} md={6}>
-                            <Card>
-                                <CardHeader title="Estadísticas de Hábitos" />
-                                <CardContent>
-                                    <Typography variant="h6">Historial de Rachas</Typography>
-                                    <List dense>
-                                        {habitsStreakData.map(habit => (
-                                            <ListItem key={habit.id} disablePadding>
-                                                <ListItemText primary={habit.name} secondary={`Racha actual: ${habit.currentStreak} días / Racha más larga: ${habit.longestStreak} días`} />
-                                            </ListItem>
-                                        ))}
-                                    </List>
-                                    <Divider sx={{ my: 2 }} />
-                                    <Typography variant="h6" gutterBottom>Calendario de Cumplimiento (Heatmap)</Typography>
-                                    <Box sx={{ p: 2, border: '1px dashed grey', borderRadius: 1, textAlign: 'center', backgroundColor: '#f5f5f5' }}>
-                                        <Typography variant="body2" color="text.secondary">
-                                            Aquí se mostraría el heatmap de un hábito seleccionado.
-                                            (Requiere una librería externa como 'react-calendar-heatmap').
-                                        </Typography>
+                                    <Box sx={{ minWidth: { xs: '700px', md: 'auto' } }}>
+                                        <AnnualHabitHeatmap completions={completions} year={2026} />
                                     </Box>
-                                </CardContent>
-                            </Card>
-                        </Grid>
+                                </Box>
+                            )}
+                        </CardContent>
+                    </Card>
+                </Grid>
 
-                        {/* Sección de Exportación de Datos */}
-                        <Grid item xs={12}>
-                            <Card>
-                                <CardHeader title="Función de Exportación de Datos" />
-                                <CardContent>
-                                    <Grid container spacing={3} alignItems="center">
-                                        <Grid item xs={12} md={4}>
-                                            <FormControl>
-                                                <FormLabel>Selector de Datos</FormLabel>
-                                                <RadioGroup row value={exportData} onChange={(e) => setExportData(e.target.value)}>
-                                                    <FormControlLabel value="tareas" control={<Radio />} label="Tareas" />
-                                                    <FormControlLabel value="habitos" control={<Radio />} label="Hábitos" />
-                                                    <FormControlLabel value="ambos" control={<Radio />} label="Ambos" />
-                                                </RadioGroup>
-                                            </FormControl>
-                                        </Grid>
-                                        <Grid item xs={12} md={5}>
-                                            <LocalizationProvider dateAdapter={AdapterDateFns}>
-                                                <DateRangePicker
-                                                    localeText={{ start: 'Fecha de inicio', end: 'Fecha de fin' }}
-                                                    value={dateRange}
-                                                    onChange={(newValue) => setDateRange(newValue)}
-                                                />
-                                            </LocalizationProvider>
-                                        </Grid>
-                                        <Grid item xs={12} md={3}>
-                                            <Box sx={{ display: 'flex', gap: 1 }}>
-                                                <Button variant="outlined" startIcon={<PictureAsPdfIcon />} onClick={() => handleExport('PDF')}>PDF</Button>
-                                                <Button variant="outlined" startIcon={<TableViewIcon />} onClick={() => handleExport('Excel')}>Excel</Button>
-                                            </Box>
-                                        </Grid>
-                                    </Grid>
-                                </CardContent>
-                            </Card>
-                        </Grid>
-                    </Grid>
-                </Container>
-            </Box>
-        </AppTheme>
+                {/* SECCIÓN DE EXPORTACIÓN */}
+                <Grid item xs={12}>
+                    <Card
+                        sx={{
+                            borderRadius: { xs: 2, md: 3 },
+                            boxShadow: { xs: 1, sm: 2 },
+                        }}
+                    >
+                        <CardHeader
+                            title="Función de Exportación de Datos"
+                            sx={{
+                                '& .MuiCardHeader-title': {
+                                    fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem' },
+                                },
+                                px: { xs: 2, sm: 3 },
+                                py: { xs: 1.5, sm: 2 },
+                            }}
+                        />
+                        <CardContent
+                            sx={{
+                                px: { xs: 2, sm: 3 },
+                                py: { xs: 2, sm: 2.5 },
+                            }}
+                        >
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    flexDirection: { xs: 'column', md: 'row' },
+                                    gap: { xs: 3, md: 4 },
+                                    alignItems: { xs: 'stretch', md: 'center' },
+                                }}
+                            >
+                                {/* Selector de Datos */}
+                                <FormControl sx={{ minWidth: { xs: '100%', md: 200 } }}>
+                                    <FormLabel
+                                        sx={{
+                                            fontSize: { xs: '0.875rem', sm: '1rem' },
+                                            mb: 1,
+                                        }}
+                                    >
+                                        Selector de Datos
+                                    </FormLabel>
+                                    <RadioGroup
+                                        row={false}
+                                        value={exportData}
+                                        onChange={(e) => setExportData(e.target.value)}
+                                    >
+                                        <FormControlLabel value="tareas" control={<Radio />} label="Tareas" />
+                                        <FormControlLabel value="habitos" control={<Radio />} label="Hábitos" />
+                                        <FormControlLabel value="ambos" control={<Radio />} label="Ambos" />
+                                    </RadioGroup>
+                                </FormControl>
+
+                                {/* Botones de Exportación */}
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: { xs: 'column', sm: 'row' },
+                                        gap: { xs: 1.5, sm: 2 },
+                                        flexGrow: 1,
+                                        justifyContent: { xs: 'stretch', md: 'flex-end' },
+                                    }}
+                                >
+                                    <Button
+                                        variant="contained"
+                                        startIcon={<PictureAsPdfIcon />}
+                                        onClick={() => handleExport('PDF')}
+                                        fullWidth={{ xs: true, sm: false }}
+                                        sx={{
+                                            minHeight: 44,
+                                            px: { xs: 2, md: 3 },
+                                        }}
+                                    >
+                                        Exportar PDF
+                                    </Button>
+                                    <Button
+                                        variant="outlined"
+                                        startIcon={<TableViewIcon />}
+                                        onClick={() => handleExport('Excel')}
+                                        fullWidth={{ xs: true, sm: false }}
+                                        sx={{
+                                            minHeight: 44,
+                                            px: { xs: 2, md: 3 },
+                                        }}
+                                    >
+                                        Exportar Excel
+                                    </Button>
+                                </Box>
+                            </Box>
+                        </CardContent>
+                    </Card>
+                </Grid>
+            </Grid>
+        </PageLayout>
     );
 }
 

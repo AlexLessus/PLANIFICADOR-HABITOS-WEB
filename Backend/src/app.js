@@ -1,3 +1,4 @@
+
 /**
  * @fileoverview Módulo Principal de la aplicación Planificador API.
  * Este archivo inicializa el servidor Express, configura los middlewares, 
@@ -6,32 +7,103 @@
  * * Responsabilidades Clave:
  * 1. Cargar variables de entorno (.env).
  * 2. Configurar CORS y manejo de JSON.
- * 3. Montar las rutas de la API (/api/auth, /api/habits).
+ * 3. Montar las rutas de la API (/api/auth, /api/habits, /api/export).
  * 4. Iniciar la escucha del servidor en el puerto configurado.
  * * @author Gustavo
- * @version 1.0.0
+ * @version 1.0.1 (Exportación añadida)
  * @module app
  */
 
-// Planificador/backend/src/app.js
-require('dotenv').config(); // Carga las variables de entorno al inicio
+// Cargar variables de entorno solo si el archivo .env existe (desarrollo)
+// En producción, las variables vienen de docker-compose
+require('dotenv').config({ path: '.env' });
 const express = require('express');
 const cors = require('cors');
-const db = require('./database/db');       // Importa nuestro pool de conexiones a la DB
-const authRoutes = require('./routes/authRoutes'); // <--- rutas
-const habitsRoutes = require('./routes/habits'); // <--- habits routes
-const tasksRouter = require('./routes/tasks'); // <--- tasks routes
+const helmet = require('helmet');
+
+// Importaciones de DB, Rutas y Middleware
+const db = require('./database/db'); 
+const authRoutes = require('./routes/authRoutes'); 
+const habitsRoutes = require('./routes/habits'); 
+const tasksRouter = require('./routes/tasks');
+const exportRoutes = require('./routes/exportRoutes'); // Archivo de rutas de exportación
+const { apiLimiter } = require('./middleware/rateLimiter');
+const { errorHandler } = require('./utils/errorHandler');
+
+// Importar logger y utilidades
+const logger = require('./config/logger');
+const { logAppStart, logDatabaseConnection } = require('./utils/logger');
+const requestLogger = require('./middleware/requestLogger');
+const { httpsRedirect, sslSecurityHeaders } = require('./middleware/httpsRedirect');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000; 
 
+// Configurar trust proxy para obtener la IP real del cliente
+// Importante cuando se usa detrás de nginx, docker, o cualquier proxy
+app.set('trust proxy', 1);
 
-console.log(habitsRoutes)
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
+// Deshabilitar información del servidor
+app.disable('x-powered-by');
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// Configuración de seguridad con Helmet
+app.use(helmet({
+  contentSecurityPolicy: false, // Deshabilitado para evitar conflictos con Google OAuth
+  crossOriginEmbedderPolicy: false,
+  crossOriginOpenerPolicy: false, // Importante para Google OAuth
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+}));
+
+// Configuración de CORS mejorada
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Lista de orígenes permitidos
+    const allowedOrigins = [
+      process.env.FRONTEND_URL || 'http://localhost:3000',
+      'https://tigertech.com.mx',
+      'https://www.tigertech.com.mx',
+      'http://localhost:3000',
+      'http://localhost',
+      // Agregar otros orígenes según sea necesario
+    ];
+
+    // Permitir requests sin origen (Postman, mobile apps, etc.) solo en desarrollo
+    if (!origin && process.env.NODE_ENV === 'development') {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      logger.warn(`[CORS] Origen bloqueado: ${origin}`);
+      callback(new Error('No permitido por CORS'));
+    }
+  },
+  credentials: true, // Permitir cookies
+  optionsSuccessStatus: 200,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+};
+
+app.use(cors(corsOptions));
+
+// Middleware de seguridad SSL/HTTPS
+app.use(httpsRedirect);
+app.use(sslSecurityHeaders);
+
+// Middleware Global
+app.use(express.json({ limit: '10mb' })); // Limitar tamaño de JSON
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Logging de requests HTTP
+app.use(requestLogger);
+
+// Rate limiting global (se aplica a todas las rutas)
+app.use('/api', apiLimiter);
 
 // --------------------------------------------------------------------------
 // Rutas de la API
@@ -41,41 +113,41 @@ app.use(express.json());
 app.get('/api/test-db', async (req, res) => {
     try {
         const [rows] = await db.query('SELECT 1 + 1 AS solution');
-        console.log('Resultado de la prueba de DB:', rows[0].solution);
+        logger.info('[API DB Test] Resultado de la prueba de DB:', rows[0].solution);
         res.status(200).json({
             message: 'Conexión a la base de datos exitosa',
             solution: rows[0].solution
         });
     } catch (err) {
-        console.error('Error al conectar/consultar la base de datos:', err.message);
+        logger.error('[API DB Test] CRITICAL ERROR: Error al conectar/consultar la base de datos:', err.message);
         res.status(500).json({
-            error: 'Error al conectar/consultar la base de datos',
+            error: 'Error al conectar/consultar la base de datos. Verifique credenciales.',
             details: err.message
         });
     }
 });
 
-// Ruta raíz (opcional, como habíamos hablado)
+// Ruta raíz 
 app.get('/', (req, res) => {
     res.status(200).json({ message: 'Bienvenido a la API del Planificador' });
 });
 
 
-// Rutas de Autenticación
-app.use('/api/auth', authRoutes); // <--- LÍNEA para usar las rutas de autenticación
-app.use('/api/habits', habitsRoutes); // <--- LÍNEA para usar las rutas de hábitos
-app.use('/api/tasks', tasksRouter); // <--- LÍNEA para usar las rutas de tareas
+// Montaje de rutas
+// Los middlewares de autenticación se aplican DENTRO de cada archivo de ruta (ej. tasks, habits, export)
+app.use('/api/auth', authRoutes); 
+app.use('/api/habits', habitsRoutes); 
+app.use('/api/tasks', tasksRouter); 
+
+// MONTAJE CORRECTO DE LA RUTA DE EXPORTACIÓN
+// Se monta el archivo de rutas exportRoutes, que internamente usa el authMiddleware.
+app.use('/api/export', exportRoutes); 
+
 // --------------------------------------------------------------------------
-// Iniciar el Servidor
+// MANEJO GLOBAL DE ERRORES
+// Este debe ser el último middleware, después de todas las rutas
+app.use(errorHandler.handleError);
 // --------------------------------------------------------------------------
-app.listen(PORT, () => {
-    console.log(`Servidor backend corriendo en http://localhost:${PORT}`);
-    db.getConnection()
-        .then(connection => {
-            console.log('Pool de conexiones de la base de datos listo.');
-            connection.release();
-        })
-        .catch(err => {
-            console.error('No se pudo establecer conexión inicial con la base de datos:', err.message);
-        });
-});
+
+// Exportar la aplicación (el servidor se inicia en server.js)
+module.exports = app;

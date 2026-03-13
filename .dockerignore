@@ -1,0 +1,67 @@
+# Dependencias
+node_modules
+npm-debug.log
+yarn-error.log
+# package-lock.json - Necesario para npm ci
+yarn.lock
+
+# Build
+build
+dist
+.next
+out
+
+# Testing
+coverage
+.nyc_output
+*.test.js
+*.spec.js
+__tests__
+__mocks__
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Environment
+# .env - Comentado para permitir que Docker lo use
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Misc
+.cache
+tmp
+temp
+*.tmp
+README.md
+LICENSE
+.editorconfig
+.prettierrc
+.eslintrc*
+
+# OS
+Thumbs.db
+.DS_Store

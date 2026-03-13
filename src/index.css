@@ -1,13 +1,245 @@
+/* ============================================
+   SISTEMA RESPONSIVE GLOBAL
+   ============================================ */
+
+/* Reset y configuración base */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Configuración de tamaño de fuente base responsive */
+html {
+  font-size: 16px; /* Base para rem */
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
+/* Ajuste de fuente base para móviles pequeños */
+@media (max-width: 599px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+/* Ajuste de fuente base para pantallas grandes */
+@media (min-width: 1536px) {
+  html {
+    font-size: 18px;
+  }
+}
+
 body {
   margin: 0;
+  padding: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-size: clamp(0.875rem, 0.8rem + 0.5vw, 1rem);
+  line-height: 1.6;
+  overflow-x: hidden; /* Previene scroll horizontal no deseado */
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* ============================================
+   IMÁGENES Y MEDIA RESPONSIVE
+   ============================================ */
+img,
+video,
+iframe {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ============================================
+   TOUCH TARGETS (Accesibilidad móvil)
+   ============================================ */
+button,
+a,
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+  min-height: 44px;
+  min-width: 44px;
+  touch-action: manipulation; /* Mejora respuesta táctil */
+}
+
+/* ============================================
+   TABLAS RESPONSIVE
+   ============================================ */
+.table-responsive {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+table {
+  max-width: 100%;
+  border-collapse: collapse;
+}
+
+/* ============================================
+   UTILIDADES RESPONSIVE
+   ============================================ */
+
+/* Ocultar elementos según breakpoint */
+.hide-xs {
+  display: none !important;
+}
+
+@media (min-width: 600px) {
+  .hide-xs {
+    display: block !important;
+  }
+  .hide-sm {
+    display: none !important;
+  }
+}
+
+@media (min-width: 900px) {
+  .hide-sm {
+    display: block !important;
+  }
+  .hide-md {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1200px) {
+  .hide-md {
+    display: block !important;
+  }
+  .hide-lg {
+    display: none !important;
+  }
+}
+
+/* Mostrar solo en ciertos breakpoints */
+.show-xs-only {
+  display: block !important;
+}
+
+@media (min-width: 600px) {
+  .show-xs-only {
+    display: none !important;
+  }
+}
+
+.show-sm-only {
+  display: none !important;
+}
+
+@media (min-width: 600px) and (max-width: 899px) {
+  .show-sm-only {
+    display: block !important;
+  }
+}
+
+.show-md-only {
+  display: none !important;
+}
+
+@media (min-width: 900px) and (max-width: 1199px) {
+  .show-md-only {
+    display: block !important;
+  }
+}
+
+/* ============================================
+   CONTENEDORES RESPONSIVE
+   ============================================ */
+.container-fluid {
+  width: 100%;
+  padding-right: 1rem;
+  padding-left: 1rem;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+@media (min-width: 600px) {
+  .container-fluid {
+    padding-right: 1.5rem;
+    padding-left: 1.5rem;
+  }
+}
+
+@media (min-width: 900px) {
+  .container-fluid {
+    padding-right: 2rem;
+    padding-left: 2rem;
+  }
+}
+
+/* ============================================
+   ORIENTACIÓN DEL DISPOSITIVO
+   ============================================ */
+@media (orientation: landscape) and (max-height: 500px) {
+  /* Ajustes para móviles en horizontal */
+  body {
+    font-size: 0.875rem;
+  }
+  
+  button,
+  a,
+  input[type="button"] {
+    min-height: 36px;
+    min-width: 36px;
+  }
+}
+
+/* ============================================
+   SCROLL SUAVE
+   ============================================ */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================
+   ACCESIBILIDAD
+   ============================================ */
+/* Focus visible para navegación por teclado */
+:focus-visible {
+  outline: 2px solid #2196f3;
+  outline-offset: 2px;
+}
+
+/* Ocultar visualmente pero mantener para lectores de pantalla */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }

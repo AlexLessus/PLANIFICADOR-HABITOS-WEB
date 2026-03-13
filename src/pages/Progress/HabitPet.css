@@ -1,0 +1,93 @@
+/* === Estilos para la mascota del hábito === */
+.pet-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem 0;
+  transition: all 0.4s ease-in-out;
+}
+
+.pet-image {
+  width: 240px;
+  height: auto;
+  max-width: 90%;
+  transition: transform 0.4s ease-in-out, filter 0.3s ease;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.15));
+}
+
+/* === Tamaño progresivo según fase === */
+.pet-container.phase1 .pet-image {
+  width: 180px;
+  transform: scale(0.95);
+}
+
+.pet-container.phase2 .pet-image {
+  width: 220px;
+  transform: scale(1);
+}
+
+.pet-container.phase3 .pet-image {
+  width: 260px;
+  transform: scale(1.1);
+}
+
+.pet-container.sad .pet-image {
+  width: 220px;
+  opacity: 0.8;
+  filter: grayscale(60%) brightness(0.9);
+}
+
+.pet-container.bones .pet-image {
+  width: 240px;
+  filter: grayscale(100%) brightness(0.6);
+  opacity: 0.6;
+}
+
+/* === Texto descriptivo === */
+.pet-container p,
+.pet-container .MuiTypography-root {
+  margin-top: 0.5rem;
+  font-weight: 500;
+  color: #333;
+}
+
+/* === Hover effect (ligero) === */
+.pet-image:hover {
+  transform: scale(1.15);
+}
+
+/* === Responsive === */
+@media (max-width: 600px) {
+  .pet-image {
+    width: 180px;
+  }
+
+  .pet-container.phase3 .pet-image {
+    width: 200px;
+  }
+}
+
+/* === Dark Mode Support === */
+@media (prefers-color-scheme: dark) {
+  .pet-container {
+    color: #eaeaea;
+  }
+
+  .pet-image {
+    filter: drop-shadow(0 4px 10px rgba(0, 230, 118, 0.15));
+  }
+
+  .pet-container.phase3 .pet-image {
+    filter: drop-shadow(0 0 12px rgba(0, 230, 118, 0.35));
+  }
+
+  .pet-container.sad .pet-image {
+    filter: grayscale(70%) brightness(0.8) drop-shadow(0 0 8px rgba(255, 0, 0, 0.25));
+  }
+
+  .pet-container.bones .pet-image {
+    filter: grayscale(100%) brightness(0.5);
+  }
+}

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
-    Container, Typography, Fab, List, Card, CardContent, Chip,
-    IconButton, Modal, TextField, Button
+    Typography, Fab, List, Card, CardContent, Chip,
+    IconButton, Modal, TextField, Button, Stack
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -9,19 +10,19 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
-import { alpha } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
-import MainLayout from '../../globalComponents/MainLayout';
-import AppTheme from '../../shared-theme/AppTheme';
+import { PageLayout } from '../../components';
+import API_URL from '../../config/api';
 import {
     chartsCustomizations,
     dataGridCustomizations,
     datePickersCustomizations,
     treeViewCustomizations,
 } from '../DashboardPage/theme/customizations';
-import Header from '../../globalComponents/Header';
 
+const COLOR_HABIT_DEFAULT = '#FF9800';
+const COLOR_HABIT_IN_DANGER = '#FF5722';
+const COLOR_HABIT_SAFE = '#4CAF50';
 
 // --- Combinando las personalizaciones del tema ---
 export const xThemeComponents = {
@@ -40,13 +41,24 @@ const getAuthHeaders = (withJson = false) => {
     return headers;
 };
 
-// Estilo del modal
+// Estilo del modal responsive
 const modalStyle = {
-    position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-    width: 400, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 24, p: 4,
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: { xs: '90%', sm: 500, md: 600 },
+    maxWidth: '90vw',
+    maxHeight: '90vh',
+    overflow: 'auto',
+    bgcolor: 'background.paper',
+    borderRadius: { xs: 2, md: 3 },
+    boxShadow: 24,
+    p: { xs: 3, sm: 4 },
 };
 
 function HabitsPage(props) {
+    const location = useLocation();
     const [habits, setHabits] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -54,6 +66,15 @@ function HabitsPage(props) {
     const [openModal, setOpenModal] = useState(false);
     // Aseguramos que los nuevos campos estén presentes en el estado
     const [currentHabit, setCurrentHabit] = useState({ id: null, title: '', streak: 0, lastCompleted: null, time: '', location: '' });
+
+    // --- Detectar si viene de búsqueda y abrir modal ---
+    useEffect(() => {
+        if (location.state?.openEditModal && location.state?.habit) {
+            handleOpenModal(location.state.habit);
+            // Limpiar el state para que no se abra de nuevo al recargar
+            window.history.replaceState({}, document.title);
+        }
+    }, [location]);
 
     // --- Lógica para cargar hábitos (Fetch) ---
     useEffect(() => {
@@ -69,7 +90,7 @@ function HabitsPage(props) {
 
             try {
                 // El backend ahora devuelve 'streak' y 'lastCompleted'
-                const response = await fetch('http://localhost:5000/api/habits', {
+                const response = await fetch(`${API_URL}/api/habits`, {
                     headers: getAuthHeaders(),
                 });
 
@@ -117,7 +138,7 @@ function HabitsPage(props) {
                 : '/api/habits';
             const method = currentHabit.id ? 'PUT' : 'POST';
 
-            const response = await fetch(`http://localhost:5000${url}`, {
+            const response = await fetch(`${API_URL}${url}`, {
                 method: method,
                 headers: getAuthHeaders(true),
                 body: JSON.stringify(currentHabit),
@@ -150,7 +171,7 @@ function HabitsPage(props) {
 
     const handleDeleteHabit = async (habitId) => {
         try {
-            const response = await fetch(`http://localhost:5000/api/habits/${habitId}`, {
+            const response = await fetch(`${API_URL}/api/habits/${habitId}`, {
                 method: 'DELETE',
                 headers: getAuthHeaders(),
             });
@@ -170,7 +191,7 @@ function HabitsPage(props) {
     // --- FUNCIÓN MODIFICADA PARA LA RACHA ---
     const handleCheckIn = async (habitId) => {
         try {
-            const response = await fetch(`http://localhost:5000/api/habits/${habitId}/checkin`, {
+            const response = await fetch(`${API_URL}/api/habits/${habitId}/checkin`, {
                 method: 'POST',
                 headers: getAuthHeaders(),
             });
@@ -206,137 +227,280 @@ function HabitsPage(props) {
         return todayString === lastCompletedDate.substring(0, 10);
     };
 
-const isStreakInDanger = (habit) => {
-        // 1. Si no hay fecha o si se completó hoy, no hay peligro.
-        if (!habit.lastCompleted || isCompletedToday(habit.lastCompleted)) {
+    const isStreakInDanger = (habit) => {
+        // 1. Si no hay fecha de última completación, no está en peligro (es nuevo)
+        if (!habit.lastCompleted) {
             return false;
         }
 
-        // 2. Formatear la fecha de AYER a YYYY-MM-DD (de forma segura).
+        // 2. Si se completó hoy, no hay peligro
+        if (isCompletedToday(habit.lastCompleted)) {
+            return false;
+        }
+
+        // 3. Formatear la fecha de AYER a YYYY-MM-DD
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
-        
+
         const yyyy = yesterday.getFullYear();
         const mm = String(yesterday.getMonth() + 1).padStart(2, '0');
         const dd = String(yesterday.getDate()).padStart(2, '0');
         const yesterdayString = `${yyyy}-${mm}-${dd}`;
-        
-        // 3. Comparar la fecha de AYER con la última fecha completada.
-        // El habit.lastCompleted viene del backend como 'YYYY-MM-DD' o similar.
-        // Usamos substring(0, 10) para asegurar que solo comparamos la fecha.
-        return yesterdayString === habit.lastCompleted.substring(0, 10);
+
+        // 4. El hábito está en peligro si la última vez que se completó NO fue ayer
+        // (significa que se rompió la racha)
+        const lastCompletedDate = habit.lastCompleted.substring(0, 10);
+        return lastCompletedDate !== yesterdayString;
     };
 
-    if (loading) {}
-    if (error) {}
+    if (loading) { }
+    if (error) { }
 
     return (
-        <AppTheme {...props} themeComponents={xThemeComponents}>
-            <CssBaseline enableColorScheme />
-            <Header />
-            <Box sx={{ display: 'flex' }}>
-                <MainLayout />
+        <PageLayout themeComponents={xThemeComponents} {...props}>
+            <Typography
+                variant="h4"
+                component="h1"
+                gutterBottom
+                sx={{
+                    fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' },
+                    fontWeight: 600,
+                    mb: { xs: 2, md: 3 },
+                }}
+            >
+                Mis Hábitos
+            </Typography>
+
+            <List sx={{ width: '100%' }}>
+                {habits.map((habit) => {
+                    const completed = isCompletedToday(habit.lastCompleted);
+                    const inDanger = isStreakInDanger(habit);
+
+                    return (
+                        <Box key={habit.id} sx={{ mb: { xs: 1.5, md: 2 } }}>
+                            {inDanger && (
+                                <Typography
+                                    variant="body2"
+                                    fontWeight="bold"
+                                    color={COLOR_HABIT_IN_DANGER}
+                                    sx={{ ml: 1, mb: 0.5, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                                >
+                                    ¡Completa hoy para mantener tu racha!
+                                </Typography>
+                            )}
+                            <Card
+                                sx={{
+                                    borderLeft: { xs: '4px solid', md: '6px solid' },
+                                    borderLeftColor: !habit.lastCompleted
+                                        ? COLOR_HABIT_DEFAULT
+                                        : inDanger
+                                            ? COLOR_HABIT_IN_DANGER
+                                            : COLOR_HABIT_SAFE,
+                                    transition: 'transform 0.2s, box-shadow 0.2s',
+                                    '&:hover': {
+                                        transform: 'translateY(-2px)',
+                                        boxShadow: 3,
+                                    },
+                                }}
+                            >
+                                <CardContent
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: { xs: 'column', sm: 'row' },
+                                        alignItems: { xs: 'stretch', sm: 'center' },
+                                        gap: { xs: 1.5, sm: 2 },
+                                        p: { xs: 2, sm: '12px' },
+                                        '&:last-child': { pb: { xs: 2, sm: '12px' } },
+                                    }}
+                                >
+                                    {/* Botón de Check */}
+                                    <IconButton
+                                        onClick={() => handleCheckIn(habit.id)}
+                                        color={completed ? 'success' : 'default'}
+                                        sx={{
+                                            alignSelf: { xs: 'center', sm: 'auto' },
+                                            minWidth: 44,
+                                            minHeight: 44,
+                                        }}
+                                    >
+                                        {completed ? (
+                                            <CheckCircleIcon sx={{ fontSize: { xs: 40, sm: 48, md: 53 } }} />
+                                        ) : (
+                                            <RadioButtonUncheckedIcon sx={{ fontSize: { xs: 40, sm: 48, md: 53 } }} />
+                                        )}
+                                    </IconButton>
+
+                                    {/* Título */}
+                                    <Typography
+                                        variant="h6"
+                                        component="div"
+                                        sx={{
+                                            flexGrow: 1,
+                                            fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.45rem' },
+                                            textAlign: { xs: 'center', sm: 'left' },
+                                            pl: { xs: 0, sm: 3 },
+                                        }}
+                                    >
+                                        {habit.title}
+                                    </Typography>
+
+                                    {/* Chip de Racha */}
+                                    <Chip
+                                        icon={<LocalFireDepartmentIcon sx={{ fontSize: { xs: 20, md: 24 } }} />}
+                                        label={`${habit.streak || 0} días`}
+                                        variant="outlined"
+                                        color={completed ? 'success' : 'default'}
+                                        sx={{
+                                            fontWeight: 'bold',
+                                            height: { xs: 32, md: 36 },
+                                            fontSize: { xs: '0.875rem', md: '1rem' },
+                                            alignSelf: { xs: 'center', sm: 'auto' },
+                                        }}
+                                    />
+
+                                    {/* Botones de Acción */}
+                                    <Stack
+                                        direction="row"
+                                        spacing={1}
+                                        sx={{ justifyContent: { xs: 'center', sm: 'flex-start' } }}
+                                    >
+                                        <IconButton
+                                            onClick={() => handleOpenModal(habit)}
+                                            sx={{ minWidth: 44, minHeight: 44 }}
+                                        >
+                                            <EditIcon />
+                                        </IconButton>
+                                        <IconButton
+                                            onClick={() => handleDeleteHabit(habit.id)}
+                                            sx={{ minWidth: 44, minHeight: 44 }}
+                                        >
+                                            <DeleteIcon />
+                                        </IconButton>
+                                    </Stack>
+                                </CardContent>
+                            </Card>
+                        </Box>
+                    );
+                })}
+            </List>
+
+            {/* FAB Responsive */}
+            <Fab
+                variant="extended"
+                color="primary"
+                aria-label="agregar habito"
+                sx={{
+                    position: 'fixed',
+                    bottom: { xs: 16, sm: 24, md: 32 },
+                    right: { xs: 16, sm: 24, md: 32 },
+                    minHeight: 48,
+                    px: { xs: 2, sm: 3 },
+                }}
+                onClick={() => handleOpenModal()}
+            >
+                <AddIcon sx={{ mr: { xs: 0, sm: 1 } }} />
                 <Box
-                    component="main"
-                    sx={(theme) => ({
-                        flexGrow: 1,
-                        backgroundColor: theme.vars ? `rgba(${theme.vars.palette.background.defaultChannel} / 1)` : alpha(theme.palette.background.default, 1),
-                        overflow: 'auto',
-                        height: '100vh',
-                    })}
+                    component="span"
+                    sx={{ display: { xs: 'none', sm: 'inline' } }}
                 >
-                    <Container maxWidth="lg" sx={{ pt: 5, pb: 5 }}>
-                        <Typography variant="h4" component="h1" gutterBottom>
-                            Mis Hábitos
+                    Agregar Hábito
+                </Box>
+            </Fab>
+
+            {/* Modal Responsive */}
+            {currentHabit && (
+                <Modal open={openModal} onClose={handleCloseModal}>
+                    <Box sx={modalStyle}>
+                        <Typography
+                            variant="h6"
+                            component="h2"
+                            sx={{
+                                fontSize: { xs: '1.125rem', sm: '1.25rem' },
+                                mb: 2,
+                            }}
+                        >
+                            {currentHabit.id ? 'Editar Hábito' : 'Añadir Nuevo Hábito'}
                         </Typography>
 
-                        <List>
-                            {habits.map((habit) => {
-                                // Los campos streak y lastCompleted ahora vienen del servidor
-                                const completed = isCompletedToday(habit.lastCompleted);
-                                const inDanger = isStreakInDanger(habit);
+                        <Stack spacing={{ xs: 2, sm: 2.5 }}>
+                            <TextField
+                                autoFocus
+                                name="title"
+                                label="Nombre del Hábito"
+                                type="text"
+                                fullWidth
+                                variant="outlined"
+                                value={currentHabit.title || ''}
+                                onChange={handleModalChange}
+                                sx={{
+                                    '& .MuiInputBase-root': {
+                                        minHeight: 44,
+                                    },
+                                }}
+                            />
 
-                                return (
-                                    <Box key={habit.id} sx={{ mb: 2 }}>
-                                        {inDanger && (
-                                            <Typography variant="body2" fontWeight="bold" color="warning.main" sx={{ ml: 1, mb: 0.5 }}>
-                                                ! Racha en Peligro
-                                            </Typography>
-                                        )}
-                                        <Card sx={{
-                                            border: 2,
-                                            borderColor: inDanger ? 'warning.main' : 'transparent',
-                                        }}>
-                                            <CardContent sx={{ display: 'flex', alignItems: 'center', p: '12px !important' }}>
-                                                <IconButton
-                                                    onClick={() => handleCheckIn(habit.id)}
-                                                    color={completed ? 'success' : 'default'}
-                                                    sx={{ mr: 1 }}
-                                                >
-                                                    {completed ? <CheckCircleIcon sx={{ fontSize: 48 }} /> : <RadioButtonUncheckedIcon sx={{ fontSize: 48 }} />}
-                                                </IconButton>
-                                                <Typography variant="h6" component="div" sx={{ flexGrow: 1, pl: 3, fontSize: '1.45rem' }}>
-                                                    {habit.title}
-                                                </Typography>
-                                                <Chip
-                                                    icon={<LocalFireDepartmentIcon sx={{ fontSize: 24 }} />}
-                                                    // Usamos habit.streak que ahora viene del backend
-                                                    label={`${habit.streak || 0} días`}
-                                                    variant="outlined"
-                                                    color={completed ? 'success' : 'default'}
-                                                    sx={{ mr: 1, fontWeight: 'bold', height: 36, fontSize: '1rem' }}
-                                                />
-                                                <IconButton onClick={() => handleOpenModal(habit)}><EditIcon /></IconButton>
-                                                <IconButton onClick={() => handleDeleteHabit(habit.id)}><DeleteIcon /></IconButton>
-                                            </CardContent>
-                                        </Card>
-                                    </Box>
-                                );
-                            })}
-                        </List>
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    flexDirection: { xs: 'column', sm: 'row' },
+                                    gap: 2,
+                                }}
+                            >
+                                <TextField
+                                    name="time"
+                                    label="Hora"
+                                    type="time"
+                                    fullWidth
+                                    InputLabelProps={{ shrink: true }}
+                                    value={currentHabit.time || ''}
+                                    onChange={handleModalChange}
+                                    sx={{
+                                        '& .MuiInputBase-root': {
+                                            minHeight: 44,
+                                        },
+                                    }}
+                                />
+                                <TextField
+                                    name="location"
+                                    label="Lugar"
+                                    type="text"
+                                    fullWidth
+                                    value={currentHabit.location || ''}
+                                    onChange={handleModalChange}
+                                    sx={{
+                                        '& .MuiInputBase-root': {
+                                            minHeight: 44,
+                                        },
+                                    }}
+                                />
+                            </Box>
 
-                        <Fab
-                            variant="extended"
-                            color="primary"
-                            aria-label="agregar habito"
-                            sx={{ position: 'fixed', bottom: 32, right: 32, }}
-                            onClick={() => handleOpenModal()}
-                        >
-                            <AddIcon sx={{ mr: 1 }} />
-                            Agregar Hábito
-                        </Fab>
-
-                        {currentHabit && (
-                            <Modal open={openModal} onClose={handleCloseModal}>
-                                <Box sx={modalStyle}>
-                                    <Typography variant="h6" component="h2">{currentHabit.id ? 'Editar Hábito' : 'Añadir Nuevo Hábito'}</Typography>
-                                    <TextField
-                                        autoFocus
-                                        margin="dense"
-                                        name="title"
-                                        label="Nombre del Hábito"
-                                        type="text"
-                                        fullWidth
-                                        variant="outlined"
-                                        value={currentHabit.title || ''}
-                                        onChange={handleModalChange}
-                                        sx={{ mt: 2 }}
-                                    />
-                                    <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-                                        <TextField name="time" label="Hora" type="time" fullWidth InputLabelProps={{ shrink: true }} value={currentHabit.time || ''} onChange={handleModalChange} />
-                                        <TextField name="location" label="Lugar" type="text" fullWidth value={currentHabit.location || ''} onChange={handleModalChange} />
-                                    </Box>
-                                    <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
-                                        <Button onClick={handleCloseModal} sx={{ mr: 1 }}>Cancelar</Button>
-                                        <Button variant="contained" onClick={handleSaveHabit}>Guardar</Button>
-                                    </Box>
-                                </Box>
-                            </Modal>
-                        )}
-                    </Container>
-                </Box>
-            </Box>
-        </AppTheme>
+                            <Stack
+                                direction={{ xs: 'column-reverse', sm: 'row' }}
+                                spacing={1}
+                                sx={{ justifyContent: 'flex-end', mt: 1 }}
+                            >
+                                <Button
+                                    onClick={handleCloseModal}
+                                    fullWidth={{ xs: true, sm: false }}
+                                    sx={{ minHeight: 44 }}
+                                >
+                                    Cancelar
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    onClick={handleSaveHabit}
+                                    fullWidth={{ xs: true, sm: false }}
+                                    sx={{ minHeight: 44 }}
+                                >
+                                    Guardar
+                                </Button>
+                            </Stack>
+                        </Stack>
+                    </Box>
+                </Modal>
+            )}
+        </PageLayout>
     );
 }
 

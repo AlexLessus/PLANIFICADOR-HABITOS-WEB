@@ -25,7 +25,6 @@ export default function MarketingPage(props) {
                 <Divider />
                 <FAQ />
                 <Divider />
-                <ContactUsSection />
             </Box>
         </AppTheme>
     );
