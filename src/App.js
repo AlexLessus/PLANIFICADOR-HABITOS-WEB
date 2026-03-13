@@ -1,11 +1,17 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import HomePage from './pages/HomePage';
 import DashboardPage from './pages/DashboardPage/Dashboard';
+import Marketing from './pages/marketing-page/MarketingPage';
+import Habits from './pages/Habits/Habits';
+import Tasks from './pages/Task/Tasks';
+import Calendar from './pages/Calendar/Calendar';
+import Progress from './pages/Progress/Progress';
 import SignIn from './pages/sign-in/SignIn';
 import SignUp from './pages/sign-up/SignUp';
 import ForgotPasswordPage from './pages/sign-in/ForgotPasswordPage';
 import ResetPasswordPage from './pages/sign-in/ResetPasswordPage';
+import { AuthProvider } from './context/AuthContext';
+import PrivateRoute from './components/PrivateRoute';
 import './App.css';
 
 function App() {
