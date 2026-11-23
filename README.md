@@ -130,9 +130,9 @@ El proyecto fue desarrollado por el equipo de **TIGERTECH SOFTWARE SOLUTIONS** c
 
 | Rol | Nombre | Contacto |
 |---|---|---|
-| Product Owner | Cristian Axel Gómez Melchor | `---` |
-| Scrum Master | Alexis De Jesús Pérez Carmona | `l2290827@cdguzman.tenm.mx` |
-| Developer | Gustavo Valerio Guzmán | `---` |
-| UI/UX Designer | Ronaldo Varona Baranda | `---` |
+| Product Owner | Cristian Axel Gómez Melchor | `l22290896@cdguzman.tecnm.mx` |
+| Scrum Master | Alexis De Jesús Pérez Carmona | `l2290827@cdguzman.tecnm.mx` |
+| Developer | Gustavo Valerio Guzmán | `l22290895@cdguzman.tecnm.mx` |
+| UI/UX Designer | Ronaldo Varona Baranda | `@cdguzman.tecnm.mx` |
 
 -----
